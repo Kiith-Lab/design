@@ -606,84 +606,254 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Step ${currentStep + 1} of 8'),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.green),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              _buildCurrentStep(),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () async {
-                  if (currentStep < 7) {
-                    if (currentStep == 0) {
-                      addMode();
-                    } else if (currentStep == 1) {
-                      addDuration();
-                    } else if (currentStep == 2) {
-                      addActivity();
-                    } else if (currentStep == 3) {
-                      // Save all selected lessons to databases
-                      bool allCardsAdded = true;
-                      for (var lesson in selectedLessons) {
-                        try {
-                          await addCard(lesson['cards_id'].toString());
-                        } catch (e) {
-                          print('Error adding card to database: $e');
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content:
-                                    Text('Error adding card to database: $e')),
-                          );
-                          allCardsAdded = false;
-                          break;
-                        }
-                      }
-                      if (allCardsAdded) {
-                        setState(() {
-                          allSelectedLessons.addAll(selectedLessons);
-                          selectedLessons.clear();
-                          currentStep++;
-                          allAddedData.add(
-                              {'type': 'Lessons', 'value': allSelectedLessons});
-                        });
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Failed to add all cards')),
-                        );
-                      }
-                    } else if (currentStep == 4) {
-                      addOutput();
-                    } else if (currentStep == 5) {
-                      addInstruction();
-                    } else if (currentStep == 6) {
-                      addCoachHeader();
-                    }
-                  } else {
-                    // Handle submission here
-                    await addCoachDetails();
-                    print('Submitting data');
-                  }
-                },
-                child: Text(currentStep == 7 ? 'Submit' : 'Next'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SummaryPage(
-                        allAddedData: allAddedData,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.white, Colors.green.shade50],
+          ),
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  height: 20,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade100,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Stack(
+                    children: [
+                      FractionallySizedBox(
+                        widthFactor: (currentStep + 1) / 8,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.green.shade300,
+                                Colors.green.shade500
+                              ],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
                       ),
+                      Center(
+                        child: Text(
+                          '${((currentStep + 1) / 8 * 100).toInt()}%',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            shadows: [
+                              Shadow(
+                                blurRadius: 2,
+                                color: Colors.green.shade700,
+                                offset: Offset(1, 1),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 20),
+                Card(
+                  elevation: 5,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  color: Colors.white,
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: _buildCurrentStep(),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (currentStep < 7) {
+                      if (currentStep == 0) {
+                        addMode();
+                      } else if (currentStep == 1) {
+                        addDuration();
+                      } else if (currentStep == 2) {
+                        addActivity();
+                      } else if (currentStep == 3) {
+                        // Save all selected lessons to databases
+                        bool allCardsAdded = true;
+                        for (var lesson in selectedLessons) {
+                          try {
+                            await addCard(lesson['cards_id'].toString());
+                          } catch (e) {
+                            print('Error adding card to database: $e');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text(
+                                      'Error adding card to database: $e')),
+                            );
+                            allCardsAdded = false;
+                            break;
+                          }
+                        }
+                        if (allCardsAdded) {
+                          setState(() {
+                            allSelectedLessons.addAll(selectedLessons);
+                            selectedLessons.clear();
+                            currentStep++;
+                            allAddedData.add({
+                              'type': 'Lessons',
+                              'value': allSelectedLessons
+                                  .map((lesson) => lesson['cards_title'])
+                                  .toList()
+                            });
+                          });
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Failed to add all cards')),
+                          );
+                        }
+                      } else if (currentStep == 4) {
+                        addOutput();
+                      } else if (currentStep == 5) {
+                        addInstruction();
+                      } else if (currentStep == 6) {
+                        addCoachHeader();
+                      }
+                    } else {
+                      // Handle submission here
+                      await addCoachDetails();
+                      print('Submitting data');
+                    }
+                  },
+                  child: Text(currentStep == 7 ? 'Submit' : 'Next'),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.green.shade600,
+                    padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
                     ),
-                  );
-                },
-                child: Text('View Summary'),
-              ),
-            ],
+                  ),
+                ),
+                SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text('Summary',
+                              style: TextStyle(color: Colors.green.shade700)),
+                          content: SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(15),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.green.withOpacity(0.3),
+                                        spreadRadius: 2,
+                                        blurRadius: 5,
+                                        offset: Offset(0, 3),
+                                      ),
+                                    ],
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(15),
+                                    child: Column(
+                                      children: allAddedData.map((data) {
+                                        return Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            border: Border(
+                                              bottom: BorderSide(
+                                                color: Colors.green.shade100,
+                                                width: 1,
+                                              ),
+                                            ),
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(12.0),
+                                            child: Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Expanded(
+                                                  flex: 1,
+                                                  child: Text(
+                                                    data['type'],
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color:
+                                                          Colors.green.shade700,
+                                                    ),
+                                                  ),
+                                                ),
+                                                SizedBox(width: 10),
+                                                Expanded(
+                                                  flex: 2,
+                                                  child: Text(
+                                                    data['value'].toString(),
+                                                    style: TextStyle(
+                                                      color: Colors.black87,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          actions: <Widget>[
+                            TextButton(
+                              child: Text('Close',
+                                  style:
+                                      TextStyle(color: Colors.green.shade600)),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  child: Text('View Summary'),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.green.shade600,
+                    backgroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      side: BorderSide(color: Colors.green.shade600),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -716,33 +886,64 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   Widget _buildModeStep() {
     return _buildStep(
       title: 'Mode',
-      content: DropdownButtonFormField<String>(
-        decoration: InputDecoration(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10.0),
+      content: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.green.shade300, Colors.yellow.shade300],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          labelText: 'Select Mode',
-          labelStyle: const TextStyle(color: Colors.black),
-          focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.black),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
+          borderRadius: BorderRadius.circular(15.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.green.withOpacity(0.3),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: Offset(0, 3),
+            ),
+          ],
         ),
-        items: modes.map((mode) {
-          return DropdownMenuItem<String>(
-            value: mode['module_master_id'].toString(),
-            child: Text(mode['module_master_name']),
-          );
-        }).toList(),
-        onChanged: (String? newValue) {
-          setState(() {
-            selectedMode = newValue;
-            selectedLesson = null; // Reset selected lesson when mode changes
-            if (newValue != null) {
-              fetchLessons(newValue);
-            }
-          });
-        },
+        child: DropdownButtonFormField<String>(
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(15.0),
+              borderSide: BorderSide.none,
+            ),
+            labelText: 'Select Mode',
+            labelStyle: TextStyle(
+              color: Colors.green.shade800,
+              fontWeight: FontWeight.bold,
+            ),
+            contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          ),
+          dropdownColor: Colors.yellow.shade100,
+          icon: Icon(Icons.arrow_drop_down, color: Colors.green.shade800),
+          style: TextStyle(
+              color: Colors.green.shade800,
+              fontSize: 18,
+              fontWeight: FontWeight.bold),
+          items: modes.map((mode) {
+            return DropdownMenuItem<String>(
+              value: mode['module_master_id'].toString(),
+              child: Text(
+                mode['module_master_name'],
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+            );
+          }).toList(),
+          onChanged: (String? newValue) {
+            setState(() {
+              selectedMode = newValue;
+              selectedLesson = null; // Reset selected lesson when mode changes
+              if (newValue != null) {
+                fetchLessons(newValue);
+              }
+            });
+          },
+        ),
       ),
     );
   }
@@ -755,11 +956,12 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
         decoration: InputDecoration(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10.0),
+            borderSide: BorderSide(color: Colors.green.shade600),
           ),
           labelText: 'How long will it take?',
-          labelStyle: const TextStyle(color: Colors.black),
+          labelStyle: TextStyle(color: Colors.green.shade600),
           focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.black),
+            borderSide: BorderSide(color: Colors.green.shade600),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -776,11 +978,12 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
         decoration: InputDecoration(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10.0),
+            borderSide: BorderSide(color: Colors.green.shade600),
           ),
           labelText: 'What activities will my students do?',
-          labelStyle: const TextStyle(color: Colors.black),
+          labelStyle: TextStyle(color: Colors.green.shade600),
           focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.black),
+            borderSide: BorderSide(color: Colors.green.shade600),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -794,34 +997,68 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       title: 'Lesson',
       content: Column(
         children: [
-          DropdownButtonFormField<String>(
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10.0),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.green.shade100, Colors.white],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              labelText: 'Select a lesson',
-              labelStyle: const TextStyle(color: Colors.black),
-              focusedBorder: OutlineInputBorder(
-                borderSide: const BorderSide(color: Colors.black),
-                borderRadius: BorderRadius.circular(10.0),
-              ),
+              borderRadius: BorderRadius.circular(15.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.green.withOpacity(0.2),
+                  spreadRadius: 2,
+                  blurRadius: 5,
+                  offset: Offset(0, 3),
+                ),
+              ],
             ),
-            items: lessons.map((lesson) {
-              return DropdownMenuItem<String>(
-                value: lesson['cards_id'].toString(),
-                child: Text(
-                    '${lesson['cards_title']} (ID: ${lesson['cards_id'].toString()})'),
-              );
-            }).toList(),
-            onChanged: (String? newValue) {
-              setState(() {
-                selectedLesson = newValue;
-              });
-            },
-            value: selectedLesson,
+            child: DropdownButtonFormField<String>(
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15.0),
+                  borderSide: BorderSide.none,
+                ),
+                labelText: 'Select a lesson',
+                labelStyle: TextStyle(
+                  color: Colors.green.shade800,
+                  fontWeight: FontWeight.bold,
+                ),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                filled: true,
+                fillColor: Colors.transparent,
+              ),
+              dropdownColor: Colors.white,
+              icon: Icon(Icons.arrow_drop_down, color: Colors.green.shade800),
+              style: TextStyle(
+                color: Colors.green.shade800,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+              items: lessons.map((lesson) {
+                return DropdownMenuItem<String>(
+                  value: lesson['cards_id'].toString(),
+                  child: Text(
+                    '${lesson['cards_title']} (ID: ${lesson['cards_id'].toString()})',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  selectedLesson = newValue;
+                });
+              },
+              value: selectedLesson,
+            ),
           ),
-          SizedBox(height: 10),
-          ElevatedButton(
+          SizedBox(height: 15),
+          ElevatedButton.icon(
             onPressed: () {
               if (selectedLesson != null) {
                 setState(() {
@@ -835,30 +1072,71 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 });
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Please select a lesson')),
+                  SnackBar(
+                    content: Text('Please select a lesson'),
+                    backgroundColor: Colors.green.shade600,
+                  ),
                 );
               }
             },
-            child: Text('Add Lesson'),
+            icon: Icon(Icons.add_circle_outline),
+            label: Text('Add Lesson'),
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.green.shade600,
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+            ),
           ),
           SizedBox(height: 20),
-          Text('Selected Lessons:'),
+          Text(
+            'Selected Lessons:',
+            style: TextStyle(
+              color: Colors.green.shade700,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          SizedBox(height: 10),
           ListView.builder(
             shrinkWrap: true,
             itemCount: selectedLessons.length,
             itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(
-                    selectedLessons[index]['cards_title'] ?? 'Unknown Title'),
-                subtitle: Text(
-                    'ID: ${selectedLessons[index]['cards_id'] ?? 'Unknown ID'}'),
-                trailing: IconButton(
-                  icon: Icon(Icons.delete),
-                  onPressed: () {
-                    setState(() {
-                      selectedLessons.removeAt(index);
-                    });
-                  },
+              return Card(
+                elevation: 3,
+                margin: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ListTile(
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  title: Text(
+                    selectedLessons[index]['cards_title'] ?? 'Unknown Title',
+                    style: TextStyle(
+                      color: Colors.green.shade700,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'ID: ${selectedLessons[index]['cards_id'] ?? 'Unknown ID'}',
+                    style: TextStyle(color: Colors.green.shade400),
+                  ),
+                  trailing: IconButton(
+                    icon:
+                        Icon(Icons.delete_outline, color: Colors.red.shade400),
+                    onPressed: () {
+                      setState(() {
+                        selectedLessons.removeAt(index);
+                      });
+                    },
+                  ),
+                  tileColor: Colors.green.shade50,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               );
             },
@@ -876,11 +1154,12 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
         decoration: InputDecoration(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10.0),
+            borderSide: BorderSide(color: Colors.green.shade600),
           ),
           labelText: 'What are the expected outputs?',
-          labelStyle: const TextStyle(color: Colors.black),
+          labelStyle: TextStyle(color: Colors.green.shade600),
           focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.black),
+            borderSide: BorderSide(color: Colors.green.shade600),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -897,11 +1176,12 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
         decoration: InputDecoration(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10.0),
+            borderSide: BorderSide(color: Colors.green.shade600),
           ),
           labelText: 'What Instruction will I give to my students?',
-          labelStyle: const TextStyle(color: Colors.black),
+          labelStyle: TextStyle(color: Colors.green.shade600),
           focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.black),
+            borderSide: BorderSide(color: Colors.green.shade600),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -918,11 +1198,12 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
         decoration: InputDecoration(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10.0),
+            borderSide: BorderSide(color: Colors.green.shade600),
           ),
           labelText: 'Enter Coach Header',
-          labelStyle: const TextStyle(color: Colors.black),
+          labelStyle: TextStyle(color: Colors.green.shade600),
           focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.black),
+            borderSide: BorderSide(color: Colors.green.shade600),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -939,11 +1220,12 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
         decoration: InputDecoration(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10.0),
+            borderSide: BorderSide(color: Colors.green.shade600),
           ),
           labelText: 'Enter Coach Details',
-          labelStyle: const TextStyle(color: Colors.black),
+          labelStyle: TextStyle(color: Colors.green.shade600),
           focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.black),
+            borderSide: BorderSide(color: Colors.green.shade600),
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
@@ -958,10 +1240,10 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: Colors.green.shade700,
           ),
         ),
         const SizedBox(height: 20),
@@ -983,35 +1265,75 @@ class SummaryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Summary'),
+        title: Text('Summary', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.green.shade600,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              for (var data in allAddedData)
-                if (data['type'] == 'Lessons')
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('${data['type']}:'),
-                      for (var lesson in data['value'])
-                        Text(
-                            '  - ${lesson['cards_title']} (ID: ${lesson['cards_id']})'),
-                      SizedBox(height: 10),
-                    ],
-                  )
-                else
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('${data['type']}: ${data['value']}'),
-                      SizedBox(height: 10),
-                    ],
-                  ),
-            ],
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.white, Colors.green.shade50],
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (var data in allAddedData)
+                  if (data['type'] == 'Lessons')
+                    Card(
+                      elevation: 3,
+                      margin: EdgeInsets.only(bottom: 16),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('${data['type']}:',
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green.shade700)),
+                            SizedBox(height: 8),
+                            for (var lesson in data['value'])
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 16, top: 4, bottom: 4),
+                                child: Text(
+                                    '• ${lesson['cards_title']} (ID: ${lesson['cards_id']})',
+                                    style: TextStyle(
+                                        color: Colors.green.shade600)),
+                              ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    Card(
+                      elevation: 3,
+                      margin: EdgeInsets.only(bottom: 16),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('${data['type']}:',
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green.shade700)),
+                            SizedBox(height: 8),
+                            Text('${data['value']}',
+                                style: TextStyle(color: Colors.green.shade600)),
+                          ],
+                        ),
+                      ),
+                    ),
+              ],
+            ),
           ),
         ),
       ),

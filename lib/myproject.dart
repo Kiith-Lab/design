@@ -143,132 +143,293 @@ class _MyProjectPageState extends State<MyProjectPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('My Project'),
-        backgroundColor: Colors.green.shade700,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back,
+              color: const Color.fromARGB(255, 14, 14, 14)),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0.0,
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              const Text(
-                'PROJECT:',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _projectNameController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Enter Project Name',
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'SUBJECT:',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _subjectController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Subject',
-                ),
-              ),
-              const Text(
-                'PROJECT DESCRIPTION:',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Enter Project Description',
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'START DATE:',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _startDateController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Enter Start Date',
-                ),
-                onTap: () {
-                  _selectDate(context, _startDateController);
-                },
-                readOnly: true,
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'END DATE:',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _endDateController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Enter End Date',
-                ),
-                onTap: () {
-                  _selectDate(context, _endDateController);
-                },
-                readOnly: true,
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'BEFORE SCHEDULE STUDENT WORKSHOP:',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _beforeScheduleController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Enter Before Schedule Student Workshop Date',
-                ),
-                onTap: () {
-                  _selectDate(context, _beforeScheduleController);
-                },
-                readOnly: true,
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'START SCHEDULE STUDENT WORKSHOP:',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _startScheduleController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Enter Start Schedule Student Workshop Date',
-                ),
-                onTap: () {
-                  _selectDate(context, _startScheduleController);
-                },
-                readOnly: true,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () async {
-                  await _addProject();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green.shade700,
-                ),
-                child: const Text('Next'),
-              ),
-            ],
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image:
+                AssetImage('assets/images/Design_Thinking_Five_Modes_Page.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    SizedBox(
+                        height:
+                            90), // Add space between the back button and content
+                    const Text(
+                      'PROJECT:',
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green),
+                    ),
+                    const SizedBox(height: 10),
+                    Card(
+                      child: TextField(
+                        controller: _projectNameController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                                15), // Changed border radius for a unique look
+                            borderSide:
+                                BorderSide(color: Colors.green.shade700),
+                          ),
+                          labelText: 'Enter Project Name',
+                          labelStyle: TextStyle(color: Colors.green.shade700),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.green.shade700),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'SUBJECT:',
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green),
+                    ),
+                    const SizedBox(height: 10),
+                    Card(
+                      child: TextField(
+                        controller: _subjectController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            borderSide:
+                                BorderSide(color: Colors.green.shade700),
+                          ),
+                          labelText: 'Subject',
+                          labelStyle: TextStyle(color: Colors.green.shade700),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.green.shade700),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const Text(
+                      'PROJECT DESCRIPTION:',
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green),
+                    ),
+                    const SizedBox(height: 10),
+                    Card(
+                      child: TextField(
+                        controller: _descriptionController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            borderSide:
+                                BorderSide(color: Colors.green.shade700),
+                          ),
+                          labelText: 'Enter Project Description',
+                          labelStyle: TextStyle(color: Colors.green.shade700),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.green.shade700),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'START DATE:',
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green),
+                    ),
+                    const SizedBox(height: 10),
+                    Card(
+                      child: TextField(
+                        controller: _startDateController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            borderSide:
+                                BorderSide(color: Colors.green.shade700),
+                          ),
+                          labelText: 'Enter Start Date',
+                          labelStyle: TextStyle(color: Colors.green.shade700),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.green.shade700),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                        ),
+                        onTap: () {
+                          _selectDate(context, _startDateController);
+                        },
+                        readOnly: true,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'END DATE:',
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green),
+                    ),
+                    const SizedBox(height: 10),
+                    Card(
+                      child: TextField(
+                        controller: _endDateController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            borderSide:
+                                BorderSide(color: Colors.green.shade700),
+                          ),
+                          labelText: 'Enter End Date',
+                          labelStyle: TextStyle(color: Colors.green.shade700),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.green.shade700),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                        ),
+                        onTap: () {
+                          _selectDate(context, _endDateController);
+                        },
+                        readOnly: true,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'BEFORE SCHEDULE STUDENT WORKSHOP:',
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green),
+                    ),
+                    const SizedBox(height: 10),
+                    Card(
+                      child: TextField(
+                        controller: _beforeScheduleController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            borderSide:
+                                BorderSide(color: Colors.green.shade700),
+                          ),
+                          labelText:
+                              'Enter Before Schedule Student Workshop Date',
+                          labelStyle: TextStyle(color: Colors.green.shade700),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.green.shade700),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                        ),
+                        onTap: () {
+                          _selectDate(context, _beforeScheduleController);
+                        },
+                        readOnly: true,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'START SCHEDULE STUDENT WORKSHOP:',
+                      style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green),
+                    ),
+                    const SizedBox(height: 10),
+                    Card(
+                      child: TextField(
+                        controller: _startScheduleController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            borderSide:
+                                BorderSide(color: Colors.green.shade700),
+                          ),
+                          labelText:
+                              'Enter Start Schedule Student Workshop Date',
+                          labelStyle: TextStyle(color: Colors.green.shade700),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.green.shade700),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                        ),
+                        onTap: () {
+                          _selectDate(context, _startScheduleController);
+                        },
+                        readOnly: true,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        color: Colors.green.shade700.withOpacity(
+                            0.3), // Changed background color for a unique look
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.green.shade700.withOpacity(0.1),
+                            spreadRadius: 5,
+                            blurRadius: 7,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          await _addProject();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green
+                              .shade700, // Changed background color for a unique look
+                          shadowColor: Colors.green.shade700.withOpacity(0.1),
+                          padding: EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                        ),
+                        child: Text(
+                          'Next',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
