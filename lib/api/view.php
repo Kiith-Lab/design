@@ -378,11 +378,11 @@ class Get
 
             return json_encode($returnValue);
         } catch (PDOException $e) {
-            error_log("Database error: " . $e->getMessage());
-            return json_encode(['error' => 'Database error occurred']);
+            error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
         } catch (Exception $e) {
-            error_log("General error: " . $e->getMessage());
-            return json_encode(['error' => 'An error occurred']);
+            error_log("General error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
         }
     }
     function GetModes()

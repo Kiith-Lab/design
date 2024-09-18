@@ -1034,8 +1034,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
               icon: Icon(Icons.arrow_drop_down, color: Colors.green.shade800),
               style: TextStyle(
                 color: Colors.green.shade800,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+                fontSize: 16,
               ),
               items: lessons.map((lesson) {
                 return DropdownMenuItem<String>(
@@ -1043,8 +1042,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                   child: Text(
                     '${lesson['cards_title']} (ID: ${lesson['cards_id'].toString()})',
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 );
