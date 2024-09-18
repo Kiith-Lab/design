@@ -22,11 +22,14 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   List<Map<String, dynamic>> modes = [];
   List<Map<String, dynamic>> lessons = [];
   List<Map<String, dynamic>> selectedLessons = [];
+  List<Map<String, dynamic>> allSelectedLessons = [];
   String? masterModuleName;
   int currentStep = 0;
   int? lastInsertedModeId;
   int? lastInsertedDurationId;
   int? lastInsertedCoachHeaderId;
+
+  List<Map<String, dynamic>> allAddedData = [];
 
   @override
   void initState() {
@@ -151,6 +154,12 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           setState(() {
             lastInsertedModeId = int.parse(decodedData['id']);
             currentStep++;
+            allAddedData.add({
+              'type': 'Mode',
+              'value': modes.firstWhere((mode) =>
+                  mode['module_master_id'].toString() ==
+                  selectedMode)['module_master_name']
+            });
           });
         } else {
           print('Failed to add mode: ${decodedData['error']}');
@@ -193,6 +202,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           setState(() {
             lastInsertedDurationId = int.parse(decodedData['id']);
             currentStep++;
+            allAddedData
+                .add({'type': 'Duration', 'value': durationController.text});
           });
         } else {
           print('Failed to add duration: ${decodedData['error']}');
@@ -235,6 +246,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           print('Activity added successfully');
           setState(() {
             currentStep++;
+            allAddedData
+                .add({'type': 'Activity', 'value': activitiesController.text});
           });
         } else {
           print('Failed to add activity: ${decodedData['error']}');
@@ -324,6 +337,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           print('Output added successfully');
           setState(() {
             currentStep++;
+            allAddedData
+                .add({'type': 'Output', 'value': outputsController.text});
           });
         } else {
           print('Failed to add output: ${decodedData['error']}');
@@ -366,6 +381,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           print('Instruction added successfully');
           setState(() {
             currentStep++; // Skip to coach header step
+            allAddedData.add(
+                {'type': 'Instruction', 'value': instructionsController.text});
           });
         } else {
           print('Failed to add instruction: ${decodedData['error']}');
@@ -408,6 +425,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           setState(() {
             lastInsertedCoachHeaderId = int.parse(decodedData['id']);
             currentStep++;
+            allAddedData.add(
+                {'type': 'Coach Header', 'value': coachHeaderController.text});
           });
         } else {
           print('Failed to add coach header: ${decodedData['error']}');
@@ -451,6 +470,10 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           // You might want to handle the completion of all steps here
           setState(() {
             currentStep = 0; // Reset to the first step
+            allAddedData.add({
+              'type': 'Coach Details',
+              'value': coachDetailsController.text
+            });
           });
         } else {
           print('Failed to add coach details: ${decodedData['error']}');
@@ -505,7 +528,11 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                       }
                       if (allCardsAdded) {
                         setState(() {
+                          allSelectedLessons.addAll(selectedLessons);
+                          selectedLessons.clear();
                           currentStep++;
+                          allAddedData.add(
+                              {'type': 'Lessons', 'value': allSelectedLessons});
                         });
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -527,26 +554,19 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 },
                 child: Text(currentStep == 7 ? 'Submit' : 'Next'),
               ),
-              if (currentStep == 0)
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SummaryPage(
-                          activities: activitiesController.text,
-                          duration: durationController.text,
-                          outputs: outputsController.text,
-                          instructions: instructionsController.text,
-                          coachHeader: coachHeaderController.text,
-                          coachDetails: coachDetailsController.text,
-                          selectedLessons: selectedLessons,
-                        ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SummaryPage(
+                        allAddedData: allAddedData,
                       ),
-                    );
-                  },
-                  child: Text('View Summary'),
-                ),
+                    ),
+                  );
+                },
+                child: Text('View Summary'),
+              ),
             ],
           ),
         ),
@@ -836,23 +856,11 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
 }
 
 class SummaryPage extends StatelessWidget {
-  final String activities;
-  final String duration;
-  final String outputs;
-  final String instructions;
-  final String coachHeader;
-  final String coachDetails;
-  final List<Map<String, dynamic>> selectedLessons;
+  final List<Map<String, dynamic>> allAddedData;
 
   const SummaryPage({
     Key? key,
-    required this.activities,
-    required this.duration,
-    required this.outputs,
-    required this.instructions,
-    required this.coachHeader,
-    required this.coachDetails,
-    required this.selectedLessons,
+    required this.allAddedData,
   }) : super(key: key);
 
   @override
@@ -867,25 +875,26 @@ class SummaryPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Activities: $activities'),
-              SizedBox(height: 10),
-              Text('Duration: $duration'),
-              SizedBox(height: 10),
-              Text('Outputs: $outputs'),
-              SizedBox(height: 10),
-              Text('Instructions: $instructions'),
-              SizedBox(height: 10),
-              Text('Coach Header: $coachHeader'),
-              SizedBox(height: 10),
-              Text('Coach Details: $coachDetails'),
-              SizedBox(height: 10),
-              Text('Selected Lessons:'),
-              ...selectedLessons.map((lesson) {
-                return ListTile(
-                  title: Text(lesson['cards_title'] ?? 'Unknown Title'),
-                  subtitle: Text('ID: ${lesson['cards_id'] ?? 'Unknown ID'}'),
-                );
-              }).toList(),
+              for (var data in allAddedData)
+                if (data['type'] == 'Lessons')
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('${data['type']}:'),
+                      for (var lesson in data['value'])
+                        Text(
+                            '  - ${lesson['cards_title']} (ID: ${lesson['cards_id']})'),
+                      SizedBox(height: 10),
+                    ],
+                  )
+                else
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('${data['type']}: ${data['value']}'),
+                      SizedBox(height: 10),
+                    ],
+                  ),
             ],
           ),
         ),
