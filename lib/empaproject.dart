@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EmpathyProjectPage extends StatefulWidget {
   final int projectId;
@@ -30,6 +32,13 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   int? lastInsertedCoachHeaderId;
 
   List<Map<String, dynamic>> allAddedData = [];
+
+  List<int> insertedIds = [];
+
+  int? lastInsertedActivityId;
+  int? lastInsertedCardId;
+  int? lastInsertedOutputId;
+  int? lastInsertedInstructionId;
 
   @override
   void initState() {
@@ -248,7 +257,13 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
             currentStep++;
             allAddedData
                 .add({'type': 'Activity', 'value': activitiesController.text});
+            lastInsertedActivityId = int.parse(decodedData['id']);
           });
+
+          // Store the activity details
+          var activityDetails = decodedData['activity'];
+          print('Activity ID: ${activityDetails['activities_details_id']}');
+          // You can store other activity details as needed
         } else {
           print('Failed to add activity: ${decodedData['error']}');
         }
@@ -301,6 +316,9 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       }
 
       print('Card added successfully');
+      setState(() {
+        lastInsertedCardId = int.parse(decodedData['id']);
+      });
     } catch (e) {
       print('Error adding card: $e');
       throw Exception('Failed to add card to database: $e');
@@ -339,6 +357,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
             currentStep++;
             allAddedData
                 .add({'type': 'Output', 'value': outputsController.text});
+            lastInsertedOutputId = int.parse(decodedData['id']);
           });
         } else {
           print('Failed to add output: ${decodedData['error']}');
@@ -383,6 +402,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
             currentStep++; // Skip to coach header step
             allAddedData.add(
                 {'type': 'Instruction', 'value': instructionsController.text});
+            lastInsertedInstructionId = int.parse(decodedData['id']);
           });
         } else {
           print('Failed to add instruction: ${decodedData['error']}');
@@ -467,7 +487,26 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
         var decodedData = jsonDecode(response.body);
         if (decodedData['success'] == true) {
           print('Coach Details added successfully');
-          // You might want to handle the completion of all steps here
+          int coachDetailsId = int.parse(decodedData['id']);
+
+          // Store all inserted IDs
+          insertedIds = [
+            lastInsertedModeId!,
+            lastInsertedDurationId!,
+            lastInsertedActivityId!,
+            lastInsertedCardId!,
+            lastInsertedOutputId!,
+            lastInsertedInstructionId!,
+            lastInsertedCoachHeaderId!,
+            coachDetailsId,
+          ];
+
+          // Store IDs in local storage
+          await storeInsertedIds();
+
+          // Add to folder operation
+          await addToFolder();
+
           setState(() {
             currentStep = 0; // Reset to the first step
             allAddedData.add({
@@ -483,6 +522,83 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       }
     } catch (e) {
       print('Error adding coach details: $e');
+    }
+  }
+
+  Future<void> storeInsertedIds() async {
+    try {
+      // Debugging print to check insertedIds
+      print('Attempting to store IDs: ${insertedIds.join(', ')}');
+
+      // Get SharedPreferences instance
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+
+      // Store the IDs
+      await prefs.setStringList(
+          'insertedIds', insertedIds.map((id) => id.toString()).toList());
+
+      print('Stored IDs successfully: ${insertedIds.join(', ')}');
+    } catch (e) {
+      print('Error storing inserted IDs: $e');
+      if (e is MissingPluginException) {
+        print('Ensure SharedPreferences is properly initialized');
+      }
+    }
+  }
+
+  Future<void> addToFolder() async {
+    try {
+      // Ensure insertedIds is populated before using it
+      if (insertedIds.length < 8) {
+        print(
+            'Error: Not all required IDs are available. Current IDs: ${insertedIds.join(', ')}');
+        return;
+      }
+
+      String url = "http://localhost/design/lib/api/masterlist.php";
+      Map<String, String> requestBody = {
+        'operation': 'addFolder',
+        'json': jsonEncode({
+          'projectId': widget.projectId.toString(),
+          'project_moduleId': insertedIds[0].toString(),
+          'activities_detailId': lastInsertedActivityId.toString(),
+          'project_cardsId': insertedIds[3].toString(),
+          'outputId': insertedIds[4].toString(),
+          'instructionId': insertedIds[5].toString(),
+          'coach_headerId': insertedIds[6].toString(),
+          'coach_detailsId': insertedIds[7].toString(),
+        }),
+      };
+
+      print('Adding to folder with IDs:');
+      print('projectId: ${widget.projectId}');
+      print('project_moduleId: ${insertedIds[0]}');
+      print('activities_detailId: $lastInsertedActivityId');
+      print('project_cardsId: ${insertedIds[3]}');
+      print('outputId: ${insertedIds[4]}');
+      print('instructionId: ${insertedIds[5]}');
+      print('coach_headerId: ${insertedIds[6]}');
+      print('coach_detailsId: ${insertedIds[7]}');
+
+      http.Response response = await http
+          .post(
+            Uri.parse(url),
+            body: requestBody,
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        var decodedData = jsonDecode(response.body);
+        if (decodedData['success'] == true) {
+          print('Added to folder successfully');
+        } else {
+          print('Failed to add to folder: ${decodedData['error']}');
+        }
+      } else {
+        throw Exception('Failed to add to folder: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error adding to folder: $e');
     }
   }
 

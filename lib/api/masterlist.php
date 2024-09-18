@@ -170,7 +170,15 @@ class Get1
             $stmt->bindParam(':activities_details_headerId', $json['activities_details_headerId'], PDO::PARAM_STR);
             $stmt->execute();
             $lastInsertId = $this->pdo->lastInsertId();
-            return json_encode(['success' => true, 'id' => $lastInsertId]);
+            
+            // Fetch the newly inserted activity
+            $selectSql = "SELECT * FROM tbl_activities_details WHERE activities_details_id = :id";
+            $selectStmt = $this->pdo->prepare($selectSql);
+            $selectStmt->bindParam(':id', $lastInsertId, PDO::PARAM_INT);
+            $selectStmt->execute();
+            $activity = $selectStmt->fetch(PDO::FETCH_ASSOC);
+            
+            return json_encode(['success' => true, 'id' => $lastInsertId, 'activity' => $activity]);
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
             return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
@@ -197,7 +205,15 @@ class Get1
             $stmt->bindParam(':project_cards_cardId', $json['project_cards_cardId'], PDO::PARAM_STR);
             $stmt->execute();
             $lastInsertId = $this->pdo->lastInsertId();
-            return json_encode(['success' => true, 'id' => $lastInsertId]);
+            
+            // Fetch the newly inserted card
+            $selectSql = "SELECT * FROM tbl_project_cards WHERE project_cards_id = :id";
+            $selectStmt = $this->pdo->prepare($selectSql);
+            $selectStmt->bindParam(':id', $lastInsertId, PDO::PARAM_INT);
+            $selectStmt->execute();
+            $card = $selectStmt->fetch(PDO::FETCH_ASSOC);
+            
+            return json_encode(['success' => true, 'id' => $lastInsertId, 'card' => $card]);
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
             return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
@@ -224,7 +240,15 @@ class Get1
             $stmt->bindParam(':outputs_content', $json['outputs_content'], PDO::PARAM_STR);
             $stmt->execute();
             $lastInsertId = $this->pdo->lastInsertId();
-            return json_encode(['success' => true, 'id' => $lastInsertId]);
+            
+            // Fetch the newly inserted output
+            $selectSql = "SELECT * FROM tbl_outputs WHERE outputs_id = :id";
+            $selectStmt = $this->pdo->prepare($selectSql);
+            $selectStmt->bindParam(':id', $lastInsertId, PDO::PARAM_INT);
+            $selectStmt->execute();
+            $output = $selectStmt->fetch(PDO::FETCH_ASSOC);
+            
+            return json_encode(['success' => true, 'id' => $lastInsertId, 'output' => $output]);
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
             return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
@@ -251,7 +275,15 @@ class Get1
             $stmt->bindParam(':instruction_content', $json['instruction_content'], PDO::PARAM_STR);
             $stmt->execute();
             $lastInsertId = $this->pdo->lastInsertId();
-            return json_encode(['success' => true, 'id' => $lastInsertId]);
+            
+            // Fetch the newly inserted instruction
+            $selectSql = "SELECT * FROM tbl_instruction WHERE instruction_id = :id";
+            $selectStmt = $this->pdo->prepare($selectSql);
+            $selectStmt->bindParam(':id', $lastInsertId, PDO::PARAM_INT);
+            $selectStmt->execute();
+            $instruction = $selectStmt->fetch(PDO::FETCH_ASSOC);
+            
+            return json_encode(['success' => true, 'id' => $lastInsertId, 'instruction' => $instruction]);
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
             return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
@@ -304,6 +336,7 @@ class Get1
             $stmt->execute();
             $lastInsertId = $this->pdo->lastInsertId();
             return json_encode(['success' => true, 'id' => $lastInsertId]);
+            // IF         INSERT INTO tbl_folder(projectId, project_moduleId, activities_detailId, project_cardsId, outputId, instructionId, coach_detailsId)
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
             return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
@@ -312,6 +345,44 @@ class Get1
             return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
         }
     }
+    function addFolder($json)
+    {
+        $json = json_decode($json, true);
+        try {
+            $sql = "INSERT INTO tbl_folder(projectId, project_moduleId, activities_detailId, project_cardsId, outputId, instructionId, coach_detailsId)
+            VALUES (
+                :projectId,
+                :project_moduleId,
+                :activities_detailId,
+                :project_cardsId,
+                :outputId,
+                :instructionId,
+                :coach_detailsId
+            )";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':projectId', $json['projectId'], PDO::PARAM_INT);
+            $stmt->bindParam(':project_moduleId', $json['project_moduleId'], PDO::PARAM_INT);
+            $stmt->bindParam(':activities_detailId', $json['activities_detailId'], PDO::PARAM_INT);
+            $stmt->bindParam(':project_cardsId', $json['project_cardsId'], PDO::PARAM_INT);
+            $stmt->bindParam(':outputId', $json['outputId'], PDO::PARAM_INT);
+            $stmt->bindParam(':instructionId', $json['instructionId'], PDO::PARAM_INT);
+            $stmt->bindParam(':coach_detailsId', $json['coach_detailsId'], PDO::PARAM_INT);
+            $stmt->execute();
+            $lastInsertId = $this->pdo->lastInsertId();
+            return json_encode(['success' => true, 'id' => $lastInsertId]);
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
+        }
+    }
+
+
+    
+
+
 }
 
 // Handle preflight requests for CORS (for OPTIONS request)
@@ -371,4 +442,7 @@ switch ($operation) {
     case "addCoachDetails":
         echo $get->addCoachDetails($json);
         break;
+        case "addFolder":
+            echo $get->addFolder($json);
+            break;
 }
