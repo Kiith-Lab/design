@@ -349,7 +349,7 @@ class Get1
     {
         $json = json_decode($json, true);
         try {
-            $sql = "INSERT INTO tbl_folder(projectId, project_moduleId, activities_detailId, project_cardsId, outputId, instructionId, coach_detailsId)
+            $sql = "INSERT INTO tbl_folders(projectId, project_moduleId, activities_detailId, project_cardsId, outputId, instructionId, coach_detailsId)
             VALUES (
                 :projectId,
                 :project_moduleId,
@@ -370,6 +370,30 @@ class Get1
             $stmt->execute();
             $lastInsertId = $this->pdo->lastInsertId();
             return json_encode(['success' => true, 'id' => $lastInsertId]);
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
+        }
+    }
+    function getFolder()
+    {
+        try {
+            $sql = "SELECT *
+            FROM tbl_folders
+            INNER JOIN tbl_project_modules ON tbl_folders.project_moduleId = tbl_project_modules.project_modules_id
+            INNER JOIN tbl_activities_details ON tbl_folders.activities_detailId = 	tbl_activities_details.activities_details_id
+            INNER JOIN tbl_project_cards ON tbl_folders.project_cardsId = tbl_project_cards.project_cards_id
+            INNER JOIN tbl_outputs ON tbl_folders.outputId = tbl_outputs.outputs_id
+            INNER JOIN tbl_instruction ON tbl_folders.instructionId = tbl_instruction.instruction_id
+            INNER JOIN tbl_coach_detail ON tbl_folders.coach_detailsId = tbl_coach_detail.coach_detail_id
+            INNER JOIN tbl_project ON tbl_project.project_id = tbl_folders.projectId";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+            $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return json_encode($returnValue);
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
             return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
@@ -406,6 +430,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 // Handle different operations based on the request
 switch ($operation) {
+    case "getFolder":
+        echo $get->getFolder();
+        break;
     case "getModuleId":
         echo $get->getModuleId();
         break;

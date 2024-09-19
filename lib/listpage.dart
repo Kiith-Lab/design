@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class ListPage extends StatefulWidget {
   const ListPage({super.key});
@@ -22,35 +26,46 @@ class _ListPageState extends State<ListPage> {
   Future<void> _fetchFolders() async {
     try {
       final response = await http.post(
-        Uri.parse('http://152.42.243.189/design/lib/api/view.php'),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        Uri.parse('http://localhost/design/lib/api/masterlist.php'),
         body: {
           'operation': 'getFolder',
         },
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> folderData = json.decode(response.body);
+        final List<dynamic> data = json.decode(response.body);
         setState(() {
-          folders = folderData
-              .map((folder) => {
-                    'id': folder['folder_id'],
-                    'name': folder['folder_name'],
-                    'creation_date': folder['folder_date'],
-                  })
-              .toList();
+          folders = List<Map<String, dynamic>>.from(data.map((item) => {
+                'folder_id': item['id'] ?? '',
+                'project_title': item['project_title'] ?? '',
+                'module_master_name': item['project_modules_masterId'] ?? '',
+                'activities_details_content':
+                    item['activities_details_content'] ?? '',
+                'card_title': item['project_cards_remarks'] ?? '',
+                'outputs_content': item['outputs_content'] ?? '',
+                'instruction_content': item['instruction_content'] ?? '',
+                'coach_detail_content': item['coach_detail_content'] ?? '',
+              }));
         });
+        // Print the fetched details
+        print('Fetched Folder Details:');
+        for (var folder in folders) {
+          print('Folder ID: ${folder['folder_id']}');
+          print('Project Title: ${folder['project_title']}');
+          print('Module Master Name: ${folder['module_master_name']}');
+          print('Activities Details: ${folder['activities_details_content']}');
+          print('Card Title: ${folder['card_title']}');
+          print('Outputs Content: ${folder['outputs_content']}');
+          print('Instruction Content: ${folder['instruction_content']}');
+          print('Coach Detail Content: ${folder['coach_detail_content']}');
+          print('---');
+        }
       } else {
-        print('Failed to fetch folders: Server error ${response.statusCode}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to fetch folders')),
-        );
+        throw Exception('Failed to load folders');
       }
     } catch (e) {
       print('Error fetching folders: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('An error occurred while fetching folders')),
-      );
+      // You might want to show an error message to the user here
     }
   }
 
@@ -189,7 +204,7 @@ class _ListPageState extends State<ListPage> {
   }
 
   void _onFolderTap(Map<String, dynamic> folder) {
-    print('Folder tapped: ${folder['name']}');
+    print('Folder tapped: ${folder['project_title']}');
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -198,12 +213,58 @@ class _ListPageState extends State<ListPage> {
     );
   }
 
+  Future<void> _generatePDF() async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Column(
+            children: [
+              pw.Header(
+                level: 0,
+                child: pw.Text('My Folders'),
+              ),
+              pw.Table.fromTextArray(
+                context: context,
+                data: <List<String>>[
+                  <String>['Folder Name', 'Module'],
+                  ...folders.map((folder) => [
+                        folder['project_title'] ?? 'Unnamed Folder',
+                        folder['module_master_name'] ?? 'Unknown module',
+                      ]),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    if (kIsWeb) {
+      await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async => pdf.save(),
+      );
+    } else {
+      // Handle non-web platforms here
+      // For example, you could save the PDF to a file or use a different printing method
+      print('PDF generation is not supported on this platform');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Folders'),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.picture_as_pdf),
+            onPressed: _generatePDF,
+            tooltip: 'Generate PDF',
+          ),
+        ],
       ),
       body: folders.isEmpty
           ? const Center(child: Text('No folders available'))
@@ -212,15 +273,16 @@ class _ListPageState extends State<ListPage> {
               itemBuilder: (context, index) {
                 return Card(
                   elevation: 2,
-                  margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   child: ListTile(
                     leading: const Icon(Icons.folder, color: Colors.amber),
                     title: Text(
-                      folders[index]['name'],
+                      folders[index]['project_title'] ?? 'Unnamed Folder',
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     subtitle: Text(
-                      'Created on: ${folders[index]['creation_date']}',
+                      'Module: ${folders[index]['module_master_name'] ?? 'Unknown module'}',
                       style: const TextStyle(fontSize: 12),
                     ),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
@@ -245,9 +307,121 @@ class FolderDetailPage extends StatelessWidget {
 
   void _addLesson(BuildContext context) {
     // TODO: Implement lesson addition logic
-    print('Add lesson tapped for folder: ${folder['name']}');
+    print(
+        'Add lesson tapped for folder: ${folder['project_title'] ?? 'Unnamed Folder'}');
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Add lesson functionality to be implemented')),
+      const SnackBar(
+          content: Text('Add lesson functionality to be implemented')),
+    );
+  }
+
+  void _showFolderDetails(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(folder['project_title'] ?? 'Unnamed Folder'),
+          content: SingleChildScrollView(
+            child: Table(
+              border: TableBorder.all(),
+              children: [
+                _buildTableRow(
+                    'Module', folder['module_master_name'] ?? 'Unknown'),
+                _buildTableRow('Activity',
+                    folder['activities_details_content'] ?? 'No activity'),
+                _buildTableRow('Card', folder['card_title'] ?? 'No card'),
+                _buildTableRow(
+                    'Output', folder['outputs_content'] ?? 'No output'),
+                _buildTableRow('Instruction',
+                    folder['instruction_content'] ?? 'No instruction'),
+                _buildTableRow('Coach Detail',
+                    folder['coach_detail_content'] ?? 'No coach detail'),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+            ElevatedButton(
+              onPressed: () => _generatePDF(context),
+              child: const Text('Generate PDF'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  TableRow _buildTableRow(String label, String value) {
+    return TableRow(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child:
+              Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(value),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _generatePDF(BuildContext context) async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Table(
+            border: pw.TableBorder.all(),
+            children: [
+              _buildPdfTableRow(
+                  'Project Title', folder['project_title'] ?? 'Unnamed Folder'),
+              _buildPdfTableRow(
+                  'Module', folder['module_master_name'] ?? 'Unknown'),
+              _buildPdfTableRow('Activity',
+                  folder['activities_details_content'] ?? 'No activity'),
+              _buildPdfTableRow('Card', folder['card_title'] ?? 'No card'),
+              _buildPdfTableRow(
+                  'Output', folder['outputs_content'] ?? 'No output'),
+              _buildPdfTableRow('Instruction',
+                  folder['instruction_content'] ?? 'No instruction'),
+              _buildPdfTableRow('Coach Detail',
+                  folder['coach_detail_content'] ?? 'No coach detail'),
+            ],
+          );
+        },
+      ),
+    );
+
+    if (kIsWeb) {
+      await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async => pdf.save(),
+      );
+    } else {
+      // Handle non-web platforms here
+      // For example, you could save the PDF to a file or use a different printing method
+      print('PDF generation is not supported on this platform');
+    }
+  }
+
+  pw.TableRow _buildPdfTableRow(String label, String value) {
+    return pw.TableRow(
+      children: [
+        pw.Padding(
+          padding: const pw.EdgeInsets.all(8.0),
+          child: pw.Text(label,
+              style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.all(8.0),
+          child: pw.Text(value),
+        ),
+      ],
     );
   }
 
@@ -255,11 +429,18 @@ class FolderDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(folder['name']),
+        title: Text(folder['project_title'] ?? 'Unnamed Folder'),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.info_outline),
+            onPressed: () => _showFolderDetails(context),
+            tooltip: 'Show Details',
+          ),
+        ],
       ),
-      body: Center(
-        child: Text('Lessons for ${folder['name']} will be displayed here.'),
+      body: const Center(
+        child: Text('Folder details'),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _addLesson(context),

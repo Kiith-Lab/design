@@ -43,6 +43,8 @@ dependencies:
   provider: ^6.1.2
   shared_preferences: ^2.3.2
   neumorphic_button: ^0.0.1+2
+  pdf: ^3.11.1
+  printing: ^5.13.2
 
 dev_dependencies:
   flutter_test:
