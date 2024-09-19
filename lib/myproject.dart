@@ -146,8 +146,8 @@ class _MyProjectPageState extends State<MyProjectPage> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back,
-              color: const Color.fromARGB(255, 14, 14, 14)),
+          icon: const Icon(Icons.arrow_back,
+              color: Color.fromARGB(255, 14, 14, 14)),
           onPressed: () => Navigator.of(context).pop(),
         ),
         backgroundColor: Colors.transparent,
@@ -172,7 +172,7 @@ class _MyProjectPageState extends State<MyProjectPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    SizedBox(
+                    const SizedBox(
                         height:
                             90), // Add space between the back button and content
                     const Text(
@@ -399,7 +399,7 @@ class _MyProjectPageState extends State<MyProjectPage> {
                             color: Colors.green.shade700.withOpacity(0.1),
                             spreadRadius: 5,
                             blurRadius: 7,
-                            offset: Offset(0, 3),
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
@@ -411,12 +411,12 @@ class _MyProjectPageState extends State<MyProjectPage> {
                           backgroundColor: Colors.green
                               .shade700, // Changed background color for a unique look
                           shadowColor: Colors.green.shade700.withOpacity(0.1),
-                          padding: EdgeInsets.symmetric(vertical: 15),
+                          padding: const EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),
                           ),
                         ),
-                        child: Text(
+                        child: const Text(
                           'Next',
                           style: TextStyle(
                             fontSize: 18,

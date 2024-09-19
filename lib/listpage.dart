@@ -322,20 +322,16 @@ class FolderDetailPage extends StatelessWidget {
         return AlertDialog(
           title: Text(folder['project_title'] ?? 'Unnamed Folder'),
           content: SingleChildScrollView(
-            child: Table(
-              border: TableBorder.all(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                _buildTableRow(
-                    'Module', folder['module_master_name'] ?? 'Unknown'),
-                _buildTableRow('Activity',
-                    folder['activities_details_content'] ?? 'No activity'),
-                _buildTableRow('Card', folder['card_title'] ?? 'No card'),
-                _buildTableRow(
-                    'Output', folder['outputs_content'] ?? 'No output'),
-                _buildTableRow('Instruction',
-                    folder['instruction_content'] ?? 'No instruction'),
-                _buildTableRow('Coach Detail',
-                    folder['coach_detail_content'] ?? 'No coach detail'),
+                Text('Module: ${folder['module_master_name'] ?? 'Unknown'}'),
+                Text('Activity: ${folder['activities_details_content'] ?? 'No activity'}'),
+                Text('Card: ${folder['card_title'] ?? 'No card'}'),
+                Text('Output: ${folder['outputs_content'] ?? 'No output'}'),
+                Text('Instruction: ${folder['instruction_content'] ?? 'No instruction'}'),
+                Text('Coach Detail: ${folder['coach_detail_content'] ?? 'No coach detail'}'),
               ],
             ),
           ),
@@ -354,44 +350,28 @@ class FolderDetailPage extends StatelessWidget {
     );
   }
 
-  TableRow _buildTableRow(String label, String value) {
-    return TableRow(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child:
-              Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(value),
-        ),
-      ],
-    );
-  }
-
   Future<void> _generatePDF(BuildContext context) async {
     final pdf = pw.Document();
 
     pdf.addPage(
       pw.Page(
         build: (pw.Context context) {
-          return pw.Table(
-            border: pw.TableBorder.all(),
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              _buildPdfTableRow(
-                  'Project Title', folder['project_title'] ?? 'Unnamed Folder'),
-              _buildPdfTableRow(
-                  'Module', folder['module_master_name'] ?? 'Unknown'),
-              _buildPdfTableRow('Activity',
-                  folder['activities_details_content'] ?? 'No activity'),
-              _buildPdfTableRow('Card', folder['card_title'] ?? 'No card'),
-              _buildPdfTableRow(
-                  'Output', folder['outputs_content'] ?? 'No output'),
-              _buildPdfTableRow('Instruction',
-                  folder['instruction_content'] ?? 'No instruction'),
-              _buildPdfTableRow('Coach Detail',
-                  folder['coach_detail_content'] ?? 'No coach detail'),
+              pw.Header(
+                level: 0,
+                child: pw.Text(folder['project_title'] ?? 'Unnamed Folder'),
+              ),
+              pw.Text('Module: ${folder['module_master_name'] ?? 'Unknown'}'),
+              pw.Text(
+                  'Activity: ${folder['activities_details_content'] ?? 'No activity'}'),
+              pw.Text('Card: ${folder['card_title'] ?? 'No card'}'),
+              pw.Text('Output: ${folder['outputs_content'] ?? 'No output'}'),
+              pw.Text(
+                  'Instruction: ${folder['instruction_content'] ?? 'No instruction'}'),
+              pw.Text(
+                  'Coach Detail: ${folder['coach_detail_content'] ?? 'No coach detail'}'),
             ],
           );
         },
@@ -407,22 +387,6 @@ class FolderDetailPage extends StatelessWidget {
       // For example, you could save the PDF to a file or use a different printing method
       print('PDF generation is not supported on this platform');
     }
-  }
-
-  pw.TableRow _buildPdfTableRow(String label, String value) {
-    return pw.TableRow(
-      children: [
-        pw.Padding(
-          padding: const pw.EdgeInsets.all(8.0),
-          child: pw.Text(label,
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-        ),
-        pw.Padding(
-          padding: const pw.EdgeInsets.all(8.0),
-          child: pw.Text(value),
-        ),
-      ],
-    );
   }
 
   @override

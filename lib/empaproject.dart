@@ -607,7 +607,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.green),
+          icon: const Icon(Icons.arrow_back, color: Colors.green),
           onPressed: () => Navigator.of(context).pop(),
         ),
         backgroundColor: Colors.white,
@@ -662,7 +662,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                               Shadow(
                                 blurRadius: 2,
                                 color: Colors.green.shade700,
-                                offset: Offset(1, 1),
+                                offset: const Offset(1, 1),
                               ),
                             ],
                           ),
@@ -671,7 +671,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                     ],
                   ),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Card(
                   elevation: 5,
                   shape: RoundedRectangleBorder(
@@ -679,7 +679,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                   ),
                   color: Colors.white,
                   child: Padding(
-                    padding: EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(16),
                     child: _buildCurrentStep(),
                   ),
                 ),
@@ -724,7 +724,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                           });
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Failed to add all cards')),
+                            const SnackBar(content: Text('Failed to add all cards')),
                           );
                         }
                       } else if (currentStep == 4) {
@@ -740,17 +740,17 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                       print('Submitting data');
                     }
                   },
-                  child: Text(currentStep == 7 ? 'Submit' : 'Next'),
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.white,
                     backgroundColor: Colors.green.shade600,
-                    padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
                   ),
+                  child: Text(currentStep == 7 ? 'Submit' : 'Next'),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: () {
                     showDialog(
@@ -770,7 +770,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                                         color: Colors.green.withOpacity(0.3),
                                         spreadRadius: 2,
                                         blurRadius: 5,
-                                        offset: Offset(0, 3),
+                                        offset: const Offset(0, 3),
                                       ),
                                     ],
                                   ),
@@ -806,12 +806,12 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                                                     ),
                                                   ),
                                                 ),
-                                                SizedBox(width: 10),
+                                                const SizedBox(width: 10),
                                                 Expanded(
                                                   flex: 2,
                                                   child: Text(
                                                     data['value'].toString(),
-                                                    style: TextStyle(
+                                                    style: const TextStyle(
                                                       color: Colors.black87,
                                                     ),
                                                   ),
@@ -841,16 +841,16 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                       },
                     );
                   },
-                  child: Text('View Summary'),
                   style: ElevatedButton.styleFrom(
                     foregroundColor: Colors.green.shade600,
                     backgroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                       side: BorderSide(color: Colors.green.shade600),
                     ),
                   ),
+                  child: Text('View Summary'),
                 ),
               ],
             ),
@@ -899,7 +899,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
               color: Colors.green.withOpacity(0.3),
               spreadRadius: 2,
               blurRadius: 5,
-              offset: Offset(0, 3),
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -914,7 +914,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
               color: Colors.green.shade800,
               fontWeight: FontWeight.bold,
             ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
           ),
           dropdownColor: Colors.yellow.shade100,
           icon: Icon(Icons.arrow_drop_down, color: Colors.green.shade800),
@@ -927,7 +927,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
               value: mode['module_master_id'].toString(),
               child: Text(
                 mode['module_master_name'],
-                style: TextStyle(
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
                 ),
@@ -1010,7 +1010,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                   color: Colors.green.withOpacity(0.2),
                   spreadRadius: 2,
                   blurRadius: 5,
-                  offset: Offset(0, 3),
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
@@ -1026,7 +1026,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                   fontWeight: FontWeight.bold,
                 ),
                 contentPadding:
-                    EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                 filled: true,
                 fillColor: Colors.transparent,
               ),
@@ -1041,7 +1041,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                   value: lesson['cards_id'].toString(),
                   child: Text(
                     '${lesson['cards_title']} (ID: ${lesson['cards_id'].toString()})',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -1055,7 +1055,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
               value: selectedLesson,
             ),
           ),
-          SizedBox(height: 15),
+          const SizedBox(height: 15),
           ElevatedButton.icon(
             onPressed: () {
               if (selectedLesson != null) {
@@ -1071,24 +1071,24 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Please select a lesson'),
+                    content: const Text('Please select a lesson'),
                     backgroundColor: Colors.green.shade600,
                   ),
                 );
               }
             },
-            icon: Icon(Icons.add_circle_outline),
-            label: Text('Add Lesson'),
+            icon: const Icon(Icons.add_circle_outline),
+            label: const Text('Add Lesson'),
             style: ElevatedButton.styleFrom(
               foregroundColor: Colors.white,
               backgroundColor: Colors.green.shade600,
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
               ),
             ),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Text(
             'Selected Lessons:',
             style: TextStyle(
@@ -1097,20 +1097,20 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
               fontSize: 18,
             ),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           ListView.builder(
             shrinkWrap: true,
             itemCount: selectedLessons.length,
             itemBuilder: (context, index) {
               return Card(
                 elevation: 3,
-                margin: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ListTile(
                   contentPadding:
-                      EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   title: Text(
                     selectedLessons[index]['cards_title'] ?? 'Unknown Title',
                     style: TextStyle(
@@ -1255,15 +1255,15 @@ class SummaryPage extends StatelessWidget {
   final List<Map<String, dynamic>> allAddedData;
 
   const SummaryPage({
-    Key? key,
+    super.key,
     required this.allAddedData,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Summary', style: TextStyle(color: Colors.white)),
+        title: const Text('Summary', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.green.shade600,
       ),
       body: Container(
@@ -1284,7 +1284,7 @@ class SummaryPage extends StatelessWidget {
                   if (data['type'] == 'Lessons')
                     Card(
                       elevation: 3,
-                      margin: EdgeInsets.only(bottom: 16),
+                      margin: const EdgeInsets.only(bottom: 16),
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
@@ -1295,7 +1295,7 @@ class SummaryPage extends StatelessWidget {
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.green.shade700)),
-                            SizedBox(height: 8),
+                            const SizedBox(height: 8),
                             for (var lesson in data['value'])
                               Padding(
                                 padding: const EdgeInsets.only(
@@ -1312,7 +1312,7 @@ class SummaryPage extends StatelessWidget {
                   else
                     Card(
                       elevation: 3,
-                      margin: EdgeInsets.only(bottom: 16),
+                      margin: const EdgeInsets.only(bottom: 16),
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: Column(
@@ -1323,7 +1323,7 @@ class SummaryPage extends StatelessWidget {
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.green.shade700)),
-                            SizedBox(height: 8),
+                            const SizedBox(height: 8),
                             Text('${data['value']}',
                                 style: TextStyle(color: Colors.green.shade600)),
                           ],
