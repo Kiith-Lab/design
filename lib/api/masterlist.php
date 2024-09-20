@@ -384,12 +384,15 @@ class Get1
             $sql = "SELECT *
             FROM tbl_folders
             INNER JOIN tbl_project_modules ON tbl_folders.project_moduleId = tbl_project_modules.project_modules_id
-            INNER JOIN tbl_activities_details ON tbl_folders.activities_detailId = 	tbl_activities_details.activities_details_id
+            INNER JOIN tbl_activities_details ON tbl_folders.activities_detailId = tbl_activities_details.activities_details_id
             INNER JOIN tbl_project_cards ON tbl_folders.project_cardsId = tbl_project_cards.project_cards_id
             INNER JOIN tbl_outputs ON tbl_folders.outputId = tbl_outputs.outputs_id
             INNER JOIN tbl_instruction ON tbl_folders.instructionId = tbl_instruction.instruction_id
             INNER JOIN tbl_coach_detail ON tbl_folders.coach_detailsId = tbl_coach_detail.coach_detail_id
-            INNER JOIN tbl_project ON tbl_project.project_id = tbl_folders.projectId";
+            INNER JOIN tbl_project ON tbl_project.project_id = tbl_folders.projectId
+            INNER JOIN tbl_module_master ON tbl_module_master.module_master_id = tbl_project_modules.project_modules_masterId
+            INNER JOIN tbl_front_cards ON tbl_project_cards.project_cards_cardId = tbl_front_cards.cards_id";
+            
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute();
             $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);

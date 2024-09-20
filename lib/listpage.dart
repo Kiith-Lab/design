@@ -38,10 +38,10 @@ class _ListPageState extends State<ListPage> {
           folders = List<Map<String, dynamic>>.from(data.map((item) => {
                 'folder_id': item['id'] ?? '',
                 'project_title': item['project_title'] ?? '',
-                'module_master_name': item['project_modules_masterId'] ?? '',
+                'module_master_name': item['module_master_name'] ?? '',
                 'activities_details_content':
                     item['activities_details_content'] ?? '',
-                'card_title': item['project_cards_remarks'] ?? '',
+                'cards_title': item['cards_title'] ?? '',
                 'outputs_content': item['outputs_content'] ?? '',
                 'instruction_content': item['instruction_content'] ?? '',
                 'coach_detail_content': item['coach_detail_content'] ?? '',
@@ -327,11 +327,14 @@ class FolderDetailPage extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text('Module: ${folder['module_master_name'] ?? 'Unknown'}'),
-                Text('Activity: ${folder['activities_details_content'] ?? 'No activity'}'),
-                Text('Card: ${folder['card_title'] ?? 'No card'}'),
+                Text(
+                    'Activity: ${folder['activities_details_content'] ?? 'No activity'}'),
+                Text('Card: ${folder['cards_title'] ?? 'No card'}'),
                 Text('Output: ${folder['outputs_content'] ?? 'No output'}'),
-                Text('Instruction: ${folder['instruction_content'] ?? 'No instruction'}'),
-                Text('Coach Detail: ${folder['coach_detail_content'] ?? 'No coach detail'}'),
+                Text(
+                    'Instruction: ${folder['instruction_content'] ?? 'No instruction'}'),
+                Text(
+                    'Coach Detail: ${folder['coach_detail_content'] ?? 'No coach detail'}'),
               ],
             ),
           ),
@@ -356,22 +359,73 @@ class FolderDetailPage extends StatelessWidget {
     pdf.addPage(
       pw.Page(
         build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
+          return pw.Table(
+            border: pw.TableBorder.all(),
             children: [
-              pw.Header(
-                level: 0,
-                child: pw.Text(folder['project_title'] ?? 'Unnamed Folder'),
+              pw.TableRow(
+                children: [
+                  pw.Header(
+                    level: 0,
+                    child: pw.Text(folder['project_title'] ?? 'Unnamed Folder',
+                        style: pw.TextStyle(
+                            fontSize: 20, fontWeight: pw.FontWeight.bold)),
+                  ),
+                ],
               ),
-              pw.Text('Module: ${folder['module_master_name'] ?? 'Unknown'}'),
-              pw.Text(
-                  'Activity: ${folder['activities_details_content'] ?? 'No activity'}'),
-              pw.Text('Card: ${folder['card_title'] ?? 'No card'}'),
-              pw.Text('Output: ${folder['outputs_content'] ?? 'No output'}'),
-              pw.Text(
-                  'Instruction: ${folder['instruction_content'] ?? 'No instruction'}'),
-              pw.Text(
-                  'Coach Detail: ${folder['coach_detail_content'] ?? 'No coach detail'}'),
+              pw.TableRow(
+                children: [
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(8),
+                    child: pw.Text(
+                        'Module: ${folder['module_master_name'] ?? 'Unknown'}'),
+                  ),
+                ],
+              ),
+              pw.TableRow(
+                children: [
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(8),
+                    child: pw.Text(
+                        'Activity: ${folder['activities_details_content'] ?? 'No activity'}'),
+                  ),
+                ],
+              ),
+              pw.TableRow(
+                children: [
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(8),
+                    child:
+                        pw.Text('Card: ${folder['card_title'] ?? 'No card'}'),
+                  ),
+                ],
+              ),
+              pw.TableRow(
+                children: [
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(8),
+                    child: pw.Text(
+                        'Output: ${folder['outputs_content'] ?? 'No output'}'),
+                  ),
+                ],
+              ),
+              pw.TableRow(
+                children: [
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(8),
+                    child: pw.Text(
+                        'Instruction: ${folder['instruction_content'] ?? 'No instruction'}'),
+                  ),
+                ],
+              ),
+              pw.TableRow(
+                children: [
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.all(8),
+                    child: pw.Text(
+                        'Coach Detail: ${folder['coach_detail_content'] ?? 'No coach detail'}'),
+                  ),
+                ],
+              ),
             ],
           );
         },
