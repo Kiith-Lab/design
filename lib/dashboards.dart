@@ -1,3 +1,4 @@
+import 'package:design/instructor.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -152,80 +153,99 @@ class _DashboardsState extends State<Dashboards> {
             }
 
             return Dialog(
+              backgroundColor: Colors.transparent,
               child: Container(
                 width: MediaQuery.of(context).size.width * 0.8,
                 height: MediaQuery.of(context).size.height * 0.8,
-                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Colors.teal.shade700, Colors.teal.shade300],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      spreadRadius: 5,
+                      blurRadius: 7,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.3),
-                            spreadRadius: 2,
-                            blurRadius: 5,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              decoration: InputDecoration(
-                                hintText: 'Search $title...',
-                                hintStyle: TextStyle(color: Colors.grey[400]),
-                                prefixIcon:
-                                    Icon(Icons.search, color: Colors.teal),
-                                border: InputBorder.none,
-                                contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 15),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                decoration: InputDecoration(
+                                  hintText: 'Search $title...',
+                                  hintStyle: TextStyle(color: Colors.white70),
+                                  prefixIcon:
+                                      Icon(Icons.search, color: Colors.white),
+                                  border: InputBorder.none,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 15),
+                                ),
+                                style: const TextStyle(color: Colors.white),
+                                cursorColor: Colors.white,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _searchQuery = value;
+                                  });
+                                },
                               ),
-                              style: const TextStyle(color: Colors.teal),
-                              cursorColor: Colors.teal,
-                              onChanged: (value) {
+                            ),
+                            PopupMenuButton<String>(
+                              icon:
+                                  Icon(Icons.filter_list, color: Colors.white),
+                              color: Colors.teal.shade600,
+                              onSelected: (String value) {
                                 setState(() {
-                                  _searchQuery = value;
+                                  _sortOrder = value;
                                 });
                               },
+                              itemBuilder: (BuildContext context) =>
+                                  <PopupMenuEntry<String>>[
+                                PopupMenuItem<String>(
+                                  value: 'all',
+                                  child: Text('All',
+                                      style: TextStyle(color: Colors.white)),
+                                ),
+                                PopupMenuItem<String>(
+                                  value: 'asc',
+                                  child: Text('A-Z',
+                                      style: TextStyle(color: Colors.white)),
+                                ),
+                                PopupMenuItem<String>(
+                                  value: 'desc',
+                                  child: Text('Z-A',
+                                      style: TextStyle(color: Colors.white)),
+                                ),
+                              ],
                             ),
-                          ),
-                          PopupMenuButton<String>(
-                            icon: Icon(Icons.filter_list, color: Colors.teal),
-                            onSelected: (String value) {
-                              setState(() {
-                                _sortOrder = value;
-                              });
-                            },
-                            itemBuilder: (BuildContext context) =>
-                                <PopupMenuEntry<String>>[
-                              const PopupMenuItem<String>(
-                                value: 'all',
-                                child: Text('All'),
-                              ),
-                              const PopupMenuItem<String>(
-                                value: 'asc',
-                                child: Text('A-Z'),
-                              ),
-                              const PopupMenuItem<String>(
-                                value: 'desc',
-                                child: Text('Z-A'),
-                              ),
-                            ],
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -239,19 +259,20 @@ class _DashboardsState extends State<Dashboards> {
                               item['school_country'] ??
                               'No Description';
                           return Card(
-                            elevation: 3,
+                            elevation: 0,
+                            color: Colors.white.withOpacity(0.1),
                             margin: const EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 4),
+                                vertical: 8, horizontal: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: ListTile(
                               contentPadding: const EdgeInsets.all(16),
                               leading: CircleAvatar(
-                                backgroundColor: Colors.teal,
+                                backgroundColor: Colors.white,
                                 child: Text(
                                   name[0].toUpperCase(),
-                                  style: const TextStyle(color: Colors.white),
+                                  style: TextStyle(color: Colors.teal.shade700),
                                 ),
                               ),
                               title: Text(
@@ -259,31 +280,45 @@ class _DashboardsState extends State<Dashboards> {
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 18,
+                                  color: Colors.white,
                                 ),
                               ),
                               subtitle: Text(
                                 description,
                                 style: TextStyle(
-                                  color: Colors.grey[600],
+                                  color: Colors.white70,
                                   fontSize: 14,
                                 ),
                               ),
                               onTap: () {
-                                // Handle tap event
+                                if (title == 'Schools') {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          UserDetailPages(user: item),
+                                    ),
+                                  );
+                                }
                               },
                             ),
                           );
                         },
                       ),
                     ),
-                    const SizedBox(height: 16),
                     Align(
                       alignment: Alignment.centerRight,
-                      child: TextButton(
-                        child: const Text('Close'),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: ElevatedButton(
+                          child: const Text('Close'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.teal.shade700,
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
                       ),
                     ),
                   ],
@@ -301,12 +336,12 @@ class _DashboardsState extends State<Dashboards> {
     return Scaffold(
       body: Stack(
         children: [
-          Image.asset(
-            'assets/images/Design_Thinking_Admin.png',
-            fit: BoxFit.cover,
-            width: double.infinity,
-            height: double.infinity,
-          ),
+          // Image.asset(
+          //   'assets/images/Design_Thinking_Admin.png',
+          //   fit: BoxFit.cover,
+          //   width: double.infinity,
+          //   height: double.infinity,
+          // ),
           SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -543,3 +578,30 @@ class _DashboardsState extends State<Dashboards> {
     );
   }
 }
+
+// class SchoolDetailPage extends StatelessWidget {
+//   final Map<String, dynamic> school;
+
+//   const SchoolDetailPage({Key? key, required this.school}) : super(key: key);
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         title: Text(school['school_name'] ?? 'School Details'),
+//       ),
+//       body: Padding(
+//         padding: const EdgeInsets.all(16.0),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             Text('School Name: ${school['school_name'] ?? 'N/A'}'),
+//             Text('Address: ${school['school_address'] ?? 'N/A'}'),
+//             Text('Country: ${school['school_country'] ?? 'N/A'}'),
+//             // Add more details as needed
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
