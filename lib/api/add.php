@@ -34,7 +34,6 @@ class Get
             :front_card_id,
             :back_card_id)";
             $stmt = $this->pdo->prepare($sql);
-            ;
             $stmt->bindParam(':folder_name', $folderName, PDO::PARAM_STR);
             $stmt->bindParam(':folder_date', $folderDate, PDO::PARAM_STR);
             $stmt->bindParam(':front_card_id', $frontId, PDO::PARAM_INT);
@@ -86,18 +85,15 @@ class Get
             project_title,
             project_description,
             project_start_date,
-            project_end_date,
-            before_schedule_studentWorkshop,
-            start_schedule_studentWorkshop) VALUES (
+            project_end_date
+            ) VALUES (
             :project_userId,
             :project_subject_code,
             :project_subject_description,
             :project_title,
             :project_description,
             :project_start_date,
-            :project_end_date,
-            :before_schedule_studentWorkshop,
-            :start_schedule_studentWorkshop)";
+            :project_end_date)";
             $stmt = $this->pdo->prepare($sql);
             $stmt->bindParam(':project_userId', $json['project_userId'], PDO::PARAM_INT);
             $stmt->bindParam(':project_subject_code', $json['project_subject_code'], PDO::PARAM_STR);
@@ -106,8 +102,6 @@ class Get
             $stmt->bindParam(':project_description', $json['project_description'], PDO::PARAM_STR);
             $stmt->bindParam(':project_start_date', $json['project_start_date'], PDO::PARAM_STR);
             $stmt->bindParam(':project_end_date', $json['project_end_date'], PDO::PARAM_STR);
-            $stmt->bindParam(':before_schedule_studentWorkshop', $json['before_schedule_studentWorkshop'], PDO::PARAM_STR);
-            $stmt->bindParam(':start_schedule_studentWorkshop', $json['start_schedule_studentWorkshop'], PDO::PARAM_STR);
 
             $stmt->execute();
             $lastInsertId = $this->pdo->lastInsertId();
