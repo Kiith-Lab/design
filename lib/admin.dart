@@ -28,7 +28,7 @@ class _AdminState extends State<Administrator> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return ShadApp.cupertino(
       debugShowCheckedModeBanner: false,
       home: Builder(
         builder: (BuildContext context) {
@@ -64,7 +64,7 @@ class _AdminState extends State<Administrator> {
                             child: Column(
                               children: [
                                 SizedBox(
-                                  height: 200, // Adjust this value as needed
+                                  height: 400, // Adjust this value as needed
                                   child: SingleChildScrollView(
                                     child: Column(
                                       children: [
