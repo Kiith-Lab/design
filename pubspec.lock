@@ -425,10 +425,10 @@ packages:
     dependency: "direct main"
     description:
       name: shadcn_ui
-      sha256: c2ae28ec000a9bb0597c6d9e4cc56f9d9616d35e2a64a3896d96e4c8bf557c4f
+      sha256: ca91ebe0fda5e95a33b70bae41f919ded7fa1b3da0ea7c2eff265ed3990f6fe7
       url: "https://pub.dev"
     source: hosted
-    version: "0.9.5"
+    version: "0.9.7"
   shared_preferences:
     dependency: "direct main"
     description:
