@@ -13,7 +13,7 @@ class ProjectPage extends StatelessWidget {
       body: Column(
         children: [
           Row(
-            children: [Text("Project")],
+              children: [Text("Project")],
           )
         ],
       ),
