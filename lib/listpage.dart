@@ -6,6 +6,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flip_card/flip_card.dart';
 
 class ListPage extends StatefulWidget {
   const ListPage({super.key});
@@ -23,51 +24,79 @@ class _ListPageState extends State<ListPage> {
     _fetchFolders();
   }
 
-  Future<void> _fetchFolders() async {
-    try {
-      final response = await http.post(
-        Uri.parse('http://localhost/design/lib/api/masterlist.php'),
-        body: {
-          'operation': 'getFolder',
-        },
-      );
+Future<void> _fetchFolders() async {
+  try {
+    final response = await http.post(
+      Uri.parse('http://localhost/design/lib/api/masterlist.php'),
+      body: {
+        'operation': 'getFolder',
+      },
+    );
 
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      print('API Response: $data'); // Add this line to print the entire response
+
+      if (data['folders'] != null && data['folders'] is List) {
         setState(() {
-          folders = List<Map<String, dynamic>>.from(data.map((item) => {
+          folders = List<Map<String, dynamic>>.from(data['folders'].map((item) => {
                 'folder_id': item['id'] ?? '',
+                    'project_subject_code': item['project_subject_code'] ?? '',
+                    'project_subject_description': item['project_subject_description'] ?? '',
+                    'project_title': item['title'] ?? '',
+                    'project_description': item['project_description'] ?? '',
+                    'project_start_date': item['project_start_date'] ?? '',
+                    'project_end_date': item['project_end_date'] ?? '',
+
                 'project_title': item['project_title'] ?? '',
                 'module_master_name': item['module_master_name'] ?? '',
-                'activities_details_content':
-                    item['activities_details_content'] ?? '',
+                'activities_details_content': item['activities_details_content'] ?? '',
                 'cards_title': item['cards_title'] ?? '',
                 'outputs_content': item['outputs_content'] ?? '',
                 'instruction_content': item['instruction_content'] ?? '',
                 'coach_detail_content': item['coach_detail_content'] ?? '',
-              }));
+                'project_cardsId': item['project_cardsId'] ?? '',
+                 'cards_content': item['cards_content'] ?? '',
+                                  'back_content': item['back_content'] ?? '',
+              }).toList());
         });
         // Print the fetched details
         print('Fetched Folder Details:');
         for (var folder in folders) {
           print('Folder ID: ${folder['folder_id']}');
           print('Project Title: ${folder['project_title']}');
+             print('Project code: ${folder['project_subject_code']}');
+                print('Project Description: ${folder['project_subject_description']}');
+                  
+                      print('project description: ${folder['project_description']}');
+                         print('Project Title: ${folder['project_title']}');
+                            print('project start: ${folder['project_start_date']}');
+                                  print('project end: ${folder['project_end_date']}');
           print('Module Master Name: ${folder['module_master_name']}');
           print('Activities Details: ${folder['activities_details_content']}');
-          print('Card Title: ${folder['card_title']}');
+          print('Card Title: ${folder['cards_title']}');
           print('Outputs Content: ${folder['outputs_content']}');
           print('Instruction Content: ${folder['instruction_content']}');
           print('Coach Detail Content: ${folder['coach_detail_content']}');
+          print('Project Cards ID: ${folder['project_cardsId']}');
           print('---');
         }
       } else {
-        throw Exception('Failed to load folders');
+        print('Invalid data format. Response: ${response.body}');
+        throw Exception('Invalid data format: ${response.body}');
       }
-    } catch (e) {
-      print('Error fetching folders: $e');
-      // You might want to show an error message to the user here
+    } else {
+      print('Failed to load folders. Status code: ${response.statusCode}');
+      throw Exception('Failed to load folders. Status code: ${response.statusCode}');
     }
+  } catch (e) {
+    print('Error fetching folders: $e');
+    // You might want to show an error message to the user here
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error fetching folders: $e')),
+    );
   }
+}
 
   Future<void> _createFolder() async {
     TextEditingController nameController = TextEditingController();
@@ -223,15 +252,30 @@ class _ListPageState extends State<ListPage> {
             children: [
               pw.Header(
                 level: 0,
-                child: pw.Text('My Folders'),
+                child: pw.Text('My Folders', style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold)),
               ),
+              pw.SizedBox(height: 20),
               pw.Table.fromTextArray(
                 context: context,
+                headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 14),
+                cellStyle: pw.TextStyle(fontSize: 12),
+                headerDecoration: pw.BoxDecoration(color: PdfColors.grey300),
+                cellAlignment: pw.Alignment.centerLeft,
+                headerHeight: 25,
+                cellHeight: 40,
+                columnWidths: {
+                  0: pw.FlexColumnWidth(2),
+                  1: pw.FlexColumnWidth(1),
+                },
                 data: <List<String>>[
-                  <String>['Folder Name', 'Module'],
+                  <String>['Folder Name', 'Module', 'Project Code', 'Project Description', 'Start Date', 'End Date'],
                   ...folders.map((folder) => [
                         folder['project_title'] ?? 'Unnamed Folder',
                         folder['module_master_name'] ?? 'Unknown module',
+                        folder['project_subject_code'] ?? 'No code',
+                        folder['project_subject_description'] ?? 'No description',
+                        folder['project_start_date'] ?? 'No start date',
+                        folder['project_end_date'] ?? 'No end date',
                       ]),
                 ],
               ),
@@ -335,6 +379,10 @@ class FolderDetailPage extends StatelessWidget {
                     'Instruction: ${folder['instruction_content'] ?? 'No instruction'}'),
                 Text(
                     'Coach Detail: ${folder['coach_detail_content'] ?? 'No coach detail'}'),
+                Text('Project Code: ${folder['project_subject_code'] ?? 'No code'}'),
+                Text('Project Description: ${folder['project_subject_description'] ?? 'No description'}'),
+                Text('Start Date: ${folder['project_start_date'] ?? 'No start date'}'),
+                Text('End Date: ${folder['project_end_date'] ?? 'No end date'}'),
               ],
             ),
           ),
@@ -359,70 +407,167 @@ class FolderDetailPage extends StatelessWidget {
     pdf.addPage(
       pw.Page(
         build: (pw.Context context) {
-          return pw.Table(
-            border: pw.TableBorder.all(),
+          return pw.Column(
             children: [
-              pw.TableRow(
-                children: [
-                  pw.Header(
-                    level: 0,
-                    child: pw.Text(folder['project_title'] ?? 'Unnamed Folder',
-                        style: pw.TextStyle(
-                            fontSize: 20, fontWeight: pw.FontWeight.bold)),
-                  ),
-                ],
+              pw.Header(
+                level: 0,
+                child: pw.Text(folder['project_title'] ?? 'Unnamed Folder',
+                    style: pw.TextStyle(
+                        fontSize: 24, fontWeight: pw.FontWeight.bold)),
               ),
-              pw.TableRow(
+              pw.SizedBox(height: 20),
+              pw.Table(
+                border: pw.TableBorder.all(),
                 children: [
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(8),
-                    child: pw.Text(
-                        'Module: ${folder['module_master_name'] ?? 'Unknown'}'),
+                  pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Module:',
+                            style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text(
+                            folder['module_master_name'] ?? 'Unknown'),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              pw.TableRow(
-                children: [
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(8),
-                    child: pw.Text(
-                        'Activity: ${folder['activities_details_content'] ?? 'No activity'}'),
+                  pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Activity:',
+                            style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text(
+                            folder['activities_details_content'] ?? 'No activity'),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              pw.TableRow(
-                children: [
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(8),
-                    child:
-                        pw.Text('Card: ${folder['card_title'] ?? 'No card'}'),
+                  pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Card:',
+                            style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text(
+                            folder['cards_title'] ?? 'No card'),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              pw.TableRow(
-                children: [
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(8),
-                    child: pw.Text(
-                        'Output: ${folder['outputs_content'] ?? 'No output'}'),
+                  pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Output:',
+                            style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text(
+                            folder['outputs_content'] ?? 'No output'),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              pw.TableRow(
-                children: [
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(8),
-                    child: pw.Text(
-                        'Instruction: ${folder['instruction_content'] ?? 'No instruction'}'),
+                  pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Instruction:',
+                            style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text(
+                            folder['instruction_content'] ?? 'No instruction'),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              pw.TableRow(
-                children: [
-                  pw.Padding(
-                    padding: const pw.EdgeInsets.all(8),
-                    child: pw.Text(
-                        'Coach Detail: ${folder['coach_detail_content'] ?? 'No coach detail'}'),
+                  pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Coach Detail:',
+                            style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text(
+                            folder['coach_detail_content'] ?? 'No coach detail'),
+                      ),
+                    ],
+                  ),
+                  pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Project Code:',
+                            style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text(
+                            folder['project_subject_code'] ?? 'No code'),
+                      ),
+                    ],
+                  ),
+                  pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Project Description:',
+                            style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text(
+                            folder['project_subject_description'] ?? 'No description'),
+                      ),
+                    ],
+                  ),
+                  pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Start Date:',
+                            style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text(
+                            folder['project_start_date'] ?? 'No start date'),
+                      ),
+                    ],
+                  ),
+                  pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('End Date:',
+                            style: pw.TextStyle(
+                                fontWeight: pw.FontWeight.bold)),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text(
+                            folder['project_end_date'] ?? 'No end date'),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -457,8 +602,33 @@ class FolderDetailPage extends StatelessWidget {
           ),
         ],
       ),
-      body: const Center(
-        child: Text('Folder details'),
+      body: Center(
+        child: FlipCard(
+          front: Container(
+            width: 300,
+            height: 200,
+            color: Colors.blue,
+            child: Center(
+              child: Text(
+                folder['cards_content'] ?? 'No content',
+                style: TextStyle(color: Colors.white, fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+          back: Container(
+            width: 300,
+            height: 200,
+            color: Colors.green,
+            child: Center(
+              child: Text(
+                folder['back_content'] ?? 'No content',
+                style: TextStyle(color: Colors.white, fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _addLesson(context),

@@ -78,14 +78,8 @@ class Get
     {
         $json = json_decode($json, true);
         try {
-            $sql = "INSERT INTO tbl_project(
-            project_userId,
-            project_subject_code,
-            project_subject_description,
-            project_title,
-            project_description,
-            project_start_date,
-            project_end_date
+            $sql = "INSERT INTO tbl_project (
+           project_userId, project_subject_code, project_subject_description, project_title, project_description, project_start_date, project_end_date
             ) VALUES (
             :project_userId,
             :project_subject_code,
@@ -93,7 +87,8 @@ class Get
             :project_title,
             :project_description,
             :project_start_date,
-            :project_end_date)";
+            :project_end_date
+            )";
             $stmt = $this->pdo->prepare($sql);
             $stmt->bindParam(':project_userId', $json['project_userId'], PDO::PARAM_INT);
             $stmt->bindParam(':project_subject_code', $json['project_subject_code'], PDO::PARAM_STR);
@@ -102,6 +97,8 @@ class Get
             $stmt->bindParam(':project_description', $json['project_description'], PDO::PARAM_STR);
             $stmt->bindParam(':project_start_date', $json['project_start_date'], PDO::PARAM_STR);
             $stmt->bindParam(':project_end_date', $json['project_end_date'], PDO::PARAM_STR);
+
+            
 
             $stmt->execute();
             $lastInsertId = $this->pdo->lastInsertId();
@@ -121,7 +118,7 @@ class Get
             error_log("JSON decode error: " . json_last_error_msg());
             return json_encode(['error' => 'Invalid JSON: ' . json_last_error_msg()]);
         }
-        
+
         try {
             $this->pdo->beginTransaction();
 
@@ -134,10 +131,10 @@ class Get
             $stmt1->bindParam(':project_modules_projectId', $decodedJson['project_modules_projectId'], PDO::PARAM_INT);
             $stmt1->bindParam(':project_modules_masterId', $decodedJson['project_modules_masterId'], PDO::PARAM_INT);
             $stmt1->execute();
-            
+
             $projectModulesId = $this->pdo->lastInsertId();
             error_log("Saved projectModulesId: " . $projectModulesId);
-                
+
             // Insert into tbl_activities_header
             $sql2 = "INSERT INTO tbl_activities_header(
                 activities_header_modulesId,
@@ -157,7 +154,7 @@ class Get
                 activities_details_headerId,
                 activities_details_remarks
                 ) VALUES (:activities_details_content, :activities_details_headerId, :activities_details_remarks)";
-            $stmt3= $this->pdo->prepare($sql3);
+            $stmt3 = $this->pdo->prepare($sql3);
             $stmt3->bindParam(':activities_details_content', $decodedJson['activities_details_content'], PDO::PARAM_STR);
             $stmt3->bindParam(':activities_details_headerId', $activitiesHeaderId, PDO::PARAM_INT);
             $stmt3->bindParam(':activities_details_remarks', $decodedJson['activities_details_remarks'] ?? '', PDO::PARAM_STR);
@@ -206,8 +203,6 @@ class Get
             return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
         }
     }
-
-
 }
 
 // Handle preflight requests for CORS (for OPTIONS request)
@@ -246,5 +241,4 @@ switch ($operation) {
     case "addProject":
         echo $get->addProject($json);
         break;
-
 }
