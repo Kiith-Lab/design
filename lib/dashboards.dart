@@ -9,7 +9,7 @@ void main() {
 }
 
 class Dashboard extends StatelessWidget {
-  const Dashboard({super.key});
+  const Dashboard({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class Dashboard extends StatelessWidget {
 }
 
 class Dashboards extends StatefulWidget {
-  const Dashboards({super.key});
+  const Dashboards({Key? key}) : super(key: key);
 
   @override
   _DashboardsState createState() => _DashboardsState();
@@ -35,6 +35,7 @@ class _DashboardsState extends State<Dashboards> {
   int schoolCount = 0;
   List<dynamic> schools = [];
   String _searchQuery = '';
+  String _sortOrder = 'all'; // 'all', 'asc', or 'desc'
 
   @override
   void initState() {
@@ -56,12 +57,14 @@ class _DashboardsState extends State<Dashboards> {
         final List<dynamic> fetchedProjects;
 
         if (decodedResponse is Map) {
+          // Handle case where response is an object
           if (decodedResponse.containsKey('error')) {
             print('Error from server: ${decodedResponse['error']}');
             return;
           }
-          fetchedProjects = [decodedResponse];
+          fetchedProjects = decodedResponse.values.toList();
         } else if (decodedResponse is List) {
+          // Handle case where response is already a list
           fetchedProjects = decodedResponse;
         } else {
           print('Unexpected response format');
@@ -72,8 +75,6 @@ class _DashboardsState extends State<Dashboards> {
           projects = fetchedProjects;
           projectCount = projects.length;
         });
-
-        print('Fetched ${projects.length} projects');
       } else {
         print('Failed to fetch projects: ${response.statusCode}');
       }
@@ -95,7 +96,6 @@ class _DashboardsState extends State<Dashboards> {
           users = fetchedUsers;
           userCount = users.length;
         });
-        print('Fetched ${users.length} users');
       } else {
         print('Failed to fetch users: ${response.statusCode}');
       }
@@ -117,7 +117,6 @@ class _DashboardsState extends State<Dashboards> {
           schools = fetchedSchools;
           schoolCount = schools.length;
         });
-        print('Fetched ${schools.length} schools');
       } else {
         print('Failed to fetch schools: ${response.statusCode}');
       }
@@ -134,12 +133,23 @@ class _DashboardsState extends State<Dashboards> {
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setState) {
             List<dynamic> filteredItems = items.where((item) {
-              final name = item[nameKey]?.toString().toLowerCase() ?? '';
-              final description =
-                  item[descriptionKey]?.toString().toLowerCase() ?? '';
-              return name.contains(_searchQuery.toLowerCase()) ||
-                  description.contains(_searchQuery.toLowerCase());
+              final name = item[nameKey] ?? '';
+              final description = item[descriptionKey] ?? '';
+              return name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                  description
+                      .toLowerCase()
+                      .contains(_searchQuery.toLowerCase());
             }).toList();
+
+            if (_sortOrder != 'all') {
+              filteredItems.sort((a, b) {
+                final aName = a[nameKey] ?? '';
+                final bName = b[nameKey] ?? '';
+                return _sortOrder == 'asc'
+                    ? aName.compareTo(bName)
+                    : bName.compareTo(aName);
+              });
+            }
 
             return Dialog(
               child: Container(
@@ -170,22 +180,52 @@ class _DashboardsState extends State<Dashboards> {
                           ),
                         ],
                       ),
-                      child: TextField(
-                        decoration: InputDecoration(
-                          hintText: 'Search $title...',
-                          hintStyle: TextStyle(color: Colors.grey[400]),
-                          prefixIcon: const Icon(Icons.search, color: Colors.teal),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 15),
-                        ),
-                        style: const TextStyle(color: Colors.teal),
-                        cursorColor: Colors.teal,
-                        onChanged: (value) {
-                          setState(() {
-                            _searchQuery = value;
-                          });
-                        },
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              decoration: InputDecoration(
+                                hintText: 'Search $title...',
+                                hintStyle: TextStyle(color: Colors.grey[400]),
+                                prefixIcon:
+                                    Icon(Icons.search, color: Colors.teal),
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 15),
+                              ),
+                              style: const TextStyle(color: Colors.teal),
+                              cursorColor: Colors.teal,
+                              onChanged: (value) {
+                                setState(() {
+                                  _searchQuery = value;
+                                });
+                              },
+                            ),
+                          ),
+                          PopupMenuButton<String>(
+                            icon: Icon(Icons.filter_list, color: Colors.teal),
+                            onSelected: (String value) {
+                              setState(() {
+                                _sortOrder = value;
+                              });
+                            },
+                            itemBuilder: (BuildContext context) =>
+                                <PopupMenuEntry<String>>[
+                              const PopupMenuItem<String>(
+                                value: 'all',
+                                child: Text('All'),
+                              ),
+                              const PopupMenuItem<String>(
+                                value: 'asc',
+                                child: Text('A-Z'),
+                              ),
+                              const PopupMenuItem<String>(
+                                value: 'desc',
+                                child: Text('Z-A'),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -194,11 +234,10 @@ class _DashboardsState extends State<Dashboards> {
                         itemCount: filteredItems.length,
                         itemBuilder: (context, index) {
                           final item = filteredItems[index];
-                          final name = item[nameKey]?.toString() ?? 'No Name';
-                          final description =
-                              item[descriptionKey]?.toString() ??
-                                  item['school_country']?.toString() ??
-                                  'No Description';
+                          final name = item[nameKey] ?? 'No Name';
+                          final description = item[descriptionKey] ??
+                              item['school_country'] ??
+                              'No Description';
                           return Card(
                             elevation: 3,
                             margin: const EdgeInsets.symmetric(
@@ -361,12 +400,6 @@ class _DashboardsState extends State<Dashboards> {
                                   case 1:
                                     school = 'School 2';
                                     break;
-                                  case 2:
-                                    school = 'School 3';
-                                    break;
-                                  case 3:
-                                    school = 'School 4';
-                                    break;
                                   default:
                                     school = '';
                                 }
@@ -392,17 +425,12 @@ class _DashboardsState extends State<Dashboards> {
                                   String text;
                                   switch (value.toInt()) {
                                     case 0:
-                                      text = 'S1';
+                                      text = ' ';
                                       break;
                                     case 1:
-                                      text = 'S2';
+                                      text = '';
                                       break;
-                                    case 2:
-                                      text = 'S3';
-                                      break;
-                                    case 3:
-                                      text = 'S4';
-                                      break;
+
                                     default:
                                       text = '';
                                   }

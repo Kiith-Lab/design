@@ -1,4 +1,4 @@
-import 'package:design/dashboard.dart';
+import 'package:design/dashboards.dart';
 import 'package:design/project.dart';
 import 'package:design/view.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -28,7 +28,7 @@ class _AdminState extends State<Administrator> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return ShadApp.cupertino(
       debugShowCheckedModeBanner: false,
       home: Builder(
         builder: (BuildContext context) {
@@ -52,48 +52,92 @@ class _AdminState extends State<Administrator> {
               actions: [
                 GestureDetector(
                   onTap: () {
-                    showDialog(
+                    showShadDialog(
                       context: context,
-                      builder: (BuildContext dialogContext) => AlertDialog(
-                        title: const Text('Settings'),
-                        content: Container(
-                          width: 300,
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          child: const Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              ListTile(
-                                leading: CircleAvatar(
-                                  backgroundImage: NetworkImage(
-                                      'https://avatars.githubusercontent.com/u/124599?v=4'),
+                      builder: (BuildContext dialogContext) => Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ShadDialog(
+                          title: const Text('Settings'),
+                          child: Container(
+                            width: 100, // Reduced from 250 to 200
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SizedBox(
+                                  height: 400, // Adjust this value as needed
+                                  child: SingleChildScrollView(
+                                    child: Column(
+                                      children: [
+                                        ShadCard(
+                                          width: double.infinity,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Row(
+                                              children: [
+                                                ShadAvatar(
+                                                  'https://avatars.githubusercontent.com/u/124599?v=4',
+                                                ),
+                                                const SizedBox(width: 5),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        "Username",
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                      ),
+                                                      Text(
+                                                        "gmail",
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          height: 10,
+                                        ),
+                                        ShadCard(
+                                          width: double.infinity,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Row(
+                                              children: [
+                                                Text("Forgot Password?")
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
-                                title: Text("Username"),
-                                subtitle: Text("gmail"),
-                              ),
-                              Divider(),
-                              ListTile(
-                                title: Text("Forgot Password?"),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
+                          actions: [
+                            ShadButton.destructive(
+                              child: const Text('Logout'),
+                              onPressed: () {
+                                // Handle save changes
+                                Navigator.of(dialogContext).pop();
+                              },
+                            ),
+                          ],
                         ),
-                        actions: [
-                          TextButton(
-                            child: const Text('Logout'),
-                            onPressed: () {
-                              Navigator.of(dialogContext).pop();
-                            },
-                          ),
-                        ],
                       ),
                     );
                   },
-                  child: const Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: CircleAvatar(
-                      backgroundImage: NetworkImage(
-                          'https://avatars.githubusercontent.com/u/124599?v=4'),
-                    ),
+                  child: ShadAvatar(
+                    'https://avatars.githubusercontent.com/u/124599?v=4',
                   ),
                 ),
               ],
