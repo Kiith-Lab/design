@@ -41,7 +41,7 @@ class _AdminState extends State<Administrator> {
                     fit: BoxFit.contain,
                     height: 50,
                   ),
-                  SizedBox(width: 5),
+                  const SizedBox(width: 5),
                   Text(_selectedIndex == 0
                       ? 'Phinma Education'
                       : _selectedIndex == 1

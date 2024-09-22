@@ -850,7 +850,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                       side: BorderSide(color: Colors.green.shade600),
                     ),
                   ),
-                  child: Text('View Summary'),
+                  child: const Text('View Summary'),
                 ),
               ],
             ),

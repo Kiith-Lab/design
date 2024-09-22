@@ -9,7 +9,7 @@ void main() {
 }
 
 class Dashboard extends StatelessWidget {
-  const Dashboard({Key? key}) : super(key: key);
+  const Dashboard({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class Dashboard extends StatelessWidget {
 }
 
 class Dashboards extends StatefulWidget {
-  const Dashboards({Key? key}) : super(key: key);
+  const Dashboards({super.key});
 
   @override
   _DashboardsState createState() => _DashboardsState();
@@ -174,7 +174,7 @@ class _DashboardsState extends State<Dashboards> {
                         decoration: InputDecoration(
                           hintText: 'Search $title...',
                           hintStyle: TextStyle(color: Colors.grey[400]),
-                          prefixIcon: Icon(Icons.search, color: Colors.teal),
+                          prefixIcon: const Icon(Icons.search, color: Colors.teal),
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(
                               horizontal: 20, vertical: 15),
