@@ -561,6 +561,28 @@ class Get
             return json_encode(['error' => 'An error occurred']);
         }
     }
+    function getUserSchoolDepartment()
+    {
+        try {
+            $sql = "SELECT * FROM `tbl_users` INNER JOIN tbl_school ON tbl_school.school_id = tbl_users.users_schoolId INNER JOIN tbl_department ON tbl_department.department_id = tbl_users.users_departmantId";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+
+            $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            error_log("SQL Query: $sql");
+            error_log("Result: " . print_r($returnValue, true));
+
+            return json_encode($returnValue);
+        }
+        catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            return json_encode(['error' => 'Database error occurred']);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage());
+            return json_encode(['error' => 'An error occurred']);
+        }
+    }
 
     
 }
@@ -639,6 +661,9 @@ switch ($operation) {
         break;
     case "getProjects":
         echo $get->getProjects();
+        break;
+    case "getUserSchoolDepartment":
+        echo $get->getUserSchoolDepartment();
         break;
     default:
         echo json_encode(['error' => 'Invalid operation']);

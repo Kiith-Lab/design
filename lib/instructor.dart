@@ -153,6 +153,9 @@ class _UserDetailPagesState extends State<UserDetailPages> {
                 );
               }).toList(),
             ),
+            SizedBox(
+              height: 20,
+            ),
 
             DropdownButton<String>(
               isExpanded: true,
@@ -165,7 +168,8 @@ class _UserDetailPagesState extends State<UserDetailPages> {
                   .map<DropdownMenuItem<String>>((String value) {
                 return DropdownMenuItem<String>(
                   value: value,
-                  child: Text('${widget.user['username'] ?? 'Username'}'),
+                  child: Text(
+                      '${widget.user['username'] ?? 'Select a Instructor'}'),
                 );
               }).toList(),
             ),
