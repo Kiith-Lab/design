@@ -1,7 +1,6 @@
 import 'package:design/dashboard.dart';
 import 'package:design/project.dart';
 import 'package:design/view.dart';
-import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 

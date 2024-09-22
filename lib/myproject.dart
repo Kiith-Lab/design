@@ -16,11 +16,6 @@ class _MyProjectPageState extends State<MyProjectPage> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _startDateController = TextEditingController();
   final TextEditingController _endDateController = TextEditingController();
-  final TextEditingController _beforeScheduleController =
-      TextEditingController();
-  final TextEditingController _startScheduleController =
-      TextEditingController();
-
   Future<void> _addProject() async {
     const String url = "http://localhost/design/lib/api/add.php";
     final Map<String, dynamic> requestBody = {
@@ -33,8 +28,6 @@ class _MyProjectPageState extends State<MyProjectPage> {
         'project_description': _descriptionController.text,
         'project_start_date': _startDateController.text,
         'project_end_date': _endDateController.text,
-        'before_schedule_studentWorkshop': _beforeScheduleController.text,
-        'start_schedule_studentWorkshop': _startScheduleController.text,
       }),
     };
 
@@ -205,7 +198,7 @@ class _MyProjectPageState extends State<MyProjectPage> {
                     ),
                     const SizedBox(height: 10),
                     const Text(
-                      'SUBJECT:',
+                      'PROJECT DESCRIPTION:',
                       style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -221,7 +214,7 @@ class _MyProjectPageState extends State<MyProjectPage> {
                             borderSide:
                                 BorderSide(color: Colors.green.shade700),
                           ),
-                          labelText: 'Subject',
+                          labelText: 'Enter Project Description',
                           labelStyle: TextStyle(color: Colors.green.shade700),
                           focusedBorder: OutlineInputBorder(
                             borderSide:
@@ -232,7 +225,7 @@ class _MyProjectPageState extends State<MyProjectPage> {
                       ),
                     ),
                     const Text(
-                      'PROJECT DESCRIPTION:',
+                      'SUBJECT:',
                       style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
@@ -248,7 +241,7 @@ class _MyProjectPageState extends State<MyProjectPage> {
                             borderSide:
                                 BorderSide(color: Colors.green.shade700),
                           ),
-                          labelText: 'Enter Project Description',
+                          labelText: 'Enter Subject',
                           labelStyle: TextStyle(color: Colors.green.shade700),
                           focusedBorder: OutlineInputBorder(
                             borderSide:
@@ -323,72 +316,6 @@ class _MyProjectPageState extends State<MyProjectPage> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    const Text(
-                      'BEFORE SCHEDULE STUDENT WORKSHOP:',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green),
-                    ),
-                    const SizedBox(height: 10),
-                    Card(
-                      child: TextField(
-                        controller: _beforeScheduleController,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
-                          ),
-                          labelText:
-                              'Enter Before Schedule Student Workshop Date',
-                          labelStyle: TextStyle(color: Colors.green.shade700),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        ),
-                        onTap: () {
-                          _selectDate(context, _beforeScheduleController);
-                        },
-                        readOnly: true,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'START SCHEDULE STUDENT WORKSHOP:',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green),
-                    ),
-                    const SizedBox(height: 10),
-                    Card(
-                      child: TextField(
-                        controller: _startScheduleController,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
-                          ),
-                          labelText:
-                              'Enter Start Schedule Student Workshop Date',
-                          labelStyle: TextStyle(color: Colors.green.shade700),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        ),
-                        onTap: () {
-                          _selectDate(context, _startScheduleController);
-                        },
-                        readOnly: true,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
                     Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(15),
