@@ -1,6 +1,7 @@
 import 'package:design/dashboards.dart';
 import 'package:design/project.dart';
 import 'package:design/view.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -27,7 +28,7 @@ class _AdminState extends State<Administrator> {
 
   @override
   Widget build(BuildContext context) {
-    return ShadApp.cupertino(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Builder(
         builder: (BuildContext context) {
@@ -61,10 +62,9 @@ class _AdminState extends State<Administrator> {
                             width: 100, // Reduced from 250 to 200
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             child: Column(
-                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 SizedBox(
-                                  height: 400, // Adjust this value as needed
+                                  height: 200, // Adjust this value as needed
                                   child: SingleChildScrollView(
                                     child: Column(
                                       children: [
