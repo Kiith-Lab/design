@@ -40,6 +40,11 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   int? lastInsertedOutputId;
   int? lastInsertedInstructionId;
 
+  List<String> addedActivities = [];
+  List<String> addedOutputs = [];
+  List<String> addedInstructions = [];
+  List<String> addedCoachDetails = [];
+
   @override
   void initState() {
     super.initState();
@@ -237,7 +242,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
         'operation': 'addActivity',
         'json': jsonEncode({
           'activities_details_remarks': 'Activity',
-          'activities_details_content': activitiesController.text,
+          'activities_details_content': jsonEncode(addedActivities),
           'activities_details_headerId': lastInsertedDurationId.toString(),
         }),
       };
@@ -256,7 +261,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           setState(() {
             currentStep++;
             allAddedData
-                .add({'type': 'Activity', 'value': activitiesController.text});
+                .add({'type': 'Activity', 'value': addedActivities.join(', ')});
             lastInsertedActivityId = int.parse(decodedData['id']);
           });
 
@@ -338,7 +343,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
         'json': jsonEncode({
           'outputs_moduleId': lastInsertedModeId.toString(),
           'outputs_remarks': 'Output',
-          'outputs_content': outputsController.text,
+          'outputs_content': jsonEncode(addedOutputs),
         }),
       };
 
@@ -356,7 +361,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           setState(() {
             currentStep++;
             allAddedData
-                .add({'type': 'Output', 'value': outputsController.text});
+                .add({'type': 'Output', 'value': addedOutputs.join(', ')});
             lastInsertedOutputId = int.parse(decodedData['id']);
           });
         } else {
@@ -383,7 +388,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
         'json': jsonEncode({
           'instruction_remarks': 'Instruction',
           'instruction_modulesId': lastInsertedModeId.toString(),
-          'instruction_content': instructionsController.text,
+          'instruction_content': jsonEncode(addedInstructions),
         }),
       };
 
@@ -401,7 +406,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           setState(() {
             currentStep++; // Skip to coach header step
             allAddedData.add(
-                {'type': 'Instruction', 'value': instructionsController.text});
+                {'type': 'Instruction', 'value': addedInstructions.join(', ')});
             lastInsertedInstructionId = int.parse(decodedData['id']);
           });
         } else {
@@ -471,7 +476,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
         'operation': 'addCoachDetails',
         'json': jsonEncode({
           'coach_detail_coachheaderId': lastInsertedCoachHeaderId.toString(),
-          'coach_detail_content': coachDetailsController.text,
+          'coach_detail_content': jsonEncode(addedCoachDetails),
           'coach_detail_renarks': 'Coach Details',
         }),
       };
@@ -511,7 +516,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
             currentStep = 0; // Reset to the first step
             allAddedData.add({
               'type': 'Coach Details',
-              'value': coachDetailsController.text
+              'value': addedCoachDetails.join(', ')
             });
           });
         } else {
@@ -588,7 +593,14 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
-        var decodedData = jsonDecode(response.body);
+        String trimmedBody = response.body.trim();
+        if (trimmedBody.isEmpty) {
+          // Save the IDs to local storage if the response is empty
+          await storeInsertedIds();
+          throw Exception('Empty response received');
+        }
+
+        var decodedData = jsonDecode(trimmedBody);
         if (decodedData['success'] == true) {
           print('Added to folder successfully');
         } else {
@@ -608,7 +620,15 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.green),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () {
+            if (currentStep > 0) {
+              setState(() {
+                currentStep--;
+              });
+            } else {
+              Navigator.of(context).pop();
+            }
+          },
         ),
         backgroundColor: Colors.white,
         elevation: 0,
@@ -850,7 +870,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                       side: BorderSide(color: Colors.green.shade600),
                     ),
                   ),
-                  child: Text('View Summary'),
+                  child: const Text('View Summary'),
                 ),
               ],
             ),
@@ -973,21 +993,53 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   Widget _buildActivitiesStep() {
     return _buildStep(
       title: 'Activities',
-      content: TextField(
-        controller: activitiesController,
-        decoration: InputDecoration(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10.0),
-            borderSide: BorderSide(color: Colors.green.shade600),
+      content: Column(
+        children: [
+          TextField(
+            controller: activitiesController,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.0),
+                borderSide: BorderSide(color: Colors.green.shade600),
+              ),
+              labelText: 'What activities will my students do?',
+              labelStyle: TextStyle(color: Colors.green.shade600),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.green.shade600),
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+            ),
+            maxLines: 3,
           ),
-          labelText: 'What activities will my students do?',
-          labelStyle: TextStyle(color: Colors.green.shade600),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.green.shade600),
-            borderRadius: BorderRadius.circular(10.0),
+          const SizedBox(height: 10),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                addedActivities.add(activitiesController.text);
+                activitiesController.clear();
+              });
+            },
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.green.shade600,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+            ),
+            child: const Text('Add More'),
           ),
-        ),
-        maxLines: 3,
+          const SizedBox(height: 10),
+          ListView.builder(
+            shrinkWrap: true,
+            itemCount: addedActivities.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text(addedActivities[index]),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -1048,7 +1100,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 );
               }).toList(),
               onChanged: (String? newValue) {
-                setState(() {
+          setState(() {
                   selectedLesson = newValue;
                 });
               },
@@ -1147,21 +1199,53 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   Widget _buildOutputsStep() {
     return _buildStep(
       title: 'Outputs',
-      content: TextField(
-        controller: outputsController,
-        decoration: InputDecoration(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10.0),
-            borderSide: BorderSide(color: Colors.green.shade600),
+      content: Column(
+        children: [
+          TextField(
+            controller: outputsController,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.0),
+                borderSide: BorderSide(color: Colors.green.shade600),
+              ),
+              labelText: 'What are the expected outputs?',
+              labelStyle: TextStyle(color: Colors.green.shade600),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.green.shade600),
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+            ),
+            maxLines: 3,
           ),
-          labelText: 'What are the expected outputs?',
-          labelStyle: TextStyle(color: Colors.green.shade600),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.green.shade600),
-            borderRadius: BorderRadius.circular(10.0),
+          const SizedBox(height: 10),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                addedOutputs.add(outputsController.text);
+                outputsController.clear();
+              });
+            },
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.green.shade600,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+            ),
+            child: const Text('Add More'),
           ),
-        ),
-        maxLines: 3,
+          const SizedBox(height: 10),
+          ListView.builder(
+            shrinkWrap: true,
+            itemCount: addedOutputs.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text(addedOutputs[index]),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -1169,21 +1253,53 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   Widget _buildInstructionsStep() {
     return _buildStep(
       title: 'Instructions',
-      content: TextField(
-        controller: instructionsController,
-        decoration: InputDecoration(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10.0),
-            borderSide: BorderSide(color: Colors.green.shade600),
+      content: Column(
+        children: [
+          TextField(
+            controller: instructionsController,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.0),
+                borderSide: BorderSide(color: Colors.green.shade600),
+              ),
+              labelText: 'What Instruction will I give to my students?',
+              labelStyle: TextStyle(color: Colors.green.shade600),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.green.shade600),
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+            ),
+            maxLines: 3,
           ),
-          labelText: 'What Instruction will I give to my students?',
-          labelStyle: TextStyle(color: Colors.green.shade600),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.green.shade600),
-            borderRadius: BorderRadius.circular(10.0),
+          const SizedBox(height: 10),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                addedInstructions.add(instructionsController.text);
+                instructionsController.clear();
+              });
+            },
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.green.shade600,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+            ),
+            child: const Text('Add More'),
           ),
-        ),
-        maxLines: 3,
+          const SizedBox(height: 10),
+          ListView.builder(
+            shrinkWrap: true,
+            itemCount: addedInstructions.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text(addedInstructions[index]),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -1213,21 +1329,53 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   Widget _buildCoachDetailsStep() {
     return _buildStep(
       title: 'Coach Details',
-      content: TextField(
-        controller: coachDetailsController,
-        decoration: InputDecoration(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10.0),
-            borderSide: BorderSide(color: Colors.green.shade600),
+      content: Column(
+        children: [
+          TextField(
+            controller: coachDetailsController,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.0),
+                borderSide: BorderSide(color: Colors.green.shade600),
+              ),
+              labelText: 'Enter Coach Details',
+              labelStyle: TextStyle(color: Colors.green.shade600),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.green.shade600),
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+            ),
+            maxLines: 3,
           ),
-          labelText: 'Enter Coach Details',
-          labelStyle: TextStyle(color: Colors.green.shade600),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.green.shade600),
-            borderRadius: BorderRadius.circular(10.0),
+          const SizedBox(height: 10),
+          ElevatedButton(
+          onPressed: () {
+              setState(() {
+                addedCoachDetails.add(coachDetailsController.text);
+                coachDetailsController.clear();
+              });
+            },
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.green.shade600,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+            ),
+            child: const Text('Add More'),
           ),
-        ),
-        maxLines: 3,
+          const SizedBox(height: 10),
+          ListView.builder(
+            shrinkWrap: true,
+            itemCount: addedCoachDetails.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text(addedCoachDetails[index]),
+              );
+            },
+          ),
+        ],
       ),
     );
   }

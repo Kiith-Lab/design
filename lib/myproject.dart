@@ -16,10 +16,6 @@ class _MyProjectPageState extends State<MyProjectPage> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _startDateController = TextEditingController();
   final TextEditingController _endDateController = TextEditingController();
-  final TextEditingController _beforeScheduleController =
-      TextEditingController();
-  final TextEditingController _startScheduleController =
-      TextEditingController();
 
   Future<void> _addProject() async {
     const String url = "http://localhost/design/lib/api/add.php";
@@ -33,8 +29,6 @@ class _MyProjectPageState extends State<MyProjectPage> {
         'project_description': _descriptionController.text,
         'project_start_date': _startDateController.text,
         'project_end_date': _endDateController.text,
-        'before_schedule_studentWorkshop': _beforeScheduleController.text,
-        'start_schedule_studentWorkshop': _startScheduleController.text,
       }),
     };
 
@@ -48,27 +42,21 @@ class _MyProjectPageState extends State<MyProjectPage> {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
         if (responseData['success'] == true) {
           final int projectId = int.parse(responseData['id'].toString());
-          print('Fetched project ID: $projectId'); // Print the fetched ID
-          // Fetch all data and navigate to EmpathyProjectPage
+          print('Fetched project ID: $projectId');
           await _fetchAllDataAndNavigate(projectId);
         } else {
-          // Handle error
           print('Failed to add project: ${responseData['error']}');
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content:
-                    Text('Failed to add project: ${responseData['error']}')),
+            SnackBar(content: Text('Failed to add project: ${responseData['error']}')),
           );
         }
       } else {
-        // Handle server error
         print('Server error: ${response.statusCode}');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Server error: ${response.statusCode}')),
         );
       }
     } catch (e) {
-      // Handle network error
       print('Network error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Network error: $e')),
@@ -91,15 +79,11 @@ class _MyProjectPageState extends State<MyProjectPage> {
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
         if (responseData.containsKey('error')) {
-          // Handle error
           print('Failed to retrieve project data: ${responseData['error']}');
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text(
-                    'Failed to retrieve project data: ${responseData['error']}')),
+            SnackBar(content: Text('Failed to retrieve project data: ${responseData['error']}')),
           );
         } else {
-          // Navigate to EmpathyProjectPage with all data
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -110,14 +94,12 @@ class _MyProjectPageState extends State<MyProjectPage> {
           );
         }
       } else {
-        // Handle server error
         print('Server error: ${response.statusCode}');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Server error: ${response.statusCode}')),
         );
       }
     } catch (e) {
-      // Handle network error
       print('Network error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Network error: $e')),
@@ -125,8 +107,7 @@ class _MyProjectPageState extends State<MyProjectPage> {
     }
   }
 
-  Future<void> _selectDate(
-      BuildContext context, TextEditingController controller) async {
+  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -146,8 +127,7 @@ class _MyProjectPageState extends State<MyProjectPage> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back,
-              color: Color.fromARGB(255, 14, 14, 14)),
+          icon: const Icon(Icons.arrow_back, color: Color.fromARGB(255, 14, 14, 14)),
           onPressed: () => Navigator.of(context).pop(),
         ),
         backgroundColor: Colors.transparent,
@@ -158,8 +138,7 @@ class _MyProjectPageState extends State<MyProjectPage> {
         height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image:
-                AssetImage('assets/images/Design_Thinking_Five_Modes_Page.png'),
+            image: AssetImage('assets/images/Design_Thinking_Five_Modes_Page.png'),
             fit: BoxFit.cover,
           ),
         ),
@@ -172,15 +151,10 @@ class _MyProjectPageState extends State<MyProjectPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    const SizedBox(
-                        height:
-                            90), // Add space between the back button and content
+                    const SizedBox(height: 90),
                     const Text(
                       'PROJECT:',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green),
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.green),
                     ),
                     const SizedBox(height: 10),
                     Card(
@@ -188,55 +162,22 @@ class _MyProjectPageState extends State<MyProjectPage> {
                         controller: _projectNameController,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                                15), // Changed border radius for a unique look
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
+                            borderRadius: BorderRadius.circular(15),
+                            borderSide: BorderSide(color: Colors.green.shade700),
                           ),
                           labelText: 'Enter Project Name',
                           labelStyle: TextStyle(color: Colors.green.shade700),
                           focusedBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
+                            borderSide: BorderSide(color: Colors.green.shade700),
                             borderRadius: BorderRadius.circular(15),
                           ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 10),
-                    const Text(
-                      'SUBJECT:',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green),
-                    ),
-                    const SizedBox(height: 10),
-                    Card(
-                      child: TextField(
-                        controller: _subjectController,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
-                          ),
-                          labelText: 'Subject',
-                          labelStyle: TextStyle(color: Colors.green.shade700),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        ),
-                      ),
-                    ),
                     const Text(
                       'PROJECT DESCRIPTION:',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green),
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.green),
                     ),
                     const SizedBox(height: 10),
                     Card(
@@ -245,14 +186,34 @@ class _MyProjectPageState extends State<MyProjectPage> {
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(15),
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
+                            borderSide: BorderSide(color: Colors.green.shade700),
                           ),
                           labelText: 'Enter Project Description',
                           labelStyle: TextStyle(color: Colors.green.shade700),
                           focusedBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
+                            borderSide: BorderSide(color: Colors.green.shade700),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const Text(
+                      'SUBJECT:',
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.green),
+                    ),
+                    const SizedBox(height: 10),
+                    Card(
+                      child: TextField(
+                        controller: _subjectController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                            borderSide: BorderSide(color: Colors.green.shade700),
+                          ),
+                          labelText: 'Enter Subject',
+                          labelStyle: TextStyle(color: Colors.green.shade700),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.green.shade700),
                             borderRadius: BorderRadius.circular(15),
                           ),
                         ),
@@ -261,10 +222,7 @@ class _MyProjectPageState extends State<MyProjectPage> {
                     const SizedBox(height: 10),
                     const Text(
                       'START DATE:',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green),
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.green),
                     ),
                     const SizedBox(height: 10),
                     Card(
@@ -273,14 +231,12 @@ class _MyProjectPageState extends State<MyProjectPage> {
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(15),
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
+                            borderSide: BorderSide(color: Colors.green.shade700),
                           ),
                           labelText: 'Enter Start Date',
                           labelStyle: TextStyle(color: Colors.green.shade700),
                           focusedBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
+                            borderSide: BorderSide(color: Colors.green.shade700),
                             borderRadius: BorderRadius.circular(15),
                           ),
                         ),
@@ -293,10 +249,7 @@ class _MyProjectPageState extends State<MyProjectPage> {
                     const SizedBox(height: 10),
                     const Text(
                       'END DATE:',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green),
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.green),
                     ),
                     const SizedBox(height: 10),
                     Card(
@@ -305,14 +258,12 @@ class _MyProjectPageState extends State<MyProjectPage> {
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(15),
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
+                            borderSide: BorderSide(color: Colors.green.shade700),
                           ),
                           labelText: 'Enter End Date',
                           labelStyle: TextStyle(color: Colors.green.shade700),
                           focusedBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
+                            borderSide: BorderSide(color: Colors.green.shade700),
                             borderRadius: BorderRadius.circular(15),
                           ),
                         ),
@@ -323,77 +274,10 @@ class _MyProjectPageState extends State<MyProjectPage> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    const Text(
-                      'BEFORE SCHEDULE STUDENT WORKSHOP:',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green),
-                    ),
-                    const SizedBox(height: 10),
-                    Card(
-                      child: TextField(
-                        controller: _beforeScheduleController,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
-                          ),
-                          labelText:
-                              'Enter Before Schedule Student Workshop Date',
-                          labelStyle: TextStyle(color: Colors.green.shade700),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        ),
-                        onTap: () {
-                          _selectDate(context, _beforeScheduleController);
-                        },
-                        readOnly: true,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'START SCHEDULE STUDENT WORKSHOP:',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green),
-                    ),
-                    const SizedBox(height: 10),
-                    Card(
-                      child: TextField(
-                        controller: _startScheduleController,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
-                          ),
-                          labelText:
-                              'Enter Start Schedule Student Workshop Date',
-                          labelStyle: TextStyle(color: Colors.green.shade700),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        ),
-                        onTap: () {
-                          _selectDate(context, _startScheduleController);
-                        },
-                        readOnly: true,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
                     Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(15),
-                        color: Colors.green.shade700.withOpacity(
-                            0.3), // Changed background color for a unique look
+                        color: Colors.green.shade700.withOpacity(0.3),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.green.shade700.withOpacity(0.1),
@@ -408,8 +292,7 @@ class _MyProjectPageState extends State<MyProjectPage> {
                           await _addProject();
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green
-                              .shade700, // Changed background color for a unique look
+                          backgroundColor: Colors.green.shade700,
                           shadowColor: Colors.green.shade700.withOpacity(0.1),
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(

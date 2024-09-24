@@ -265,6 +265,7 @@ class Get
             return json_encode(['error' => 'An error occurred']);
         }
     }
+    
     function getBack2()
     {
         $cardId = isset($_POST['cardId']) ? $_POST['cardId'] : '';
@@ -474,6 +475,115 @@ class Get
             echo json_encode(['error' => 'An error occurred']);
         }
     }
+    function getUser()
+    {
+        try {
+            $sql = "SELECT a.*, b.role_name FROM tbl_users a
+            INNER JOIN tbl_role b ON b.role_id = a.users_roleId";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+
+            $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            error_log("SQL Query: $sql");
+            error_log("Result: " . print_r($returnValue, true));
+
+            return json_encode($returnValue);
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            return json_encode(['error' => 'Database error occurred']);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage());
+            return json_encode(['error' => 'An error occurred']);
+        }
+    }
+    function getSchool()
+    {
+        try {
+            $sql = "SELECT * FROM tbl_school";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+
+            $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            error_log("SQL Query: $sql");
+            error_log("Result: " . print_r($returnValue, true));
+
+            return json_encode($returnValue);
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            return json_encode(['error' => 'Database error occurred']);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage());
+            return json_encode(['error' => 'An error occurred']);
+        }
+    }
+    function getInstructors()
+    {
+        try {
+            $sql = "SELECT a.*, b.role_name FROM tbl_users a
+            INNER JOIN tbl_role b ON b.role_id = a.users_roleId";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+
+            $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            error_log("SQL Query: $sql");
+            error_log("Result: " . print_r($returnValue, true));
+
+            return json_encode($returnValue);
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            return json_encode(['error' => 'Database error occurred']);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage());
+            return json_encode(['error' => 'An error occurred']);
+        }
+    }
+    function getProjects()
+    {
+        try {
+            $sql = "SELECT a.*, b.users_firstname, b.users_lastname FROM tbl_project a INNER JOIN tbl_users b ON b.users_id = a.project_userId";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+
+            $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            error_log("SQL Query: $sql");
+            error_log("Result: " . print_r($returnValue, true));
+
+            return json_encode($returnValue);
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            return json_encode(['error' => 'Database error occurred']);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage());
+            return json_encode(['error' => 'An error occurred']);
+        }
+    }
+    function getUserSchoolDepartment()
+    {
+        try {
+            $sql = "SELECT * FROM `tbl_users` INNER JOIN tbl_school ON tbl_school.school_id = tbl_users.users_schoolId INNER JOIN tbl_department ON tbl_department.department_id = tbl_users.users_departmantId";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+
+            $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            error_log("SQL Query: $sql");
+            error_log("Result: " . print_r($returnValue, true));
+
+            return json_encode($returnValue);
+        }
+        catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            return json_encode(['error' => 'Database error occurred']);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage());
+            return json_encode(['error' => 'An error occurred']);
+        }
+    }
+
     
 }
 
@@ -539,6 +649,21 @@ switch ($operation) {
         break;
     case "getFolder":
         echo $get->getFolder();
+        break;
+    case "getUser":
+        echo $get->getUser();
+        break;
+    case "getSchool":
+        echo $get->getSchool();
+        break;
+    case "getInstructors":
+        echo $get->getInstructors();
+        break;
+    case "getProjects":
+        echo $get->getProjects();
+        break;
+    case "getUserSchoolDepartment":
+        echo $get->getUserSchoolDepartment();
         break;
     default:
         echo json_encode(['error' => 'Invalid operation']);
