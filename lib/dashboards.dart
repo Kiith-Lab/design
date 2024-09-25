@@ -1,4 +1,3 @@
-import 'package:design/instructor.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -30,57 +29,60 @@ class Dashboards extends StatefulWidget {
 
 class _DashboardsState extends State<Dashboards> {
   int projectCount = 0;
-  List<dynamic> projects = [];
+  List<dynamic> folders = [];
   int userCount = 0;
   List<dynamic> users = [];
   int schoolCount = 0;
   List<dynamic> schools = [];
+  int instructorCount = 0;
+  List<dynamic> instructors = [];
   String _searchQuery = '';
-  String _sortOrder = 'all'; // 'all', 'asc', or 'desc'
+  String _sortOrder = 'all';
+  String _schoolFilter = 'all';
+  String _departmentFilter = 'all';
 
   @override
   void initState() {
     super.initState();
-    fetchProjects();
+    fetchFolders();
     fetchUsers();
     fetchSchools();
+    fetchInstructors();
   }
 
-  Future<void> fetchProjects() async {
+  Future<void> fetchFolders() async {
     try {
       final response = await http.post(
         Uri.parse('http://localhost/design/lib/api/view.php'),
-        body: {'operation': 'getProjects'},
+        body: {'operation': 'getFolders'},
       );
 
       if (response.statusCode == 200) {
         final dynamic decodedResponse = json.decode(response.body);
-        final List<dynamic> fetchedProjects;
+        final List<dynamic> fetchedFolders;
 
         if (decodedResponse is Map) {
-          // Handle case where response is an object
           if (decodedResponse.containsKey('error')) {
             print('Error from server: ${decodedResponse['error']}');
             return;
           }
-          fetchedProjects = decodedResponse.values.toList();
+          fetchedFolders = decodedResponse.values.toList();
         } else if (decodedResponse is List) {
-          // Handle case where response is already a list
-          fetchedProjects = decodedResponse;
+          fetchedFolders = decodedResponse;
         } else {
           print('Unexpected response format');
           return;
         }
 
         setState(() {
-          projects = fetchedProjects;
-          projectCount = projects.length;
+          folders = fetchedFolders;
+          projectCount = folders.length;
         });
       } else {
-        print('Failed to fetch projects: ${response.statusCode}');
+        print('Failed to fetch folders: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching projects: $e');
+      print('Error fetching folders: $e');
     }
   }
 
@@ -126,20 +128,65 @@ class _DashboardsState extends State<Dashboards> {
     }
   }
 
+  Future<void> fetchInstructors() async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost/design/lib/api/view.php'),
+        body: {'operation': 'getInstructors'},
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> fetchedInstructors = json.decode(response.body);
+        setState(() {
+          instructors = fetchedInstructors
+              .where((instructor) => instructor['role_name'] != 'Admin')
+              .toList();
+          instructorCount = instructors.length;
+        });
+      } else {
+        print('Failed to fetch instructors: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching instructors: $e');
+    }
+  }
+
   void _showList(BuildContext context, String title, List<dynamic> items,
       String nameKey, String descriptionKey) {
+    String localSearchQuery = '';
+    String localSortOrder = 'all';
+    String localSchoolFilter = 'all';
+    String localDepartmentFilter = 'all';
+    bool hideFilters =
+        title == 'Schools' || title == 'User Accounts' || title == 'Folders';
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
+          builder: (BuildContext context, StateSetter setDialogState) {
             List<dynamic> filteredItems = items.where((item) {
-              final name = item[nameKey] ?? '';
-              final description = item[descriptionKey] ?? '';
-              return name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                  description
-                      .toLowerCase()
-                      .contains(_searchQuery.toLowerCase());
+              final name = item[nameKey]?.toString().toLowerCase() ?? '';
+              final description =
+                  item[descriptionKey]?.toString().toLowerCase() ?? '';
+              final schoolName =
+                  item['school_name']?.toString().toLowerCase() ?? '';
+              final departmentName =
+                  item['department_name']?.toString().toLowerCase() ?? '';
+
+              bool matchesSearch =
+                  name.contains(localSearchQuery.toLowerCase()) ||
+                      description.contains(localSearchQuery.toLowerCase()) ||
+                      schoolName.contains(localSearchQuery.toLowerCase()) ||
+                      departmentName.contains(localSearchQuery.toLowerCase());
+
+              bool matchesSchool = localSchoolFilter == 'all' ||
+                  schoolName == localSchoolFilter.toLowerCase();
+              bool matchesDepartment = localDepartmentFilter == 'all' ||
+                  departmentName == localDepartmentFilter.toLowerCase();
+
+              return matchesSearch &&
+                  (hideFilters || (matchesSchool && matchesDepartment));
             }).toList();
 
             if (_sortOrder != 'all') {
@@ -152,101 +199,92 @@ class _DashboardsState extends State<Dashboards> {
               });
             }
 
+            List<String> schoolNames = [
+              'all',
+              ...items
+                  .map((item) => item['school_name']?.toString() ?? '')
+                  .where((name) => name.isNotEmpty)
+                  .toSet()
+                  .toList()
+            ];
+
+            List<String> departmentNames = [
+              'all',
+              ...items
+                  .map((item) => item['department_name']?.toString() ?? '')
+                  .where((name) => name.isNotEmpty)
+                  .toSet()
+                  .toList()
+            ];
+
             return Dialog(
-              backgroundColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: Container(
                 width: MediaQuery.of(context).size.width * 0.8,
                 height: MediaQuery.of(context).size.height * 0.8,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Colors.teal.shade700, Colors.teal.shade300],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      spreadRadius: 5,
-                      blurRadius: 7,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
+                padding: const EdgeInsets.all(24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.teal,
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                    const SizedBox(height: 24),
+                    TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Search $title...',
+                        prefixIcon:
+                            const Icon(Icons.search, color: Colors.teal),
+                        border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide.none,
                         ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                decoration: InputDecoration(
-                                  hintText: 'Search $title...',
-                                  hintStyle: TextStyle(color: Colors.white70),
-                                  prefixIcon:
-                                      Icon(Icons.search, color: Colors.white),
-                                  border: InputBorder.none,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 15),
-                                ),
-                                style: const TextStyle(color: Colors.white),
-                                cursorColor: Colors.white,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _searchQuery = value;
-                                  });
-                                },
-                              ),
-                            ),
-                            PopupMenuButton<String>(
-                              icon:
-                                  Icon(Icons.filter_list, color: Colors.white),
-                              color: Colors.teal.shade600,
-                              onSelected: (String value) {
-                                setState(() {
-                                  _sortOrder = value;
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                      ),
+                      onChanged: (value) {
+                        setDialogState(() {
+                          localSearchQuery = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildFilterButton(
+                          'Sort',
+                          Icons.sort,
+                          () => _showSortDialog(
+                              context, setDialogState, localSortOrder),
+                        ),
+                        if (!hideFilters)
+                          _buildFilterButton(
+                            'Filter',
+                            Icons.filter_list,
+                            () => _showFilterDialog(
+                              context,
+                              (newSchoolFilter, newDepartmentFilter) {
+                                setDialogState(() {
+                                  localSchoolFilter = newSchoolFilter;
+                                  localDepartmentFilter = newDepartmentFilter;
                                 });
                               },
-                              itemBuilder: (BuildContext context) =>
-                                  <PopupMenuEntry<String>>[
-                                PopupMenuItem<String>(
-                                  value: 'all',
-                                  child: Text('All',
-                                      style: TextStyle(color: Colors.white)),
-                                ),
-                                PopupMenuItem<String>(
-                                  value: 'asc',
-                                  child: Text('A-Z',
-                                      style: TextStyle(color: Colors.white)),
-                                ),
-                                PopupMenuItem<String>(
-                                  value: 'desc',
-                                  child: Text('Z-A',
-                                      style: TextStyle(color: Colors.white)),
-                                ),
-                              ],
+                              localSchoolFilter,
+                              localDepartmentFilter,
+                              schoolNames,
+                              departmentNames,
+                              hideFilters,
                             ),
-                          ],
-                        ),
-                      ),
+                          ),
+                      ],
                     ),
                     const SizedBox(height: 16),
                     Expanded(
@@ -254,25 +292,24 @@ class _DashboardsState extends State<Dashboards> {
                         itemCount: filteredItems.length,
                         itemBuilder: (context, index) {
                           final item = filteredItems[index];
-                          final name = item[nameKey] ?? 'No Name';
-                          final description = item[descriptionKey] ??
-                              item['school_country'] ??
-                              'No Description';
+                          final name = item[nameKey]?.toString() ?? 'No Names';
+                          final description =
+                              item[descriptionKey]?.toString() ??
+                                  item['school_country']?.toString() ??
+                                  'No Description';
                           return Card(
-                            elevation: 0,
-                            color: Colors.white.withOpacity(0.1),
-                            margin: const EdgeInsets.symmetric(
-                                vertical: 8, horizontal: 16),
+                            elevation: 2,
+                            margin: const EdgeInsets.symmetric(vertical: 8),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: ListTile(
                               contentPadding: const EdgeInsets.all(16),
                               leading: CircleAvatar(
-                                backgroundColor: Colors.white,
+                                backgroundColor: Colors.teal,
                                 child: Text(
-                                  name[0].toUpperCase(),
-                                  style: TextStyle(color: Colors.teal.shade700),
+                                  name.isNotEmpty ? name[0].toUpperCase() : 'N',
+                                  style: const TextStyle(color: Colors.white),
                                 ),
                               ),
                               title: Text(
@@ -280,45 +317,31 @@ class _DashboardsState extends State<Dashboards> {
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 18,
-                                  color: Colors.white,
                                 ),
                               ),
                               subtitle: Text(
                                 description,
                                 style: TextStyle(
-                                  color: Colors.white70,
+                                  color: Colors.grey[600],
                                   fontSize: 14,
                                 ),
                               ),
                               onTap: () {
-                                if (title == 'Schools') {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          UserDetailPages(user: item),
-                                    ),
-                                  );
-                                }
+                                // Handle tap event
                               },
                             ),
                           );
                         },
                       ),
                     ),
+                    const SizedBox(height: 16),
                     Align(
                       alignment: Alignment.centerRight,
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: ElevatedButton(
-                          child: const Text('Close'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: Colors.teal.shade700,
-                          ),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                        ),
+                      child: TextButton(
+                        child: const Text('Close'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
                       ),
                     ),
                   ],
@@ -331,28 +354,154 @@ class _DashboardsState extends State<Dashboards> {
     );
   }
 
+  Widget _buildFilterButton(
+      String label, IconData icon, VoidCallback onPressed) {
+    return ElevatedButton.icon(
+      icon: Icon(icon, size: 18),
+      label: Text(label),
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.teal,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+        ),
+      ),
+    );
+  }
+
+  void _showSortDialog(
+      BuildContext context, StateSetter setDialogState, String localSortOrder) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Sort Order'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildSortOption('All', 'all', localSortOrder, setDialogState),
+              _buildSortOption('A-Z', 'asc', localSortOrder, setDialogState),
+              _buildSortOption('Z-A', 'desc', localSortOrder, setDialogState),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSortOption(
+      String label, String value, String currentValue, StateSetter setState) {
+    return ListTile(
+      title: Text(label),
+      leading: Radio<String>(
+        value: value,
+        groupValue: currentValue,
+        onChanged: (String? newValue) {
+          setState(() {
+            _sortOrder = newValue!;
+          });
+          Navigator.pop(context);
+        },
+      ),
+    );
+  }
+
+  void _showFilterDialog(
+      BuildContext context,
+      Function(String, String) onFilterApplied,
+      String localSchoolFilter,
+      String localDepartmentFilter,
+      List<String> schoolNames,
+      List<String> departmentNames,
+      bool hideFilters) {
+    String tempSchoolFilter = localSchoolFilter;
+    String tempDepartmentFilter = localDepartmentFilter;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              title: const Text('Filter'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (!hideFilters)
+                      _buildDropdown('School', tempSchoolFilter, schoolNames,
+                          (String? newValue) {
+                        setState(() {
+                          tempSchoolFilter = newValue!;
+                        });
+                      }),
+                    if (!hideFilters) const SizedBox(height: 16),
+                    _buildDropdown(
+                        'Department', tempDepartmentFilter, departmentNames,
+                        (String? newValue) {
+                      setState(() {
+                        tempDepartmentFilter = newValue!;
+                      });
+                    }),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  child: const Text('Apply'),
+                  onPressed: () {
+                    onFilterApplied(tempSchoolFilter, tempDepartmentFilter);
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildDropdown(String label, String value, List<String> items,
+      Function(String?) onChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        DropdownButton<String>(
+          isExpanded: true,
+          value: value,
+          onChanged: onChanged,
+          items: items.map<DropdownMenuItem<String>>((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value == 'all' ? 'All $label' : value),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.green, Colors.white],
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/Design_Thinking_Admin.png'),
+            fit: BoxFit.cover,
           ),
         ),
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                const Text(
-                  'Overview',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 32),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -365,28 +514,29 @@ class _DashboardsState extends State<Dashboards> {
                           'users_firstname', 'role_name'),
                     ),
                     _buildInfoCard(
-                      'Projects',
+                      'Folders',
                       projectCount.toString(),
                       Icons.folder,
                       Colors.orange,
-                      () => _showList(context, 'Projects', projects,
+                      () => _showList(context, 'Folders', folders,
                           'project_title', 'users_firstname'),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _buildInfoCard(
                       'Instructors',
-                      '89',
+                      instructorCount.toString(),
                       FontAwesomeIcons.userPlus,
                       Colors.purple,
-                      () {},
+                      () => _showList(context, 'Instructors', instructors,
+                          'users_firstname', 'role_name'),
                     ),
                     _buildInfoCard(
-                      'School',
+                      'Schools',
                       schoolCount.toString(),
                       FontAwesomeIcons.school,
                       Colors.green,
@@ -395,20 +545,23 @@ class _DashboardsState extends State<Dashboards> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 40),
                 const Text(
                   'User Statistics',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
                 Container(
                   height: 300,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
+                        color: Colors.black.withOpacity(0.1),
                         spreadRadius: 5,
                         blurRadius: 7,
                         offset: const Offset(0, 3),
@@ -425,19 +578,8 @@ class _DashboardsState extends State<Dashboards> {
                           enabled: true,
                           touchTooltipData: BarTouchTooltipData(
                             tooltipBgColor: Colors.blueAccent,
-                            getTooltipItem:
-                                (group, groupIndex, rod, rodIndex) {
-                              String school;
-                              switch (group.x.toInt()) {
-                                case 0:
-                                  school = 'School 1';
-                                  break;
-                                case 1:
-                                  school = 'School 2';
-                                  break;
-                                default:
-                                  school = '';
-                              }
+                            getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                              String school = 'School ${group.x.toInt() + 1}';
                               return BarTooltipItem(
                                 '$school\n${rod.toY.round()}',
                                 const TextStyle(color: Colors.white),
@@ -450,34 +592,22 @@ class _DashboardsState extends State<Dashboards> {
                           bottomTitles: AxisTitles(
                             sideTitles: SideTitles(
                               showTitles: true,
-                              getTitlesWidget:
-                                  (double value, TitleMeta meta) {
-                                const style = TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
+                              getTitlesWidget: (double value, TitleMeta meta) {
+                                return Text(
+                                  'S${value.toInt() + 1}',
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
                                 );
-                                String text;
-                                switch (value.toInt()) {
-                                  case 0:
-                                    text = ' ';
-                                    break;
-                                  case 1:
-                                    text = '';
-                                    break;
-
-                                  default:
-                                    text = '';
-                                }
-                                return Text(text, style: style);
                               },
                             ),
                           ),
                           leftTitles: AxisTitles(
                             sideTitles: SideTitles(
                               showTitles: true,
-                              getTitlesWidget:
-                                  (double value, TitleMeta meta) {
+                              getTitlesWidget: (double value, TitleMeta meta) {
                                 return Text(
                                   '${value.toInt()}',
                                   style: const TextStyle(
@@ -535,14 +665,15 @@ class _DashboardsState extends State<Dashboards> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.43,
+        width: MediaQuery.of(context).size.width * 0.4,
+        height: MediaQuery.of(context).size.width * 0.4,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.black.withOpacity(0.1),
               spreadRadius: 5,
               blurRadius: 7,
               offset: const Offset(0, 3),
@@ -550,19 +681,20 @@ class _DashboardsState extends State<Dashboards> {
           ],
         ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, size: 30, color: color),
-            const SizedBox(height: 10),
+            Icon(icon, size: 28, color: color),
+            const SizedBox(height: 12),
             Text(
               title,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey[600],
+                color: Colors.grey[800],
               ),
             ),
-            const SizedBox(height: 5),
+            const SizedBox(height: 6),
             Text(
               value,
               style: TextStyle(
@@ -577,30 +709,3 @@ class _DashboardsState extends State<Dashboards> {
     );
   }
 }
-
-// class SchoolDetailPage extends StatelessWidget {
-//   final Map<String, dynamic> school;
-
-//   const SchoolDetailPage({Key? key, required this.school}) : super(key: key);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text(school['school_name'] ?? 'School Details'),
-//       ),
-//       body: Padding(
-//         padding: const EdgeInsets.all(16.0),
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             Text('School Name: ${school['school_name'] ?? 'N/A'}'),
-//             Text('Address: ${school['school_address'] ?? 'N/A'}'),
-//             Text('Country: ${school['school_country'] ?? 'N/A'}'),
-//             // Add more details as needed
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
