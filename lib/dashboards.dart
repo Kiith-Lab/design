@@ -59,7 +59,7 @@ class _DashboardsState extends State<Dashboards> {
 
       if (response.statusCode == 200) {
         final dynamic decodedResponse = json.decode(response.body);
-        final List<dynamic> fetchedFolders;
+        List<dynamic> fetchedFolders;
 
         if (decodedResponse is Map) {
           if (decodedResponse.containsKey('error')) {
@@ -292,11 +292,11 @@ class _DashboardsState extends State<Dashboards> {
                         itemCount: filteredItems.length,
                         itemBuilder: (context, index) {
                           final item = filteredItems[index];
-                          final name = item[nameKey]?.toString() ?? 'No Names';
-                          final description =
-                              item[descriptionKey]?.toString() ??
-                                  item['school_country']?.toString() ??
-                                  'No Description';
+                          final usersName = item['users_firstname'];
+                          final role = item['role_name'];
+                          final projectTitle = item['Lesson'];
+                          final schoolName = item[
+                              'school_name']; // Added this line to get the school name
                           return Card(
                             elevation: 2,
                             margin: const EdgeInsets.symmetric(vertical: 8),
@@ -308,26 +308,55 @@ class _DashboardsState extends State<Dashboards> {
                               leading: CircleAvatar(
                                 backgroundColor: Colors.teal,
                                 child: Text(
-                                  name.isNotEmpty ? name[0].toUpperCase() : 'N',
+                                  usersName?.isNotEmpty ?? false
+                                      ? usersName![0].toUpperCase()
+                                      : 'N',
                                   style: const TextStyle(color: Colors.white),
                                 ),
                               ),
                               title: Text(
-                                name,
+                                usersName ?? '',
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 18,
                                 ),
                               ),
-                              subtitle: Text(
-                                description,
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 14,
-                                ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (role != null)
+                                    Text(
+                                      role,
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  if (projectTitle != null)
+                                    Text(
+                                      projectTitle,
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  if (title != 'Instructors' &&
+                                      schoolName !=
+                                          null) // Modified this line to hide school name for Instructors
+                                    Text(
+                                      schoolName,
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                ],
                               ),
                               onTap: () {
                                 // Handle tap event
+                                if (title == 'Folders') {
+                                  _showFolderDetails(context, item);
+                                }
                               },
                             ),
                           );
@@ -351,6 +380,39 @@ class _DashboardsState extends State<Dashboards> {
           },
         );
       },
+    );
+  }
+
+  void _showFolderDetails(BuildContext context, dynamic folder) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Folder Details'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildFolderDetail('Mode', folder['Mode'] ?? 'N/A'),
+              _buildFolderDetail(
+                  'Duration', folder['Duration']?.toString() ?? 'N/A'),
+              _buildFolderDetail('Activity', folder['Activity'] ?? 'N/A'),
+              _buildFolderDetail('Lesson', folder['Lesson'] ?? 'N/A'),
+              _buildFolderDetail('Output', folder['Output'] ?? 'N/A'),
+              _buildFolderDetail(
+                  'Coach Header', folder['Instruction'] ?? 'N/A'),
+              _buildFolderDetail(
+                  'Coach Detail', folder['CoachDetail'] ?? 'N/A'),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFolderDetail(String label, String value) {
+    return ListTile(
+      title: Text(label),
+      subtitle: Text(value),
     );
   }
 
