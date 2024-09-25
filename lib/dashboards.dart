@@ -3,6 +3,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 
 void main() {
   runApp(const MaterialApp(home: Dashboard()));
@@ -189,15 +192,16 @@ class _DashboardsState extends State<Dashboards> {
                   (hideFilters || (matchesSchool && matchesDepartment));
             }).toList();
 
-            if (_sortOrder != 'all') {
-              filteredItems.sort((a, b) {
-                final aName = a[nameKey] ?? '';
-                final bName = b[nameKey] ?? '';
-                return _sortOrder == 'asc'
-                    ? aName.compareTo(bName)
-                    : bName.compareTo(aName);
-              });
-            }
+            filteredItems.sort((a, b) {
+              final aName = a[nameKey]?.toString().toLowerCase() ?? '';
+              final bName = b[nameKey]?.toString().toLowerCase() ?? '';
+              if (localSortOrder == 'asc') {
+                return aName.compareTo(bName);
+              } else if (localSortOrder == 'desc') {
+                return bName.compareTo(aName);
+              }
+              return 0;
+            });
 
             List<String> schoolNames = [
               'all',
@@ -240,51 +244,67 @@ class _DashboardsState extends State<Dashboards> {
                     TextField(
                       decoration: InputDecoration(
                         hintText: 'Search $title...',
-                        prefixIcon:
-                            const Icon(Icons.search, color: Colors.teal),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(30),
                           borderSide: BorderSide.none,
                         ),
                         filled: true,
                         fillColor: Colors.grey[200],
+                        prefixIcon:
+                            const Icon(Icons.search, color: Colors.teal),
+                        suffixIcon: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            PopupMenuButton<String>(
+                              icon: const Icon(Icons.sort, color: Colors.teal),
+                              onSelected: (String value) {
+                                setDialogState(() {
+                                  localSortOrder = value;
+                                });
+                              },
+                              itemBuilder: (BuildContext context) => [
+                                const PopupMenuItem(
+                                  value: 'all',
+                                  child: Text('All'),
+                                ),
+                                const PopupMenuItem(
+                                  value: 'asc',
+                                  child: Text('A-Z'),
+                                ),
+                                const PopupMenuItem(
+                                  value: 'desc',
+                                  child: Text('Z-A'),
+                                ),
+                              ],
+                            ),
+                            if (!hideFilters)
+                              IconButton(
+                                icon: const Icon(Icons.filter_list,
+                                    color: Colors.teal),
+                                onPressed: () => _showFilterDialog(
+                                  context,
+                                  (newSchoolFilter, newDepartmentFilter) {
+                                    setDialogState(() {
+                                      localSchoolFilter = newSchoolFilter;
+                                      localDepartmentFilter =
+                                          newDepartmentFilter;
+                                    });
+                                  },
+                                  localSchoolFilter,
+                                  localDepartmentFilter,
+                                  schoolNames,
+                                  departmentNames,
+                                  hideFilters,
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                       onChanged: (value) {
                         setDialogState(() {
                           localSearchQuery = value;
                         });
                       },
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildFilterButton(
-                          'Sort',
-                          Icons.sort,
-                          () => _showSortDialog(
-                              context, setDialogState, localSortOrder),
-                        ),
-                        if (!hideFilters)
-                          _buildFilterButton(
-                            'Filter',
-                            Icons.filter_list,
-                            () => _showFilterDialog(
-                              context,
-                              (newSchoolFilter, newDepartmentFilter) {
-                                setDialogState(() {
-                                  localSchoolFilter = newSchoolFilter;
-                                  localDepartmentFilter = newDepartmentFilter;
-                                });
-                              },
-                              localSchoolFilter,
-                              localDepartmentFilter,
-                              schoolNames,
-                              departmentNames,
-                              hideFilters,
-                            ),
-                          ),
-                      ],
                     ),
                     const SizedBox(height: 16),
                     Expanded(
@@ -295,8 +315,7 @@ class _DashboardsState extends State<Dashboards> {
                           final usersName = item['users_firstname'];
                           final role = item['role_name'];
                           final projectTitle = item['Lesson'];
-                          final schoolName = item[
-                              'school_name']; // Added this line to get the school name
+                          final schoolName = item['school_name'];
                           return Card(
                             elevation: 2,
                             margin: const EdgeInsets.symmetric(vertical: 8),
@@ -341,8 +360,7 @@ class _DashboardsState extends State<Dashboards> {
                                       ),
                                     ),
                                   if (title != 'Instructors' &&
-                                      schoolName !=
-                                          null) // Modified this line to hide school name for Instructors
+                                      schoolName != null)
                                     Text(
                                       schoolName,
                                       style: TextStyle(
@@ -353,7 +371,6 @@ class _DashboardsState extends State<Dashboards> {
                                 ],
                               ),
                               onTap: () {
-                                // Handle tap event
                                 if (title == 'Folders') {
                                   _showFolderDetails(context, item);
                                 }
@@ -402,10 +419,80 @@ class _DashboardsState extends State<Dashboards> {
                   'Coach Header', folder['Instruction'] ?? 'N/A'),
               _buildFolderDetail(
                   'Coach Detail', folder['CoachDetail'] ?? 'N/A'),
+              ElevatedButton(
+                child: const Text('Print PDF'),
+                onPressed: () => _printFolderDetailsPDF(folder),
+              ),
             ],
           ),
         );
       },
+    );
+  }
+
+  Future<void> _printFolderDetailsPDF(dynamic folder) async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text('Folder Details',
+                style:
+                    pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 20),
+            pw.Table(
+              border: pw.TableBorder.all(),
+              children: [
+                pw.TableRow(
+                  children: [
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(5),
+                      child: pw.Text('Field',
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(5),
+                      child: pw.Text('Value',
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    ),
+                  ],
+                ),
+                _buildPDFTableRow('Mode', folder['Mode'] ?? 'N/A'),
+                _buildPDFTableRow(
+                    'Duration', folder['Duration']?.toString() ?? 'N/A'),
+                _buildPDFTableRow('Activity', folder['Activity'] ?? 'N/A'),
+                _buildPDFTableRow('Lesson', folder['Lesson'] ?? 'N/A'),
+                _buildPDFTableRow('Output', folder['Output'] ?? 'N/A'),
+                _buildPDFTableRow(
+                    'Coach Header', folder['Instruction'] ?? 'N/A'),
+                _buildPDFTableRow(
+                    'Coach Detail', folder['CoachDetail'] ?? 'N/A'),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdf.save(),
+    );
+  }
+
+  pw.TableRow _buildPDFTableRow(String label, String value) {
+    return pw.TableRow(
+      children: [
+        pw.Padding(
+          padding: const pw.EdgeInsets.all(5),
+          child: pw.Text(label),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.all(5),
+          child: pw.Text(value),
+        ),
+      ],
     );
   }
 
@@ -413,58 +500,6 @@ class _DashboardsState extends State<Dashboards> {
     return ListTile(
       title: Text(label),
       subtitle: Text(value),
-    );
-  }
-
-  Widget _buildFilterButton(
-      String label, IconData icon, VoidCallback onPressed) {
-    return ElevatedButton.icon(
-      icon: Icon(icon, size: 18),
-      label: Text(label),
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.teal,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
-        ),
-      ),
-    );
-  }
-
-  void _showSortDialog(
-      BuildContext context, StateSetter setDialogState, String localSortOrder) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Sort Order'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildSortOption('All', 'all', localSortOrder, setDialogState),
-              _buildSortOption('A-Z', 'asc', localSortOrder, setDialogState),
-              _buildSortOption('Z-A', 'desc', localSortOrder, setDialogState),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildSortOption(
-      String label, String value, String currentValue, StateSetter setState) {
-    return ListTile(
-      title: Text(label),
-      leading: Radio<String>(
-        value: value,
-        groupValue: currentValue,
-        onChanged: (String? newValue) {
-          setState(() {
-            _sortOrder = newValue!;
-          });
-          Navigator.pop(context);
-        },
-      ),
     );
   }
 
