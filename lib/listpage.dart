@@ -35,20 +35,18 @@ Future<void> _fetchFolders() async {
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
-      print('API Response: $data'); // Add this line to print the entire response
+      print('API Response: $data');
 
       if (data['folders'] != null && data['folders'] is List) {
         setState(() {
           folders = List<Map<String, dynamic>>.from(data['folders'].map((item) => {
                 'folder_id': item['id'] ?? '',
-                    'project_subject_code': item['project_subject_code'] ?? '',
-                    'project_subject_description': item['project_subject_description'] ?? '',
-                    'project_title': item['title'] ?? '',
-                    'project_description': item['project_description'] ?? '',
-                    'project_start_date': item['project_start_date'] ?? '',
-                    'project_end_date': item['project_end_date'] ?? '',
-
+                'project_subject_code': item['project_subject_code'] ?? '',
+                'project_subject_description': item['project_subject_description'] ?? '',
                 'project_title': item['project_title'] ?? '',
+                'project_description': item['project_description'] ?? '',
+                'project_start_date': item['project_start_date'] ?? '',
+                'project_end_date': item['project_end_date'] ?? '',
                 'module_master_name': item['module_master_name'] ?? '',
                 'activities_details_content': item['activities_details_content'] ?? '',
                 'cards_title': item['cards_title'] ?? '',
@@ -56,8 +54,8 @@ Future<void> _fetchFolders() async {
                 'instruction_content': item['instruction_content'] ?? '',
                 'coach_detail_content': item['coach_detail_content'] ?? '',
                 'project_cardsId': item['project_cardsId'] ?? '',
-                 'cards_content': item['cards_content'] ?? '',
-                  'back_content': item['back_content'] ?? '',
+                'cards_content': item['cards_content'] ?? '',
+                'back_content': item['back_content'] ?? '',
               }).toList());
         });
         // Print the fetched details
@@ -65,13 +63,11 @@ Future<void> _fetchFolders() async {
         for (var folder in folders) {
           print('Folder ID: ${folder['folder_id']}');
           print('Project Title: ${folder['project_title']}');
-             print('Project code: ${folder['project_subject_code']}');
-                print('Project Description: ${folder['project_subject_description']}');
-                  
-                      print('project description: ${folder['project_description']}');
-                         print('Project Title: ${folder['project_title']}');
-                            print('project start: ${folder['project_start_date']}');
-                                  print('project end: ${folder['project_end_date']}');
+          print('Project code: ${folder['project_subject_code']}');
+          print('Project Description: ${folder['project_subject_description']}');
+          print('project description: ${folder['project_description']}');
+          print('project start: ${folder['project_start_date']}');
+          print('project end: ${folder['project_end_date']}');
           print('Module Master Name: ${folder['module_master_name']}');
           print('Activities Details: ${folder['activities_details_content']}');
           print('Card Title: ${folder['cards_title']}');

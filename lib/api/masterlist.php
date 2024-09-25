@@ -356,6 +356,20 @@ class Get1
     {
         $json = json_decode($json, true);
         try {
+            // Check if the project_cardsId already exists for this projectId
+            $checkSql = "SELECT COUNT(*) FROM tbl_folder WHERE projectId = :projectId AND project_cardsId = :project_cardsId";
+            $checkStmt = $this->pdo->prepare($checkSql);
+            $checkStmt->bindParam(':projectId', $json['projectId'], PDO::PARAM_INT);
+            $checkStmt->bindParam(':project_cardsId', $json['project_cardsId'], PDO::PARAM_INT);
+            $checkStmt->execute();
+            $count = $checkStmt->fetchColumn();
+
+            if ($count > 0) {
+                // If the project_cardsId already exists for this projectId, don't insert
+                return json_encode(['success' => false, 'message' => 'This card has already been added to this project.']);
+            }
+
+            // If the project_cardsId doesn't exist for this projectId, proceed with insertion
             $sql = "INSERT INTO tbl_folder(projectId, project_moduleId, activities_detailId, project_cardsId, outputId, instructionId, coach_detailsId)
             VALUES (
                 :projectId,
@@ -377,6 +391,50 @@ class Get1
             $stmt->execute();
             $lastInsertId = $this->pdo->lastInsertId();
             return json_encode(['success' => true, 'id' => $lastInsertId]);
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
+        }
+    }
+
+    function updateData($json)
+    {
+        $data = json_decode($json, true);
+        $type = $data['type'];
+        $content = $data['content'];
+        $id = $data['id'];
+
+        try {
+            switch ($type) {
+                case 'activity':
+                    $sql = "UPDATE tbl_activities_details SET activities_details_content = :content WHERE activities_details_id = :id";
+                    break;
+                case 'output':
+                    $sql = "UPDATE tbl_outputs SET outputs_content = :content WHERE outputs_id = :id";
+                    break;
+                case 'instruction':
+                    $sql = "UPDATE tbl_instruction SET instruction_content = :content WHERE instruction_id = :id";
+                    break;
+                case 'coachDetail':
+                    $sql = "UPDATE tbl_coach_detail SET coach_detail_content = :content WHERE coach_detail_id = :id";
+                    break;
+                default:
+                    return json_encode(['error' => 'Invalid update type']);
+            }
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':content', json_encode($content), PDO::PARAM_STR);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmt->execute();
+
+            if ($stmt->rowCount() > 0) {
+                return json_encode(['success' => true, 'message' => ucfirst($type) . ' updated successfully']);
+            } else {
+                return json_encode(['success' => false, 'message' => 'No changes made']);
+            }
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
             return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
@@ -483,4 +541,7 @@ switch ($operation) {
         case "addFolder":
             echo $get->addFolder($json);
             break;
+            case "updateData":
+                echo $get->updateData($json);
+                break;
 }

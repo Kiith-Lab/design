@@ -1,384 +1,217 @@
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+<?php
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
+header("Content-Type: application/json");
 
-class ListPage extends StatefulWidget {
-  @override
-  _ListPageState createState() => _ListPageState();
-}
+// Database connection (ensure this file exists and has the correct PDO object)
+include 'db_connection.php';
 
-class _ListPageState extends State<ListPage> {
-  List<Map<String, dynamic>> folders = [];
+class Update
+{
+    private $pdo;
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchFolders();
-  }
-
-  Future<void> _fetchFolders() async {
-    try {
-      final response = await http.post(
-        Uri.parse('http://localhost/design/lib/api/view.php'),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: {
-          'operation': 'getFolder',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final List<dynamic> folderData = json.decode(response.body);
-        setState(() {
-          folders = folderData
-              .map((folder) => {
-                    'id': folder['folder_id'],
-                    'name': folder['folder_name'],
-                    'creation_date': folder['folder_date'],
-                  })
-              .toList();
-        });
-      } else {
-        print('Failed to fetch folders: Server error ${response.statusCode}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to fetch folders')),
-        );
-      }
-    } catch (e) {
-      print('Error fetching folders: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred while fetching folders')),
-      );
-    }
-  }
-
-  Future<void> _createFolder() async {
-    TextEditingController nameController = TextEditingController();
-    TextEditingController dateController = TextEditingController();
-    final _formKey = GlobalKey<FormState>();
-
-    Future<void> _selectDate(BuildContext context) async {
-      final DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime(2000),
-        lastDate: DateTime(2101),
-      );
-      if (picked != null) {
-        setState(() {
-          dateController.text = DateFormat('yyyy-MM-dd').format(picked);
-        });
-      }
+    public function __construct($pdo)
+    {
+        $this->pdo = $pdo;
     }
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Create New Folder'),
-          content: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                    labelText: 'Folder Name',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.folder),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a folder name';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 16),
-                TextFormField(
-                  controller: dateController,
-                  decoration: InputDecoration(
-                    labelText: 'Creation Date',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.calendar_today),
-                  ),
-                  onTap: () {
-                    _selectDate(context);
-                  },
-                  readOnly: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please select a date';
-                    }
-                    return null;
-                  },
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (_formKey.currentState!.validate()) {
-                  String folderName = nameController.text;
-                  String creationTime = dateController.text;
-                  await _addFolder(folderName, creationTime);
-                  Navigator.of(context).pop();
+    function updateActivity($json)
+    {
+        $data = json_decode($json, true);
+        error_log("updateActivity called with data: " . print_r($data, true));
+        try {
+            $sql = "UPDATE tbl_activities_details 
+                    SET activities_details_content = :content 
+                    WHERE activities_details_id = :id";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':content', json_encode($data['activities']), PDO::PARAM_STR);
+            $stmt->bindParam(':id', $data['activityId'], PDO::PARAM_INT);
+            $stmt->execute();
+
+            if ($stmt->rowCount() > 0) {
+                return json_encode(['success' => true, 'message' => 'Activity updated successfully']);
+            } else {
+                // If no rows were updated, insert a new record
+                $insertSql = "INSERT INTO tbl_activities_details (activities_details_content, activities_details_headerId) 
+                              VALUES (:content, :headerId)";
+                $insertStmt = $this->pdo->prepare($insertSql);
+                $insertStmt->bindParam(':content', json_encode($data['activities']), PDO::PARAM_STR);
+                $insertStmt->bindParam(':headerId', $data['headerId'], PDO::PARAM_INT);
+                $insertStmt->execute();
+
+                if ($insertStmt->rowCount() > 0) {
+                    $newId = $this->pdo->lastInsertId();
+                    return json_encode(['success' => true, 'message' => 'New activity added successfully', 'id' => $newId]);
+                } else {
+                    return json_encode(['success' => false, 'error' => 'Failed to add new activity']);
                 }
-              },
-              child: Text('Create'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _addFolder(String folderName, String creationTime) async {
-    Map<String, dynamic> data = {
-      'folder_name': folderName,
-      'folder_date': creationTime,
-    };
-    try {
-      final response = await http.post(
-        Uri.parse('http://localhost/design/lib/api/add.php'),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: {
-          'operation': 'addfolder',
-          'json': jsonEncode(data),
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        if (responseData['success'] == true) {
-          print('Folder created successfully with ID: ${responseData['id']}');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Folder created successfully')),
-          );
-          await _fetchFolders(); // Refresh the folder list
-        } else {
-          print('Failed to create folder: ${responseData['error']}');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content:
-                    Text('Failed to create folder: ${responseData['error']}')),
-          );
+            }
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
         }
-      } else {
-        print('Failed to create folder: Server error ${response.statusCode}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Server error occurred')),
-        );
-      }
-    } catch (e) {
-      print('Error adding folder: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
-      );
     }
-  }
 
-  void _onFolderTap(Map<String, dynamic> folder) {
-    print('Folder tapped: ${folder['name']}');
-    if (folder['id'] != null) {
-      // Ensure folder['id'] is a String
-      String folderId = folder['id'].toString(); // Convert to String
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => FolderDetailPage(
-              folder: folder, folderId: folderId), // Pass folder ID as String
-        ),
-      );
-    } else {
-      print('Error: folder_id is null for folder: ${folder['id']}');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: folder ID is missing')),
-      );
+    function updateOutput($json)
+    {
+        $data = json_decode($json, true);
+        error_log("updateOutput called with data: " . print_r($data, true));
+        try {
+            $sql = "UPDATE tbl_outputs 
+                    SET outputs_content = :content 
+                    WHERE outputs_id = :id";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':content', json_encode($data['outputs']), PDO::PARAM_STR);
+            $stmt->bindParam(':id', $data['outputId'], PDO::PARAM_INT);
+            $stmt->execute();
+
+            if ($stmt->rowCount() > 0) {
+                return json_encode(['success' => true, 'message' => 'Output updated successfully']);
+            } else {
+                // If no rows were updated, insert a new record
+                $insertSql = "INSERT INTO tbl_outputs (outputs_content, outputs_moduleId) 
+                              VALUES (:content, :moduleId)";
+                $insertStmt = $this->pdo->prepare($insertSql);
+                $insertStmt->bindParam(':content', json_encode($data['outputs']), PDO::PARAM_STR);
+                $insertStmt->bindParam(':moduleId', $data['moduleId'], PDO::PARAM_INT);
+                $insertStmt->execute();
+
+                if ($insertStmt->rowCount() > 0) {
+                    $newId = $this->pdo->lastInsertId();
+                    return json_encode(['success' => true, 'message' => 'New output added successfully', 'id' => $newId]);
+                } else {
+                    return json_encode(['success' => false, 'error' => 'Failed to add new output']);
+                }
+            }
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
+        }
     }
-  }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('My Folders'),
-        elevation: 0,
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/empha.jpg'),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: folders.isEmpty
-            ? Center(
-                child: Text('No folders available',
-                    style: TextStyle(color: Colors.white)))
-            : ListView.builder(
-                itemCount: folders.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    elevation: 2,
-                    margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    child: ListTile(
-                      leading: Icon(Icons.folder, color: Colors.amber),
-                      title: Text(
-                        folders[index]['name'],
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(
-                        'Created on: ${folders[index]['creation_date']}',
-                        style: TextStyle(fontSize: 12),
-                      ),
-                      trailing: Icon(Icons.arrow_forward_ios, size: 16),
-                      onTap: () => _onFolderTap(folders[index]),
-                    ),
-                  );
-                },
-              ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _createFolder,
-        child: Icon(Icons.create_new_folder),
-        tooltip: 'Create New Folder',
-      ),
-    );
-  }
+    function updateInstruction($json)
+    {
+        $data = json_decode($json, true);
+        error_log("updateInstruction called with data: " . print_r($data, true));
+        try {
+            $sql = "UPDATE tbl_instruction 
+                    SET instruction_content = :content 
+                    WHERE instruction_id = :id";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':content', json_encode($data['instructions']), PDO::PARAM_STR);
+            $stmt->bindParam(':id', $data['instructionId'], PDO::PARAM_INT);
+            $stmt->execute();
+
+            if ($stmt->rowCount() > 0) {
+                return json_encode(['success' => true, 'message' => 'Instruction updated successfully']);
+            } else {
+                // If no rows were updated, insert a new record
+                $insertSql = "INSERT INTO tbl_instruction (instruction_content, instruction_modulesId) 
+                              VALUES (:content, :moduleId)";
+                $insertStmt = $this->pdo->prepare($insertSql);
+                $insertStmt->bindParam(':content', json_encode($data['instructions']), PDO::PARAM_STR);
+                $insertStmt->bindParam(':moduleId', $data['moduleId'], PDO::PARAM_INT);
+                $insertStmt->execute();
+
+                if ($insertStmt->rowCount() > 0) {
+                    $newId = $this->pdo->lastInsertId();
+                    return json_encode(['success' => true, 'message' => 'New instruction added successfully', 'id' => $newId]);
+                } else {
+                    return json_encode(['success' => false, 'error' => 'Failed to add new instruction']);
+                }
+            }
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
+        }
+    }
+
+    function updateCoachDetail($json)
+    {
+        $data = json_decode($json, true);
+        error_log("updateCoachDetail called with data: " . print_r($data, true));
+        try {
+            $sql = "UPDATE tbl_coach_detail 
+                    SET coach_detail_content = :content 
+                    WHERE coach_detail_id = :id";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':content', json_encode($data['coachDetails']), PDO::PARAM_STR);
+            $stmt->bindParam(':id', $data['coachDetailId'], PDO::PARAM_INT);
+            $stmt->execute();
+
+            if ($stmt->rowCount() > 0) {
+                return json_encode(['success' => true, 'message' => 'Coach detail updated successfully']);
+            } else {
+                // If no rows were updated, insert a new record
+                $insertSql = "INSERT INTO tbl_coach_detail (coach_detail_content, coach_detail_coachheaderId) 
+                              VALUES (:content, :headerId)";
+                $insertStmt = $this->pdo->prepare($insertSql);
+                $insertStmt->bindParam(':content', json_encode($data['coachDetails']), PDO::PARAM_STR);
+                $insertStmt->bindParam(':headerId', $data['coachHeaderId'], PDO::PARAM_INT);
+                $insertStmt->execute();
+
+                if ($insertStmt->rowCount() > 0) {
+                    $newId = $this->pdo->lastInsertId();
+                    return json_encode(['success' => true, 'message' => 'New coach detail added successfully', 'id' => $newId]);
+                } else {
+                    return json_encode(['success' => false, 'error' => 'Failed to add new coach detail']);
+                }
+            }
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
+        }
+    }
 }
 
-class FolderDetailPage extends StatefulWidget {
-  final Map<String, dynamic> folder;
-  final String folderId; // Add folderId parameter
-
-  const FolderDetailPage(
-      {required this.folder, required this.folderId}); // Update constructor
-
-  @override
-  _FolderDetailPageState createState() => _FolderDetailPageState();
+// Handle preflight requests for CORS (for OPTIONS request)
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    http_response_code(200);
+    exit();
 }
 
-class _FolderDetailPageState extends State<FolderDetailPage> {
-  List<Map<String, dynamic>> cardLists = [];
+// Instantiate the Update class with the database connection
+$update = new Update($pdo);
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchCardLists();
-  }
+$json = isset($_POST['json']) ? $_POST['json'] : '';
+// Determine the request method and check for the operation
+$operation = '';
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $operation = isset($_POST['operation']) ? $_POST['operation'] : '';
+} else {
+    echo json_encode(['error' => 'Invalid request method']);
+    exit;
+}
 
-  Future<void> _fetchCardLists() async {
-    try {
-      final folderId = widget.folder['id'].toString();
-      print('Fetching card lists for folder ID: $folderId');
-
-      final response = await http.post(
-        Uri.parse('http://localhost/design/lib/api/add.php'),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: {
-          'operation': 'getMyList',
-          'folderId': folderId,
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final String responseBody = response.body.trim();
-        if (responseBody.startsWith('[') && responseBody.endsWith(']')) {
-          final List<dynamic> cardListData = json.decode(responseBody);
-          if (cardListData.isNotEmpty) {
-            setState(() {
-              cardLists = List<Map<String, dynamic>>.from(cardListData);
-            });
-          } else {
-            print('No card lists found for folder ID: $folderId');
-          }
-        } else {
-          print('Invalid response format: $responseBody');
-          throw Exception('Invalid response format');
-        }
-      } else {
-        print(
-            'Failed to fetch card lists for folder ID $folderId: Server error ${response.statusCode}');
-        throw Exception('Server error ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error fetching card lists: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('An error occurred while fetching card lists: $e')),
-      );
-    }
-  }
-
-  void _addLesson(BuildContext context) {
-    // TODO: Implement lesson addition logic
-    print('Add lesson tapped for folder: ${widget.folder['name']}');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Add lesson functionality to be implemented')),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.folder['name']),
-        elevation: 0,
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/background.jpg'),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: cardLists.isEmpty
-            ? Center(
-                child: Text(
-                  'No lessons available for ${widget.folder['name']}',
-                  style: TextStyle(color: Colors.white),
-                ),
-              )
-            : ListView.builder(
-                itemCount: cardLists.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    elevation: 2,
-                    margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    child: ListTile(
-                      title: Text(
-                        cardLists[index]['cards_title'] ?? 'Untitled',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(
-                        cardLists[index]['back_cards_header_title	'] ??
-                            'No content',
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      onTap: () {
-                        // TODO: Implement navigation to lesson detail page
-                        print(
-                            'Lesson tapped: ${cardLists[index]['list_cards_header_title']}');
-                      },
-                    ),
-                  );
-                },
-              ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _addLesson(context),
-        child: Icon(Icons.add),
-        tooltip: 'Add Lesson',
-      ),
-    );
-  }
+// Handle different operations based on the request
+switch ($operation) {
+    case "updateActivity":
+        echo $update->updateActivity($json);
+        break;
+    case "updateOutput":
+        echo $update->updateOutput($json);
+        break;
+    case "updateInstruction":
+        echo $update->updateInstruction($json);
+        break;
+    case "updateCoachDetail":
+        echo $update->updateCoachDetail($json);
+        break;
+    default:
+        echo json_encode(['error' => 'Invalid operation']);
+        break;
+}
+// End of Selection
