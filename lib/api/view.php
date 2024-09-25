@@ -427,7 +427,8 @@ class Get
                 GROUP BY tbl_front_cards.cards_id, 
                 tbl_front_cards.cards_title, 
                 tbl_front_cards.cards_content,
-                tbl_front_cards.cards_masterId;";
+                tbl_front_cards.cards_masterId
+                ORDER BY tbl_front_cards.cards_title;";
 
             $stmt = $this->pdo->prepare($sql);
             $stmt->bindParam(':modeId', $modeId, PDO::PARAM_INT);

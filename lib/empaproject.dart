@@ -17,7 +17,6 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   final TextEditingController durationController = TextEditingController();
   final TextEditingController outputsController = TextEditingController();
   final TextEditingController instructionsController = TextEditingController();
-  final TextEditingController coachHeaderController = TextEditingController();
   final TextEditingController coachDetailsController = TextEditingController();
   String? selectedLesson;
   String? selectedMode;
@@ -420,62 +419,14 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
   }
 
-  Future<void> addCoachHeader() async {
-    if (lastInsertedModeId == null) {
-      print('No mode ID available');
-      return;
-    }
-
-    try {
-      String url = "http://localhost/design/lib/api/masterlist.php";
-      Map<String, String> requestBody = {
-        'operation': 'addCoachHeader',
-        'json': jsonEncode({
-          'coach_header_moduleId': lastInsertedModeId.toString(),
-          'coach_header_duration': coachHeaderController.text,
-        }),
-      };
-
-      http.Response response = await http
-          .post(
-            Uri.parse(url),
-            body: requestBody,
-          )
-          .timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        var decodedData = jsonDecode(response.body);
-        if (decodedData['success'] == true) {
-          print('Coach Header added successfully');
-          setState(() {
-            lastInsertedCoachHeaderId = int.parse(decodedData['id']);
-            currentStep++;
-            allAddedData.add(
-                {'type': 'Coach Header', 'value': coachHeaderController.text});
-          });
-        } else {
-          print('Failed to add coach header: ${decodedData['error']}');
-        }
-      } else {
-        throw Exception('Failed to add coach header: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('Error adding coach header: $e');
-    }
-  }
 
   Future<void> addCoachDetails() async {
-    if (lastInsertedCoachHeaderId == null) {
-      print('No coach header ID available');
-      return;
-    }
-
     try {
       String url = "http://localhost/design/lib/api/masterlist.php";
       Map<String, String> requestBody = {
         'operation': 'addCoachDetails',
         'json': jsonEncode({
-          'coach_detail_coachheaderId': lastInsertedCoachHeaderId.toString(),
+          'coach_detail_coachheaderId': '1',
           'coach_detail_content': jsonEncode(addedCoachDetails),
           'coach_detail_renarks': 'Coach Details',
         }),
@@ -502,7 +453,6 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
             lastInsertedCardId!,
             lastInsertedOutputId!,
             lastInsertedInstructionId!,
-            lastInsertedCoachHeaderId!,
             coachDetailsId,
           ];
 
@@ -554,7 +504,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   Future<void> addToFolder() async {
     try {
       // Ensure insertedIds is populated before using it
-      if (insertedIds.length < 8) {
+      if (insertedIds.length < 7) {
         print(
             'Error: Not all required IDs are available. Current IDs: ${insertedIds.join(', ')}');
         return;
@@ -570,8 +520,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           'project_cardsId': insertedIds[3].toString(),
           'outputId': insertedIds[4].toString(),
           'instructionId': insertedIds[5].toString(),
-          'coach_headerId': insertedIds[6].toString(),
-          'coach_detailsId': insertedIds[7].toString(),
+          'coach_detailsId': insertedIds[6].toString(),
         }),
       };
 
@@ -582,8 +531,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       print('project_cardsId: ${insertedIds[3]}');
       print('outputId: ${insertedIds[4]}');
       print('instructionId: ${insertedIds[5]}');
-      print('coach_headerId: ${insertedIds[6]}');
-      print('coach_detailsId: ${insertedIds[7]}');
+      print('coach_detailsId: ${insertedIds[6]}');
 
       http.Response response = await http
           .post(
@@ -752,7 +700,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                       } else if (currentStep == 5) {
                         addInstruction();
                       } else if (currentStep == 6) {
-                        addCoachHeader();
+                        addCoachDetails();
                       }
                     } else {
                       // Handle submission here
@@ -895,7 +843,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       case 5:
         return _buildInstructionsStep();
       case 6:
-        return _buildCoachHeaderStep();
+        return _buildCoachDetailsStep();
       case 7:
         return _buildCoachDetailsStep();
       default:
@@ -1303,29 +1251,6 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       ),
     );
   }
-
-  Widget _buildCoachHeaderStep() {
-    return _buildStep(
-      title: 'Coach Header',
-      content: TextField(
-        controller: coachHeaderController,
-        decoration: InputDecoration(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10.0),
-            borderSide: BorderSide(color: Colors.green.shade600),
-          ),
-          labelText: 'Enter Coach Header',
-          labelStyle: TextStyle(color: Colors.green.shade600),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.green.shade600),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-        ),
-        maxLines: 3,
-      ),
-    );
-  }
-
   Widget _buildCoachDetailsStep() {
     return _buildStep(
       title: 'Coach Details',

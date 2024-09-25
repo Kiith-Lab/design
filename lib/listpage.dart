@@ -57,7 +57,7 @@ Future<void> _fetchFolders() async {
                 'coach_detail_content': item['coach_detail_content'] ?? '',
                 'project_cardsId': item['project_cardsId'] ?? '',
                  'cards_content': item['cards_content'] ?? '',
-                                  'back_content': item['back_content'] ?? '',
+                  'back_content': item['back_content'] ?? '',
               }).toList());
         });
         // Print the fetched details

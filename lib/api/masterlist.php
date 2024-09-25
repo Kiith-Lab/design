@@ -107,38 +107,20 @@ class Get1
     function addMode($json)
     {
         $json = json_decode($json, true);
+        error_log("addMode called with data: " . print_r($json, true));
         try {
-            // Check if the mode already exists
-            $checkSql = "SELECT project_modules_id FROM tbl_project_modules WHERE project_modules_projectId = :project_modules_projectId AND project_modules_masterId = :project_modules_masterId";
-            $checkStmt = $this->pdo->prepare($checkSql);
-            $checkStmt->bindParam(':project_modules_projectId', $json['project_modules_projectId'], PDO::PARAM_STR);
-            $checkStmt->bindParam(':project_modules_masterId', $json['project_modules_masterId'], PDO::PARAM_STR);
-            $checkStmt->execute();
-            $existingMode = $checkStmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($existingMode) {
-                // Mode already exists, update it
-                $sql = "UPDATE tbl_project_modules SET project_modules_masterId = :project_modules_masterId WHERE project_modules_id = :project_modules_id";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->bindParam(':project_modules_masterId', $json['project_modules_masterId'], PDO::PARAM_STR);
-                $stmt->bindParam(':project_modules_id', $existingMode['project_modules_id'], PDO::PARAM_INT);
-                $stmt->execute();
-                return json_encode(['success' => true, 'id' => $existingMode['project_modules_id']]);
-            } else {
-                // Mode does not exist, insert it
-                $sql = "INSERT INTO tbl_project_modules (
-                project_modules_projectId,
-                project_modules_masterId	
-                ) VALUES (
-                :project_modules_projectId,
-                :project_modules_masterId)";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->bindParam(':project_modules_projectId', $json['project_modules_projectId'], PDO::PARAM_STR);
-                $stmt->bindParam(':project_modules_masterId', $json['project_modules_masterId'], PDO::PARAM_STR);
-                $stmt->execute();
-                $lastInsertId = $this->pdo->lastInsertId();
-                return json_encode(['success' => true, 'id' => $lastInsertId]);
-            }
+            $sql = "INSERT INTO tbl_project_modules (
+            project_modules_projectId,
+            project_modules_masterId	
+            ) VALUES (
+            :project_modules_projectId,
+            :project_modules_masterId)";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':project_modules_projectId', $json['project_modules_projectId'], PDO::PARAM_STR);
+            $stmt->bindParam(':project_modules_masterId', $json['project_modules_masterId'], PDO::PARAM_STR);
+            $stmt->execute();
+            $lastInsertId = $this->pdo->lastInsertId();
+            return json_encode(['success' => true, 'id' => $lastInsertId]);
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
             return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
@@ -151,37 +133,20 @@ class Get1
     function addDuration($json)
     {
         $json = json_decode($json, true);
+        error_log("addDuration called with data: " . print_r($json, true));
         try {
-            // Check if the duration already exists
-            $checkSql = "SELECT activities_header_id FROM tbl_activities_header WHERE activities_header_modulesId = :activities_header_modulesId";
-            $checkStmt = $this->pdo->prepare($checkSql);
-            $checkStmt->bindParam(':activities_header_modulesId', $json['activities_header_modulesId'], PDO::PARAM_STR);
-            $checkStmt->execute();
-            $existingDuration = $checkStmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($existingDuration) {
-                // Duration already exists, update it
-                $sql = "UPDATE tbl_activities_header SET activities_header_duration = :activities_header_duration WHERE activities_header_id = :activities_header_id";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->bindParam(':activities_header_duration', $json['activities_header_duration'], PDO::PARAM_STR);
-                $stmt->bindParam(':activities_header_id', $existingDuration['activities_header_id'], PDO::PARAM_INT);
-                $stmt->execute();
-                return json_encode(['success' => true, 'id' => $existingDuration['activities_header_id']]);
-            } else {
-                // Duration does not exist, insert it
-                $sql = "INSERT INTO tbl_activities_header (
-                activities_header_modulesId,
-                activities_header_duration		
-                ) VALUES (
-                :activities_header_modulesId,
-                :activities_header_duration)";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->bindParam(':activities_header_modulesId', $json['activities_header_modulesId'], PDO::PARAM_STR);
-                $stmt->bindParam(':activities_header_duration', $json['activities_header_duration'], PDO::PARAM_STR);
-                $stmt->execute();
-                $lastInsertId = $this->pdo->lastInsertId();
-                return json_encode(['success' => true, 'id' => $lastInsertId]);
-            }
+            $sql = "INSERT INTO tbl_activities_header (
+            activities_header_modulesId,
+            activities_header_duration		
+            ) VALUES (
+            :activities_header_modulesId,
+            :activities_header_duration)";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':activities_header_modulesId', $json['activities_header_modulesId'], PDO::PARAM_STR);
+            $stmt->bindParam(':activities_header_duration', $json['activities_header_duration'], PDO::PARAM_STR);
+            $stmt->execute();
+            $lastInsertId = $this->pdo->lastInsertId();
+            return json_encode(['success' => true, 'id' => $lastInsertId]);
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
             return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
@@ -195,48 +160,29 @@ class Get1
     {
         $json = json_decode($json, true);
         try {
-            // Check if the activity already exists
-            $checkSql = "SELECT activities_details_id FROM tbl_activities_details WHERE activities_details_headerId = :activities_details_headerId AND activities_details_content = :activities_details_content";
-            $checkStmt = $this->pdo->prepare($checkSql);
-            $checkStmt->bindParam(':activities_details_headerId', $json['activities_details_headerId'], PDO::PARAM_STR);
-            $checkStmt->bindParam(':activities_details_content', $json['activities_details_content'], PDO::PARAM_STR);
-            $checkStmt->execute();
-            $existingActivity = $checkStmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($existingActivity) {
-                // Activity already exists, update it
-                $sql = "UPDATE tbl_activities_details SET activities_details_remarks = :activities_details_remarks WHERE activities_details_id = :activities_details_id";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->bindParam(':activities_details_remarks', $json['activities_details_remarks'], PDO::PARAM_STR);
-                $stmt->bindParam(':activities_details_id', $existingActivity['activities_details_id'], PDO::PARAM_INT);
-                $stmt->execute();
-                return json_encode(['success' => true, 'id' => $existingActivity['activities_details_id']]);
-            } else {
-                // Activity does not exist, insert it
-                $sql = "INSERT INTO tbl_activities_details (
-                activities_details_remarks,
-                activities_details_content,
-                activities_details_headerId	
-                ) VALUES (
-                :activities_details_remarks,
-                :activities_details_content,
-                :activities_details_headerId)";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->bindParam(':activities_details_remarks', $json['activities_details_remarks'], PDO::PARAM_STR);
-                $stmt->bindParam(':activities_details_content', $json['activities_details_content'], PDO::PARAM_STR);
-                $stmt->bindParam(':activities_details_headerId', $json['activities_details_headerId'], PDO::PARAM_STR);
-                $stmt->execute();
-                $lastInsertId = $this->pdo->lastInsertId();
-                
-                // Fetch the newly inserted activity
-                $selectSql = "SELECT * FROM tbl_activities_details WHERE activities_details_id = :id";
-                $selectStmt = $this->pdo->prepare($selectSql);
-                $selectStmt->bindParam(':id', $lastInsertId, PDO::PARAM_INT);
-                $selectStmt->execute();
-                $activity = $selectStmt->fetch(PDO::FETCH_ASSOC);
-                
-                return json_encode(['success' => true, 'id' => $lastInsertId, 'activity' => $activity]);
-            }
+            $sql = "INSERT INTO tbl_activities_details (
+            activities_details_remarks,
+            activities_details_content,
+            activities_details_headerId	
+            ) VALUES (
+            :activities_details_remarks,
+            :activities_details_content,
+            :activities_details_headerId)";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':activities_details_remarks', $json['activities_details_remarks'], PDO::PARAM_STR);
+            $stmt->bindParam(':activities_details_content', $json['activities_details_content'], PDO::PARAM_STR);
+            $stmt->bindParam(':activities_details_headerId', $json['activities_details_headerId'], PDO::PARAM_STR);
+            $stmt->execute();
+            $lastInsertId = $this->pdo->lastInsertId();
+            
+            // Fetch the newly inserted activity
+            $selectSql = "SELECT * FROM tbl_activities_details WHERE activities_details_id = :id";
+            $selectStmt = $this->pdo->prepare($selectSql);
+            $selectStmt->bindParam(':id', $lastInsertId, PDO::PARAM_INT);
+            $selectStmt->execute();
+            $activity = $selectStmt->fetch(PDO::FETCH_ASSOC);
+            
+            return json_encode(['success' => true, 'id' => $lastInsertId, 'activity' => $activity]);
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
             return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
@@ -250,48 +196,29 @@ class Get1
     {
         $json = json_decode($json, true);
         try {
-            // Check if the card already exists
-            $checkSql = "SELECT project_cards_id FROM tbl_project_cards WHERE project_cards_modulesId = :project_cards_modulesId AND project_cards_cardId = :project_cards_cardId";
-            $checkStmt = $this->pdo->prepare($checkSql);
-            $checkStmt->bindParam(':project_cards_modulesId', $json['project_cards_modulesId'], PDO::PARAM_STR);
-            $checkStmt->bindParam(':project_cards_cardId', $json['project_cards_cardId'], PDO::PARAM_STR);
-            $checkStmt->execute();
-            $existingCard = $checkStmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($existingCard) {
-                // Card already exists, update it
-                $sql = "UPDATE tbl_project_cards SET project_cards_remarks = :project_cards_remarks WHERE project_cards_id = :project_cards_id";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->bindParam(':project_cards_remarks', $json['project_cards_remarks'], PDO::PARAM_STR);
-                $stmt->bindParam(':project_cards_id', $existingCard['project_cards_id'], PDO::PARAM_INT);
-                $stmt->execute();
-                return json_encode(['success' => true, 'id' => $existingCard['project_cards_id']]);
-            } else {
-                // Card does not exist, insert it
-                $sql = "INSERT INTO tbl_project_cards (
-                project_cards_remarks,
-                project_cards_modulesId,
-                project_cards_cardId
-                ) VALUES (
-                :project_cards_remarks,
-                :project_cards_modulesId,
-                :project_cards_cardId)";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->bindParam(':project_cards_remarks', $json['project_cards_remarks'], PDO::PARAM_STR);
-                $stmt->bindParam(':project_cards_modulesId', $json['project_cards_modulesId'], PDO::PARAM_STR);
-                $stmt->bindParam(':project_cards_cardId', $json['project_cards_cardId'], PDO::PARAM_STR);
-                $stmt->execute();
-                $lastInsertId = $this->pdo->lastInsertId();
-                
-                // Fetch the newly inserted card
-                $selectSql = "SELECT * FROM tbl_project_cards WHERE project_cards_id = :id";
-                $selectStmt = $this->pdo->prepare($selectSql);
-                $selectStmt->bindParam(':id', $lastInsertId, PDO::PARAM_INT);
-                $selectStmt->execute();
-                $card = $selectStmt->fetch(PDO::FETCH_ASSOC);
-                
-                return json_encode(['success' => true, 'id' => $lastInsertId, 'card' => $card]);
-            }
+            $sql = "INSERT INTO tbl_project_cards (
+            project_cards_remarks,
+            project_cards_modulesId,
+            project_cards_cardId
+            ) VALUES (
+            :project_cards_remarks,
+            :project_cards_modulesId,
+            :project_cards_cardId)";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':project_cards_remarks', $json['project_cards_remarks'], PDO::PARAM_STR);
+            $stmt->bindParam(':project_cards_modulesId', $json['project_cards_modulesId'], PDO::PARAM_STR);
+            $stmt->bindParam(':project_cards_cardId', $json['project_cards_cardId'], PDO::PARAM_STR);
+            $stmt->execute();
+            $lastInsertId = $this->pdo->lastInsertId();
+            
+            // Fetch the newly inserted card
+            $selectSql = "SELECT * FROM tbl_project_cards WHERE project_cards_id = :id";
+            $selectStmt = $this->pdo->prepare($selectSql);
+            $selectStmt->bindParam(':id', $lastInsertId, PDO::PARAM_INT);
+            $selectStmt->execute();
+            $card = $selectStmt->fetch(PDO::FETCH_ASSOC);
+            
+            return json_encode(['success' => true, 'id' => $lastInsertId, 'card' => $card]);
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
             return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
@@ -305,48 +232,29 @@ class Get1
     {
         $json = json_decode($json, true);
         try {
-            // Check if the output already exists
-            $checkSql = "SELECT outputs_id FROM tbl_outputs WHERE outputs_moduleId = :outputs_moduleId AND outputs_content = :outputs_content";
-            $checkStmt = $this->pdo->prepare($checkSql);
-            $checkStmt->bindParam(':outputs_moduleId', $json['outputs_moduleId'], PDO::PARAM_STR);
-            $checkStmt->bindParam(':outputs_content', $json['outputs_content'], PDO::PARAM_STR);
-            $checkStmt->execute();
-            $existingOutput = $checkStmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($existingOutput) {
-                // Output already exists, update it
-                $sql = "UPDATE tbl_outputs SET outputs_remarks = :outputs_remarks WHERE outputs_id = :outputs_id";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->bindParam(':outputs_remarks', $json['outputs_remarks'], PDO::PARAM_STR);
-                $stmt->bindParam(':outputs_id', $existingOutput['outputs_id'], PDO::PARAM_INT);
-                $stmt->execute();
-                return json_encode(['success' => true, 'id' => $existingOutput['outputs_id']]);
-            } else {
-                // Output does not exist, insert it
-                $sql = "INSERT INTO tbl_outputs (
-                outputs_moduleId,
-                outputs_remarks,
-                outputs_content
-                ) VALUES (
-                :outputs_moduleId,
-                :outputs_remarks,
-                :outputs_content)";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->bindParam(':outputs_moduleId', $json['outputs_moduleId'], PDO::PARAM_STR);
-                $stmt->bindParam(':outputs_remarks', $json['outputs_remarks'], PDO::PARAM_STR);
-                $stmt->bindParam(':outputs_content', $json['outputs_content'], PDO::PARAM_STR);
-                $stmt->execute();
-                $lastInsertId = $this->pdo->lastInsertId();
-                
-                // Fetch the newly inserted output
-                $selectSql = "SELECT * FROM tbl_outputs WHERE outputs_id = :id";
-                $selectStmt = $this->pdo->prepare($selectSql);
-                $selectStmt->bindParam(':id', $lastInsertId, PDO::PARAM_INT);
-                $selectStmt->execute();
-                $output = $selectStmt->fetch(PDO::FETCH_ASSOC);
-                
-                return json_encode(['success' => true, 'id' => $lastInsertId, 'output' => $output]);
-            }
+            $sql = "INSERT INTO tbl_outputs (
+            outputs_moduleId,
+            outputs_remarks,
+            outputs_content
+            ) VALUES (
+            :outputs_moduleId,
+            :outputs_remarks,
+            :outputs_content)";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':outputs_moduleId', $json['outputs_moduleId'], PDO::PARAM_STR);
+            $stmt->bindParam(':outputs_remarks', $json['outputs_remarks'], PDO::PARAM_STR);
+            $stmt->bindParam(':outputs_content', $json['outputs_content'], PDO::PARAM_STR);
+            $stmt->execute();
+            $lastInsertId = $this->pdo->lastInsertId();
+            
+            // Fetch the newly inserted output
+            $selectSql = "SELECT * FROM tbl_outputs WHERE outputs_id = :id";
+            $selectStmt = $this->pdo->prepare($selectSql);
+            $selectStmt->bindParam(':id', $lastInsertId, PDO::PARAM_INT);
+            $selectStmt->execute();
+            $output = $selectStmt->fetch(PDO::FETCH_ASSOC);
+            
+            return json_encode(['success' => true, 'id' => $lastInsertId, 'output' => $output]);
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
             return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
@@ -360,48 +268,29 @@ class Get1
     {
         $json = json_decode($json, true);
         try {
-            // Check if the instruction already exists
-            $checkSql = "SELECT instruction_id FROM tbl_instruction WHERE instruction_modulesId = :instruction_modulesId AND instruction_content = :instruction_content";
-            $checkStmt = $this->pdo->prepare($checkSql);
-            $checkStmt->bindParam(':instruction_modulesId', $json['instruction_modulesId'], PDO::PARAM_STR);
-            $checkStmt->bindParam(':instruction_content', $json['instruction_content'], PDO::PARAM_STR);
-            $checkStmt->execute();
-            $existingInstruction = $checkStmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($existingInstruction) {
-                // Instruction already exists, update it
-                $sql = "UPDATE tbl_instruction SET instruction_remarks = :instruction_remarks WHERE instruction_id = :instruction_id";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->bindParam(':instruction_remarks', $json['instruction_remarks'], PDO::PARAM_STR);
-                $stmt->bindParam(':instruction_id', $existingInstruction['instruction_id'], PDO::PARAM_INT);
-                $stmt->execute();
-                return json_encode(['success' => true, 'id' => $existingInstruction['instruction_id']]);
-            } else {
-                // Instruction does not exist, insert it
-                $sql = "INSERT INTO tbl_instruction (	
-                instruction_remarks,
-                instruction_modulesId,
-                instruction_content
-                ) VALUES (
-                :instruction_remarks,
-                :instruction_modulesId,
-                :instruction_content)";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->bindParam(':instruction_remarks', $json['instruction_remarks'], PDO::PARAM_STR);
-                $stmt->bindParam(':instruction_modulesId', $json['instruction_modulesId'], PDO::PARAM_STR);
-                $stmt->bindParam(':instruction_content', $json['instruction_content'], PDO::PARAM_STR);
-                $stmt->execute();
-                $lastInsertId = $this->pdo->lastInsertId();
-                
-                // Fetch the newly inserted instruction
-                $selectSql = "SELECT * FROM tbl_instruction WHERE instruction_id = :id";
-                $selectStmt = $this->pdo->prepare($selectSql);
-                $selectStmt->bindParam(':id', $lastInsertId, PDO::PARAM_INT);
-                $selectStmt->execute();
-                $instruction = $selectStmt->fetch(PDO::FETCH_ASSOC);
-                
-                return json_encode(['success' => true, 'id' => $lastInsertId, 'instruction' => $instruction]);
-            }
+            $sql = "INSERT INTO tbl_instruction (	
+            instruction_remarks,
+            instruction_modulesId,
+            instruction_content
+            ) VALUES (
+            :instruction_remarks,
+            :instruction_modulesId,
+            :instruction_content)";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':instruction_remarks', $json['instruction_remarks'], PDO::PARAM_STR);
+            $stmt->bindParam(':instruction_modulesId', $json['instruction_modulesId'], PDO::PARAM_STR);
+            $stmt->bindParam(':instruction_content', $json['instruction_content'], PDO::PARAM_STR);
+            $stmt->execute();
+            $lastInsertId = $this->pdo->lastInsertId();
+            
+            // Fetch the newly inserted instruction
+            $selectSql = "SELECT * FROM tbl_instruction WHERE instruction_id = :id";
+            $selectStmt = $this->pdo->prepare($selectSql);
+            $selectStmt->bindParam(':id', $lastInsertId, PDO::PARAM_INT);
+            $selectStmt->execute();
+            $instruction = $selectStmt->fetch(PDO::FETCH_ASSOC);
+            
+            return json_encode(['success' => true, 'id' => $lastInsertId, 'instruction' => $instruction]);
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
             return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
@@ -415,36 +304,18 @@ class Get1
     {
         $json = json_decode($json, true);
         try {
-            // Check if the coach header already exists
-            $checkSql = "SELECT coach_header_id FROM tbl_coach_header WHERE coach_header_moduleId = :coach_header_moduleId";
-            $checkStmt = $this->pdo->prepare($checkSql);
-            $checkStmt->bindParam(':coach_header_moduleId', $json['coach_header_moduleId'], PDO::PARAM_STR);
-            $checkStmt->execute();
-            $existingCoachHeader = $checkStmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($existingCoachHeader) {
-                // Coach header already exists, update it
-                $sql = "UPDATE tbl_coach_header SET coach_header_duration = :coach_header_duration WHERE coach_header_id = :coach_header_id";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->bindParam(':coach_header_duration', $json['coach_header_duration'], PDO::PARAM_STR);
-                $stmt->bindParam(':coach_header_id', $existingCoachHeader['coach_header_id'], PDO::PARAM_INT);
-                $stmt->execute();
-                return json_encode(['success' => true, 'id' => $existingCoachHeader['coach_header_id']]);
-            } else {
-                // Coach header does not exist, insert it
-                $sql = "INSERT INTO tbl_coach_header (	
-                coach_header_duration,
-                coach_header_moduleId
-                ) VALUES (
-                :coach_header_duration,
-                :coach_header_moduleId)";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->bindParam(':coach_header_duration', $json['coach_header_duration'], PDO::PARAM_STR);
-                $stmt->bindParam(':coach_header_moduleId', $json['coach_header_moduleId'], PDO::PARAM_STR);
-                $stmt->execute();
-                $lastInsertId = $this->pdo->lastInsertId();
-                return json_encode(['success' => true, 'id' => $lastInsertId]);
-            }
+            $sql = "INSERT INTO tbl_coach_header (	
+            coach_header_duration,
+            coach_header_moduleId
+            ) VALUES (
+            :coach_header_duration,
+            :coach_header_moduleId)";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':coach_header_duration', $json['coach_header_duration'], PDO::PARAM_STR);
+            $stmt->bindParam(':coach_header_moduleId', $json['coach_header_moduleId'], PDO::PARAM_STR);
+            $stmt->execute();
+            $lastInsertId = $this->pdo->lastInsertId();
+            return json_encode(['success' => true, 'id' => $lastInsertId]);
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
             return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
@@ -458,40 +329,21 @@ class Get1
     {
         $json = json_decode($json, true);
         try {
-            // Check if the coach details already exist
-            $checkSql = "SELECT coach_detail_id FROM tbl_coach_detail WHERE coach_detail_coachheaderId = :coach_detail_coachheaderId AND coach_detail_content = :coach_detail_content";
-            $checkStmt = $this->pdo->prepare($checkSql);
-            $checkStmt->bindParam(':coach_detail_coachheaderId', $json['coach_detail_coachheaderId'], PDO::PARAM_STR);
-            $checkStmt->bindParam(':coach_detail_content', $json['coach_detail_content'], PDO::PARAM_STR);
-            $checkStmt->execute();
-            $existingCoachDetails = $checkStmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($existingCoachDetails) {
-                // Coach details already exist, update them
-                $sql = "UPDATE tbl_coach_detail SET coach_detail_renarks = :coach_detail_renarks WHERE coach_detail_id = :coach_detail_id";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->bindParam(':coach_detail_renarks', $json['coach_detail_renarks'], PDO::PARAM_STR);
-                $stmt->bindParam(':coach_detail_id', $existingCoachDetails['coach_detail_id'], PDO::PARAM_INT);
-                $stmt->execute();
-                return json_encode(['success' => true, 'id' => $existingCoachDetails['coach_detail_id']]);
-            } else {
-                // Coach details do not exist, insert them
-                $sql = "INSERT INTO tbl_coach_detail (	
-                coach_detail_coachheaderId,
-                coach_detail_content,
-                coach_detail_renarks	
-                ) VALUES (
-                :coach_detail_coachheaderId,	
-                :coach_detail_content,	
-                :coach_detail_renarks)";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->bindParam(':coach_detail_coachheaderId', $json['coach_detail_coachheaderId'], PDO::PARAM_STR);
-                $stmt->bindParam(':coach_detail_content', $json['coach_detail_content'], PDO::PARAM_STR);
-                $stmt->bindParam(':coach_detail_renarks', $json['coach_detail_renarks'], PDO::PARAM_STR);
-                $stmt->execute();
-                $lastInsertId = $this->pdo->lastInsertId();
-                return json_encode(['success' => true, 'id' => $lastInsertId]);
-            }
+            $sql = "INSERT INTO tbl_coach_detail (	
+            coach_detail_coachheaderId,
+            coach_detail_content,
+            coach_detail_renarks	
+            ) VALUES (
+            :coach_detail_coachheaderId,	
+            :coach_detail_content,	
+            :coach_detail_renarks)";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':coach_detail_coachheaderId', $json['coach_detail_coachheaderId'], PDO::PARAM_STR);
+            $stmt->bindParam(':coach_detail_content', $json['coach_detail_content'], PDO::PARAM_STR);
+            $stmt->bindParam(':coach_detail_renarks', $json['coach_detail_renarks'], PDO::PARAM_STR);
+            $stmt->execute();
+            $lastInsertId = $this->pdo->lastInsertId();
+            return json_encode(['success' => true, 'id' => $lastInsertId]);
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
             return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
