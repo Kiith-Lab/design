@@ -265,7 +265,7 @@ class Get
             return json_encode(['error' => 'An error occurred']);
         }
     }
-    
+
     function getBack2()
     {
         $cardId = isset($_POST['cardId']) ? $_POST['cardId'] : '';
@@ -522,8 +522,10 @@ class Get
     function getInstructors()
     {
         try {
-            $sql = "SELECT a.*, b.role_name FROM tbl_users a
-            INNER JOIN tbl_role b ON b.role_id = a.users_roleId";
+            $sql = "SELECT a.*, b.role_name, c.school_name, d.department_name FROM tbl_users a
+            INNER JOIN tbl_role b ON b.role_id = a.users_roleId
+            INNER JOIN tbl_school c ON c.school_id = a.users_schoolId
+            INNER JOIN tbl_department d ON d.department_id = a.users_departmantId";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute();
 
@@ -541,10 +543,51 @@ class Get
             return json_encode(['error' => 'An error occurred']);
         }
     }
-    function getProjects()
+
+    function getFolders()
     {
         try {
-            $sql = "SELECT a.*, b.users_firstname, b.users_lastname FROM tbl_project a INNER JOIN tbl_users b ON b.users_id = a.project_userId";
+            $sql = "SELECT 
+    tbl_users.users_firstname AS Name,
+    tbl_module_master.module_master_name AS Mode, 
+    tbl_activities_header.activities_header_duration AS Duration,  
+    tbl_activities_details.activities_details_content AS Activity, 
+    tbl_project.project_title AS Lesson, 
+    tbl_outputs.outputs_content AS Output, 
+    tbl_instruction.instruction_content AS Instruction, 
+    tbl_coach_detail.coach_detail_content AS CoachDetail
+FROM 
+    tbl_folder
+LEFT JOIN tbl_project ON tbl_folder.projectId = tbl_project.project_id
+LEFT JOIN tbl_project_modules ON tbl_folder.project_moduleId = tbl_project_modules.project_modules_id
+LEFT JOIN tbl_module_master ON tbl_project_modules.project_modules_masterId = tbl_module_master.module_master_id
+LEFT JOIN tbl_activities_details ON tbl_folder.activities_detailId = tbl_activities_details.activities_details_id
+LEFT JOIN tbl_activities_header ON tbl_activities_header.activities_header_modulesId = tbl_activities_details.activities_details_id
+LEFT JOIN tbl_outputs ON tbl_folder.outputId = tbl_outputs.outputs_id
+LEFT JOIN tbl_instruction ON tbl_folder.instructionId = tbl_instruction.instruction_id
+LEFT JOIN tbl_coach_detail ON tbl_folder.coach_detailsId = tbl_coach_detail.coach_detail_id
+LEFT JOIN tbl_users ON tbl_project.project_userId = tbl_users.users_id";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+
+            $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            error_log("SQL Query: $sql");
+            error_log("Result: " . print_r($returnValue, true));
+
+            return json_encode($returnValue);
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            return json_encode(['error' => 'Database error occurred']);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage());
+            return json_encode(['error' => 'An error occurred']);
+        }
+    }
+    function getUserSchoolDepartment()
+    {
+        try {
+            $sql = "SELECT * FROM `tbl_users` INNER JOIN tbl_school ON tbl_school.school_id = tbl_users.users_schoolId INNER JOIN tbl_department ON tbl_department.department_id = tbl_users.users_departmantId";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute();
 
@@ -563,7 +606,7 @@ class Get
         }
     }
 
-    
+
 }
 
 // Handle preflight requests for CORS (for OPTIONS request)
@@ -638,8 +681,11 @@ switch ($operation) {
     case "getInstructors":
         echo $get->getInstructors();
         break;
-    case "getProjects":
-        echo $get->getProjects();
+    case "getFolders":
+        echo $get->getFolders();
+        break;
+    case "getUserSchoolDepartment":
+        echo $get->getUserSchoolDepartment();
         break;
     default:
         echo json_encode(['error' => 'Invalid operation']);

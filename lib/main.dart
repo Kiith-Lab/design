@@ -84,7 +84,7 @@ class _LoginPageState extends State<LoginPage> {
               context: context,
               builder: (BuildContext context) {
                 return AlertDialog(
-                  title: const Text('Login hpotoy'),
+                  title: const Text('Login Failed'),
                   content: Text(result['message']),
                   actions: <Widget>[
                     TextButton(

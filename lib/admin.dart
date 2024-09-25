@@ -38,7 +38,11 @@ class _AdminState extends State<Administrator> {
               child: Container(
                 margin: EdgeInsets.only(top: 20, left: 20, right: 20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Colors.green, Colors.white],
+                  ),
                   borderRadius: BorderRadius.circular(15),
                   boxShadow: [
                     BoxShadow(
@@ -190,6 +194,11 @@ class _AdminState extends State<Administrator> {
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(30),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Colors.green, Colors.white],
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.grey.withOpacity(0.4),
@@ -260,7 +269,7 @@ class _AdminState extends State<Administrator> {
                     unselectedItemColor: Colors.grey,
                     selectedLabelStyle:
                         const TextStyle(fontWeight: FontWeight.bold),
-                    backgroundColor: Colors.white,
+                    backgroundColor: Colors.transparent,
                     elevation: 0,
                     onTap: (index) {
                       setState(() {
