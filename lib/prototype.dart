@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'config.dart';
+
 void main() {
   runApp(const MaterialApp(home: Prototype()));
 }
@@ -193,7 +195,7 @@ class _PrototypeState extends State<Prototype> {
   }
 
   Future<List> getData3() async {
-    String url = "http://localhost/design/lib/api/view.php";
+    String url = "${baseUrl}view.php";
     Map<String, String> requestBody = {
       'operation': 'getPrototype',
     };
@@ -231,7 +233,7 @@ class _PrototypeState extends State<Prototype> {
   }
 
   Future<List> getBacker3() async {
-    String url = "http://localhost/design/lib/api/view.php";
+    String url = "${baseUrl}view.php";
     Map<String, String> requestBody = {
       'operation': 'getBack3',
     };
@@ -308,7 +310,7 @@ class _FlashcardPageState extends State<FlashcardPage>
 
   Future<void> fetchBackCards() async {
     try {
-      String url = "http://localhost/design/lib/api/view.php";
+      String url = "${baseUrl}view.php";
       Map<String, String> requestBody = {
         'operation': 'getBack3',
         'cardId': widget.cardId.toString(), // Ensure cardId is being passed

@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:design/ideate.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
+
+import 'config.dart';
 
 void main() {
   runApp(const MaterialApp(home: Define()));
@@ -193,7 +195,7 @@ class _DefineState extends State<Define> {
   }
 
   Future<List> getDefine() async {
-    String url = "http://localhost/design/lib/api/view.php";
+    String url = "${baseUrl}view.php";
     Map<String, String> requestBody = {
       'operation': 'getDefine',
     };
@@ -231,7 +233,7 @@ class _DefineState extends State<Define> {
   }
 
   Future<List> getBack1() async {
-    String url = "http://localhost/design/lib/api/view.php";
+    String url = "${baseUrl}view.php";
     Map<String, String> requestBody = {
       'operation': 'getBack1',
     };
@@ -308,7 +310,7 @@ class _FlashcardPageState extends State<FlashcardPage>
 
   Future<void> fetchBackCards() async {
     try {
-      String url = "http://localhost/design/lib/api/view.php";
+      String url = "${baseUrl}view.php";
       Map<String, String> requestBody = {
         'operation': 'getBack1',
         'cardId': widget.cardId.toString(), // Ensure cardId is being passed
@@ -390,7 +392,8 @@ class _FlashcardPageState extends State<FlashcardPage>
               child: const Text('Yes'),
               onPressed: () {
                 Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (context) => const AddLessonPage()),
+                  MaterialPageRoute(
+                      builder: (context) => const AddLessonPage()),
                 );
               },
             ),

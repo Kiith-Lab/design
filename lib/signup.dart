@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'config.dart';
+
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
 
@@ -43,7 +45,7 @@ class _SignupPageState extends State<SignupPage> {
 
   Future<void> _fetchSchools() async {
     try {
-      final response = await http.get(Uri.parse('http://localhost/design/lib/api/get_schools.php'));
+      final response = await http.get(Uri.parse('${baseUrl}get_schools.php'));
       if (response.statusCode == 200) {
         final List<dynamic> schoolsJson = json.decode(response.body);
         setState(() {
@@ -62,7 +64,7 @@ class _SignupPageState extends State<SignupPage> {
 
   Future<void> _fetchDepartments() async {
     try {
-      final response = await http.get(Uri.parse('http://localhost/design/lib/api/get_departments.php'));
+      final response = await http.get(Uri.parse('${baseUrl}get_departments.php'));
       if (response.statusCode == 200) {
         final List<dynamic> departmentsJson = json.decode(response.body);
         setState(() {
@@ -95,7 +97,7 @@ class _SignupPageState extends State<SignupPage> {
     if (_formKey.currentState!.validate()) {
       try {
         final response = await http.post(
-          Uri.parse('http://localhost/design/lib/api/signup.php'),
+          Uri.parse('${baseUrl}signup.php'),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
           },

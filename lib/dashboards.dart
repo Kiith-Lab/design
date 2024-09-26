@@ -59,7 +59,7 @@ class _DashboardsState extends State<Dashboards> {
   Future<void> fetchFolders() async {
     try {
       final response = await http.post(
-        Uri.parse('${baseUrl}lib/api/view.php'),
+        Uri.parse('${baseUrl}view.php'),
         body: {'operation': 'getFolders'},
       );
 
@@ -95,7 +95,7 @@ class _DashboardsState extends State<Dashboards> {
   Future<void> fetchUsers() async {
     try {
       final response = await http.post(
-        Uri.parse('${baseUrl}lib/api/view.php'),
+        Uri.parse('${baseUrl}view.php'),
         body: {'operation': 'getUser'},
       );
 
@@ -116,7 +116,7 @@ class _DashboardsState extends State<Dashboards> {
   Future<void> fetchSchools() async {
     try {
       final response = await http.post(
-        Uri.parse('${baseUrl}lib/api/view.php'),
+        Uri.parse('${baseUrl}view.php'),
         body: {'operation': 'getSchool'},
       );
 
@@ -137,7 +137,7 @@ class _DashboardsState extends State<Dashboards> {
   Future<void> fetchInstructors() async {
     try {
       final response = await http.post(
-        Uri.parse('${baseUrl}lib/api/view.php'),
+        Uri.parse('${baseUrl}view.php'),
         body: {'operation': 'getInstructors'},
       );
 

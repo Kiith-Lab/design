@@ -8,6 +8,9 @@ import 'package:printing/printing.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flip_card/flip_card.dart';
 
+import 'config.dart';
+
+
 class ListPage extends StatefulWidget {
   const ListPage({super.key});
 
@@ -27,7 +30,7 @@ class _ListPageState extends State<ListPage> {
 Future<void> _fetchFolders() async {
   try {
     final response = await http.post(
-      Uri.parse('http://localhost/design/lib/api/masterlist.php'),
+      Uri.parse('${baseUrl}masterlist.php'),
       body: {
         'operation': 'getFolder',
       },
@@ -194,7 +197,7 @@ Future<void> _fetchFolders() async {
     };
     try {
       final response = await http.post(
-        Uri.parse('http://localhost/design/lib/api/add.php'),
+        Uri.parse('${baseUrl}add.php'),
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: {
           'operation': 'addfolder',
