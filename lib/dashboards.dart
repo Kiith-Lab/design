@@ -603,7 +603,7 @@ class _DashboardsState extends State<Dashboards> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _buildInfoCard(
-                      'Folders',
+                      'User Accounts',
                       userCount.toString(),
                       Icons.person,
                       Colors.blue,
