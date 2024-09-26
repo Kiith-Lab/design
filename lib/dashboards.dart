@@ -39,13 +39,17 @@ class _DashboardsState extends State<Dashboards> {
   int userCount = 0;
   List<dynamic> users = [];
   int schoolCount = 0;
+  int departmentCount = 0;
   List<dynamic> schools = [];
+  List<dynamic> departments = [];
   int instructorCount = 0;
   List<dynamic> instructors = [];
   final String _searchQuery = '';
   final String _sortOrder = 'all';
   final String _schoolFilter = 'all';
   final String _departmentFilter = 'all';
+
+  bool _isDialogOpen = false;
 
   @override
   void initState() {
@@ -134,6 +138,28 @@ class _DashboardsState extends State<Dashboards> {
     }
   }
 
+  Future<void> fetchDepartment() async {
+    try {
+      final response = await http.post(
+        Uri.parse('${baseUrl}view.php'),
+        body: {'operation': 'getDepartments'},
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> fetchedDepartments = json.decode(response.body);
+        // print(fetchedDepartments);
+        setState(() {
+          departments = fetchedDepartments;
+          departmentCount = departments.length;
+        });
+      } else {
+        print('Failed to fetch departments: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching departments: $e');
+    }
+  }
+
   Future<void> fetchInstructors() async {
     try {
       final response = await http.post(
@@ -165,6 +191,10 @@ class _DashboardsState extends State<Dashboards> {
     String localDepartmentFilter = 'all';
     bool hideFilters =
         title == 'Schools' || title == 'User Accounts' || title == 'Folders';
+
+    if (title == 'Schools') {
+      fetchDepartment(); // Fetch departments when the Schools card is clicked
+    }
 
     showDialog(
       context: context,
@@ -516,27 +546,65 @@ class _DashboardsState extends State<Dashboards> {
   }
 
   void _showDepartmentDetails(BuildContext context, dynamic school) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Department Details'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildDepartmentDetail(
-                  'Department Name', school['department_name'] ?? 'N/A'),
-            ],
-          ),
-        );
-      },
-    );
+    if (_isDialogOpen)
+      return; // Prevent opening a new dialog if one is already open
+    _isDialogOpen = true; // Set the flag to true when opening the dialog
+
+    fetchDepartment().then((_) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Department Details'),
+            content: Container(
+              width: 300, // Set a width for the dialog
+              height: 400, // Set a height for the dialog
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: departments.length,
+                      itemBuilder: (context, index) {
+                        final department = departments[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          child: Container(
+                            height: 75, // Fixed height for each card
+                            child: _buildDepartmentDetail(
+                              department['department_name'] ?? 'N/A',
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      child: const Text('Close'),
+                      onPressed: () {
+                        _isDialogOpen =
+                            false; // Reset the flag when closing the dialog
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ).then((_) {
+        _isDialogOpen = false; // Reset the flag when the dialog is dismissed
+      });
+    });
   }
 
-  Widget _buildDepartmentDetail(String label, String value) {
+  Widget _buildDepartmentDetail(String value) {
     return ListTile(
-      title: Text(label),
-      subtitle: Text(value),
+      title: Text(value),
     );
   }
 
