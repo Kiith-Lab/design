@@ -38,11 +38,14 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   int? lastInsertedCardId;
   int? lastInsertedOutputId;
   int? lastInsertedInstructionId;
+  int? lastInsertedFolderId;
 
   List<String> addedActivities = [];
   List<String> addedOutputs = [];
   List<String> addedInstructions = [];
   List<String> addedCoachDetails = [];
+
+  bool isUpdating = false;
 
   @override
   void initState() {
@@ -143,6 +146,12 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       return;
     }
 
+    // Check if the mode has already been added
+    if (allAddedData.any((item) => item['type'] == 'Mode' && item['value'] == modes.firstWhere((mode) => mode['module_master_id'].toString() == selectedMode)['module_master_name'])) {
+      print('Mode already added');
+      return;
+    }
+
     try {
       String url = "http://localhost/design/lib/api/masterlist.php";
       Map<String, String> requestBody = {
@@ -191,6 +200,12 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       return;
     }
 
+    // Check if the duration has already been added
+    if (allAddedData.any((item) => item['type'] == 'Duration' && item['value'] == durationController.text)) {
+      print('Duration already added');
+      return;
+    }
+
     try {
       String url = "http://localhost/design/lib/api/masterlist.php";
       Map<String, String> requestBody = {
@@ -232,6 +247,12 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   Future<void> addActivity() async {
     if (lastInsertedDurationId == null) {
       print('No duration ID available');
+      return;
+    }
+
+    // Check if the activities have already been added
+    if (allAddedData.any((item) => item['type'] == 'Activity' && item['value'] == addedActivities.join(', '))) {
+      print('Activities already added');
       return;
     }
 
@@ -285,6 +306,12 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       return;
     }
 
+    // Check if the card has already been added
+    if (allAddedData.any((item) => item['type'] == 'Card' && item['value'] == cardId)) {
+      print('Card already added');
+      return;
+    }
+
     String url = "http://localhost/design/lib/api/masterlist.php";
     Map<String, String> requestBody = {
       'operation': 'addCards',
@@ -322,6 +349,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       print('Card added successfully');
       setState(() {
         lastInsertedCardId = int.parse(decodedData['id']);
+        allAddedData.add({'type': 'Card', 'value': cardId});
       });
     } catch (e) {
       print('Error adding card: $e');
@@ -332,6 +360,12 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   Future<void> addOutput() async {
     if (lastInsertedModeId == null) {
       print('No mode ID available');
+      return;
+    }
+
+    // Check if the outputs have already been added
+    if (allAddedData.any((item) => item['type'] == 'Output' && item['value'] == addedOutputs.join(', '))) {
+      print('Outputs already added');
       return;
     }
 
@@ -380,6 +414,12 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       return;
     }
 
+    // Check if the instructions have already been added
+    if (allAddedData.any((item) => item['type'] == 'Instruction' && item['value'] == addedInstructions.join(', '))) {
+      print('Instructions already added');
+      return;
+    }
+
     try {
       String url = "http://localhost/design/lib/api/masterlist.php";
       Map<String, String> requestBody = {
@@ -419,8 +459,13 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
   }
 
-
   Future<void> addCoachDetails() async {
+    // Check if the coach details have already been added
+    if (allAddedData.any((item) => item['type'] == 'Coach Details' && item['value'] == addedCoachDetails.join(', '))) {
+      print('Coach Details already added');
+      return;
+    }
+
     try {
       String url = "http://localhost/design/lib/api/masterlist.php";
       Map<String, String> requestBody = {
@@ -551,6 +596,11 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
         var decodedData = jsonDecode(trimmedBody);
         if (decodedData['success'] == true) {
           print('Added to folder successfully');
+          lastInsertedFolderId = int.parse(decodedData['id']);
+          
+          // Save the folder ID along with other IDs
+          insertedIds.add(lastInsertedFolderId!);
+          await storeInsertedIds();
         } else {
           print('Failed to add to folder: ${decodedData['error']}');
         }
@@ -562,852 +612,256 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
   }
 
+  Future<void> updateData() async {
+    if (lastInsertedModeId == null) {
+      print('No mode ID available for update');
+      return;
+    }
+
+    try {
+      String url = "http://localhost/design/lib/api/masterlist.php";
+      Map<String, String> requestBody = {
+        'operation': 'updateData',
+        'json': jsonEncode({
+          'modeId': lastInsertedModeId.toString(),
+          'duration': durationController.text,
+          'activities': jsonEncode(addedActivities),
+          'cards': jsonEncode(selectedLessons.map((lesson) => lesson['cards_id']).toList()),
+          'outputs': jsonEncode(addedOutputs),
+          'instructions': jsonEncode(addedInstructions),
+          'coachDetails': jsonEncode(addedCoachDetails),
+        }),
+      };
+
+      http.Response response = await http
+          .post(
+            Uri.parse(url),
+            body: requestBody,
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        var decodedData = jsonDecode(response.body);
+        if (decodedData['success'] == true) {
+          print('Data updated successfully');
+          // Update the local state or perform any necessary actions after successful update
+        } else {
+          print('Failed to update data: ${decodedData['error']}');
+        }
+      } else {
+        throw Exception('Failed to update data: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error updating data: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.green),
-          onPressed: () {
-            if (currentStep > 0) {
-              setState(() {
-                currentStep--;
-              });
-            } else {
-              Navigator.of(context).pop();
-            }
-          },
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
+        title: Text('Empathy Project'),
+        backgroundColor: Colors.green.shade600,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.white, Colors.green.shade50],
-          ),
-        ),
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Container(
-                  height: 20,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade100,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Stack(
-                    children: [
-                      FractionallySizedBox(
-                        widthFactor: (currentStep + 1) / 8,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.green.shade300,
-                                Colors.green.shade500
-                              ],
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                      Center(
-                        child: Text(
-                          '${((currentStep + 1) / 8 * 100).toInt()}%',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            shadows: [
-                              Shadow(
-                                blurRadius: 2,
-                                color: Colors.green.shade700,
-                                offset: const Offset(1, 1),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Card(
-                  elevation: 5,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  color: Colors.white,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: _buildCurrentStep(),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (currentStep < 7) {
-                      if (currentStep == 0) {
-                        addMode();
-                      } else if (currentStep == 1) {
-                        addDuration();
-                      } else if (currentStep == 2) {
-                        addActivity();
-                      } else if (currentStep == 3) {
-                        // Save all selected lessons to databases
-                        bool allCardsAdded = true;
-                        for (var lesson in selectedLessons) {
-                          try {
-                            await addCard(lesson['cards_id'].toString());
-                          } catch (e) {
-                            print('Error adding card to database: $e');
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content: Text(
-                                      'Error adding card to database: $e')),
-                            );
-                            allCardsAdded = false;
-                            break;
-                          }
-                        }
-                        if (allCardsAdded) {
-                          setState(() {
-                            allSelectedLessons.addAll(selectedLessons);
-                            selectedLessons.clear();
-                            currentStep++;
-                            allAddedData.add({
-                              'type': 'Lessons',
-                              'value': allSelectedLessons
-                                  .map((lesson) => lesson['cards_title'])
-                                  .toList()
-                            });
-                          });
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Failed to add all cards')),
-                          );
-                        }
-                      } else if (currentStep == 4) {
-                        addOutput();
-                      } else if (currentStep == 5) {
-                        addInstruction();
-                      } else if (currentStep == 6) {
-                        addCoachDetails();
-                      }
-                    } else {
-                      // Handle submission here
-                      await addCoachDetails();
-                      print('Submitting data');
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: Colors.green.shade600,
-                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  child: Text(currentStep == 7 ? 'Submit' : 'Next'),
-                ),
-                const SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: Text('Summary',
-                              style: TextStyle(color: Colors.green.shade700)),
-                          content: SingleChildScrollView(
-                            child: Column(
-                              children: [
-                                Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(15),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.green.withOpacity(0.3),
-                                        spreadRadius: 2,
-                                        blurRadius: 5,
-                                        offset: const Offset(0, 3),
-                                      ),
-                                    ],
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(15),
-                                    child: Column(
-                                      children: allAddedData.map((data) {
-                                        return Container(
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            border: Border(
-                                              bottom: BorderSide(
-                                                color: Colors.green.shade100,
-                                                width: 1,
-                                              ),
-                                            ),
-                                          ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(12.0),
-                                            child: Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Expanded(
-                                                  flex: 1,
-                                                  child: Text(
-                                                    data['type'],
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color:
-                                                          Colors.green.shade700,
-                                                    ),
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 10),
-                                                Expanded(
-                                                  flex: 2,
-                                                  child: Text(
-                                                    data['value'].toString(),
-                                                    style: const TextStyle(
-                                                      color: Colors.black87,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      }).toList(),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          actions: <Widget>[
-                            TextButton(
-                              child: Text('Close',
-                                  style:
-                                      TextStyle(color: Colors.green.shade600)),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.green.shade600,
-                    backgroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      side: BorderSide(color: Colors.green.shade600),
-                    ),
-                  ),
-                  child: const Text('View Summary'),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCurrentStep() {
-    switch (currentStep) {
-      case 0:
-        return _buildModeStep();
-      case 1:
-        return _buildDurationStep();
-      case 2:
-        return _buildActivitiesStep();
-      case 3:
-        return _buildLessonStep();
-      case 4:
-        return _buildOutputsStep();
-      case 5:
-        return _buildInstructionsStep();
-      case 6:
-        return _buildCoachDetailsStep();
-      case 7:
-        return _buildCoachDetailsStep();
-      default:
-        return Container();
-    }
-  }
-
-  Widget _buildModeStep() {
-    return _buildStep(
-      title: 'Mode',
-      content: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.green.shade300, Colors.yellow.shade300],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(15.0),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.green.withOpacity(0.3),
-              spreadRadius: 2,
-              blurRadius: 5,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: DropdownButtonFormField<String>(
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(15.0),
-              borderSide: BorderSide.none,
-            ),
-            labelText: 'Select Mode',
-            labelStyle: TextStyle(
-              color: Colors.green.shade800,
-              fontWeight: FontWeight.bold,
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-          ),
-          dropdownColor: Colors.yellow.shade100,
-          icon: Icon(Icons.arrow_drop_down, color: Colors.green.shade800),
-          style: TextStyle(
-              color: Colors.green.shade800,
-              fontSize: 18,
-              fontWeight: FontWeight.bold),
-          items: modes.map((mode) {
-            return DropdownMenuItem<String>(
-              value: mode['module_master_id'].toString(),
-              child: Text(
-                mode['module_master_name'],
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
-            );
-          }).toList(),
-          onChanged: (String? newValue) {
-            setState(() {
-              selectedMode = newValue;
-              selectedLesson = null; // Reset selected lesson when mode changes
-              if (newValue != null) {
-                fetchLessons(newValue);
-              }
-            });
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDurationStep() {
-    return _buildStep(
-      title: 'Duration',
-      content: TextField(
-        controller: durationController,
-        decoration: InputDecoration(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10.0),
-            borderSide: BorderSide(color: Colors.green.shade600),
-          ),
-          labelText: 'How long will it take?',
-          labelStyle: TextStyle(color: Colors.green.shade600),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: Colors.green.shade600),
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-        ),
-        maxLines: 1,
-      ),
-    );
-  }
-
-  Widget _buildActivitiesStep() {
-    return _buildStep(
-      title: 'Activities',
-      content: Column(
-        children: [
-          TextField(
-            controller: activitiesController,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10.0),
-                borderSide: BorderSide(color: Colors.green.shade600),
-              ),
-              labelText: 'What activities will my students do?',
-              labelStyle: TextStyle(color: Colors.green.shade600),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.green.shade600),
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-            ),
-            maxLines: 3,
-          ),
-          const SizedBox(height: 10),
-          ElevatedButton(
-            onPressed: () {
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildModeDropdown(),
+            SizedBox(height: 20),
+            _buildTextField(durationController, 'Duration'),
+            SizedBox(height: 20),
+            _buildTextField(activitiesController, 'Activities'),
+            SizedBox(height: 10),
+            _buildAddButton('Add Activity', () {
               setState(() {
                 addedActivities.add(activitiesController.text);
                 activitiesController.clear();
               });
-            },
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.white,
-              backgroundColor: Colors.green.shade600,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
-            ),
-            child: const Text('Add More'),
-          ),
-          const SizedBox(height: 10),
-          ListView.builder(
-            shrinkWrap: true,
-            itemCount: addedActivities.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(addedActivities[index]),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLessonStep() {
-    return _buildStep(
-      title: 'Lesson',
-      content: Column(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.green.shade100, Colors.white],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(15.0),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.green.withOpacity(0.2),
-                  spreadRadius: 2,
-                  blurRadius: 5,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: DropdownButtonFormField<String>(
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15.0),
-                  borderSide: BorderSide.none,
-                ),
-                labelText: 'Select a lesson',
-                labelStyle: TextStyle(
-                  color: Colors.green.shade800,
-                  fontWeight: FontWeight.bold,
-                ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                filled: true,
-                fillColor: Colors.transparent,
-              ),
-              dropdownColor: Colors.white,
-              icon: Icon(Icons.arrow_drop_down, color: Colors.green.shade800),
-              style: TextStyle(
-                color: Colors.green.shade800,
-                fontSize: 16,
-              ),
-              items: lessons.map((lesson) {
-                return DropdownMenuItem<String>(
-                  value: lesson['cards_id'].toString(),
-                  child: Text(
-                    '${lesson['cards_title']} (ID: ${lesson['cards_id'].toString()})',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-          setState(() {
-                  selectedLesson = newValue;
-                });
-              },
-              value: selectedLesson,
-            ),
-          ),
-          const SizedBox(height: 15),
-          ElevatedButton.icon(
-            onPressed: () {
-              if (selectedLesson != null) {
-                setState(() {
-                  Map<String, dynamic> addedLesson = lessons.firstWhere(
-                    (lesson) => lesson['cards_id'].toString() == selectedLesson,
-                    orElse: () =>
-                        {'cards_title': 'Unknown', 'cards_id': selectedLesson},
-                  );
-                  selectedLessons.add(addedLesson);
-                  selectedLesson = null;
-                });
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text('Please select a lesson'),
-                    backgroundColor: Colors.green.shade600,
-                  ),
-                );
-              }
-            },
-            icon: const Icon(Icons.add_circle_outline),
-            label: const Text('Add Lesson'),
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.white,
-              backgroundColor: Colors.green.shade600,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'Selected Lessons:',
-            style: TextStyle(
-              color: Colors.green.shade700,
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
-          ),
-          const SizedBox(height: 10),
-          ListView.builder(
-            shrinkWrap: true,
-            itemCount: selectedLessons.length,
-            itemBuilder: (context, index) {
-              return Card(
-                elevation: 3,
-                margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ListTile(
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  title: Text(
-                    selectedLessons[index]['cards_title'] ?? 'Unknown Title',
-                    style: TextStyle(
-                      color: Colors.green.shade700,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  subtitle: Text(
-                    'ID: ${selectedLessons[index]['cards_id'] ?? 'Unknown ID'}',
-                    style: TextStyle(color: Colors.green.shade400),
-                  ),
-                  trailing: IconButton(
-                    icon:
-                        Icon(Icons.delete_outline, color: Colors.red.shade400),
-                    onPressed: () {
-                      setState(() {
-                        selectedLessons.removeAt(index);
-                      });
-                    },
-                  ),
-                  tileColor: Colors.green.shade50,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOutputsStep() {
-    return _buildStep(
-      title: 'Outputs',
-      content: Column(
-        children: [
-          TextField(
-            controller: outputsController,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10.0),
-                borderSide: BorderSide(color: Colors.green.shade600),
-              ),
-              labelText: 'What are the expected outputs?',
-              labelStyle: TextStyle(color: Colors.green.shade600),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.green.shade600),
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-            ),
-            maxLines: 3,
-          ),
-          const SizedBox(height: 10),
-          ElevatedButton(
-            onPressed: () {
+            }),
+            _buildList(addedActivities),
+            SizedBox(height: 20),
+            _buildLessonDropdown(),
+            SizedBox(height: 10),
+            _buildAddButton('Add Lesson', _addLesson),
+            _buildList(selectedLessons.map((lesson) => lesson['cards_title'] as String).toList()),
+            SizedBox(height: 20),
+            _buildTextField(outputsController, 'Outputs'),
+            SizedBox(height: 10),
+            _buildAddButton('Add Output', () {
               setState(() {
                 addedOutputs.add(outputsController.text);
                 outputsController.clear();
               });
-            },
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.white,
-              backgroundColor: Colors.green.shade600,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
-            ),
-            child: const Text('Add More'),
-          ),
-          const SizedBox(height: 10),
-          ListView.builder(
-            shrinkWrap: true,
-            itemCount: addedOutputs.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(addedOutputs[index]),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInstructionsStep() {
-    return _buildStep(
-      title: 'Instructions',
-      content: Column(
-        children: [
-          TextField(
-            controller: instructionsController,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10.0),
-                borderSide: BorderSide(color: Colors.green.shade600),
-              ),
-              labelText: 'What Instruction will I give to my students?',
-              labelStyle: TextStyle(color: Colors.green.shade600),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.green.shade600),
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-            ),
-            maxLines: 3,
-          ),
-          const SizedBox(height: 10),
-          ElevatedButton(
-            onPressed: () {
+            }),
+            _buildList(addedOutputs),
+            SizedBox(height: 20),
+            _buildTextField(instructionsController, 'Instructions'),
+            SizedBox(height: 10),
+            _buildAddButton('Add Instruction', () {
               setState(() {
                 addedInstructions.add(instructionsController.text);
                 instructionsController.clear();
               });
-            },
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.white,
-              backgroundColor: Colors.green.shade600,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
-            ),
-            child: const Text('Add More'),
-          ),
-          const SizedBox(height: 10),
-          ListView.builder(
-            shrinkWrap: true,
-            itemCount: addedInstructions.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(addedInstructions[index]),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-  Widget _buildCoachDetailsStep() {
-    return _buildStep(
-      title: 'Coach Details',
-      content: Column(
-        children: [
-          TextField(
-            controller: coachDetailsController,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10.0),
-                borderSide: BorderSide(color: Colors.green.shade600),
-              ),
-              labelText: 'Enter Coach Details',
-              labelStyle: TextStyle(color: Colors.green.shade600),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.green.shade600),
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-            ),
-            maxLines: 3,
-          ),
-          const SizedBox(height: 10),
-          ElevatedButton(
-          onPressed: () {
+            }),
+            _buildList(addedInstructions),
+            SizedBox(height: 20),
+            _buildTextField(coachDetailsController, 'Coach Details'),
+            SizedBox(height: 10),
+            _buildAddButton('Add Coach Detail', () {
               setState(() {
                 addedCoachDetails.add(coachDetailsController.text);
                 coachDetailsController.clear();
               });
-            },
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.white,
-              backgroundColor: Colors.green.shade600,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
+            }),
+            _buildList(addedCoachDetails),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _submitAll,
+              child: Text('Submit All'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green.shade600,
+                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
               ),
             ),
-            child: const Text('Add More'),
-          ),
-          const SizedBox(height: 10),
-          ListView.builder(
-            shrinkWrap: true,
-            itemCount: addedCoachDetails.length,
-            itemBuilder: (context, index) {
-              return ListTile(
-                title: Text(addedCoachDetails[index]),
-              );
-            },
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildStep({required String title, required Widget content}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.green.shade700,
-          ),
-        ),
-        const SizedBox(height: 20),
-        content,
-      ],
+  Widget _buildModeDropdown() {
+    return DropdownButtonFormField<String>(
+      decoration: InputDecoration(
+        labelText: 'Select Mode',
+        border: OutlineInputBorder(),
+      ),
+      value: selectedMode,
+      items: modes.map((mode) {
+        return DropdownMenuItem<String>(
+          value: mode['module_master_id'].toString(),
+          child: Text(mode['module_master_name']),
+        );
+      }).toList(),
+      onChanged: (String? newValue) {
+        setState(() {
+          if (selectedMode != newValue) {
+            selectedMode = newValue;
+            selectedLesson = null;
+            isUpdating = false;
+            if (newValue != null) {
+              fetchLessons(newValue);
+              
+              // Clear all controllers and lists when a new mode is selected
+              durationController.clear();
+              activitiesController.clear();
+              outputsController.clear();
+              instructionsController.clear();
+              coachDetailsController.clear();
+              addedActivities.clear();
+              addedOutputs.clear();
+              addedInstructions.clear();
+              addedCoachDetails.clear();
+              selectedLessons.clear();
+            }
+          } else {
+            isUpdating = true;
+          }
+        });
+      },
     );
   }
-}
 
-class SummaryPage extends StatelessWidget {
-  final List<Map<String, dynamic>> allAddedData;
+  Widget _buildTextField(TextEditingController controller, String label) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(),
+      ),
+      maxLines: 3,
+    );
+  }
 
-  const SummaryPage({
-    super.key,
-    required this.allAddedData,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Summary', style: TextStyle(color: Colors.white)),
+  Widget _buildAddButton(String label, VoidCallback onPressed) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      child: Text(label),
+      style: ElevatedButton.styleFrom(
         backgroundColor: Colors.green.shade600,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.white, Colors.green.shade50],
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (var data in allAddedData)
-                  if (data['type'] == 'Lessons')
-                    Card(
-                      elevation: 3,
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('${data['type']}:',
-                                style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.green.shade700)),
-                            const SizedBox(height: 8),
-                            for (var lesson in data['value'])
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 16, top: 4, bottom: 4),
-                                child: Text(
-                                    '• ${lesson['cards_title']} (ID: ${lesson['cards_id']})',
-                                    style: TextStyle(
-                                        color: Colors.green.shade600)),
-                              ),
-                          ],
-                        ),
-                      ),
-                    )
-                  else
-                    Card(
-                      elevation: 3,
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('${data['type']}:',
-                                style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.green.shade700)),
-                            const SizedBox(height: 8),
-                            Text('${data['value']}',
-                                style: TextStyle(color: Colors.green.shade600)),
-                          ],
-                        ),
-                      ),
-                    ),
-              ],
-            ),
-          ),
-        ),
+    );
+  }
+
+  Widget _buildList(List<String> items) {
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        return ListTile(
+          title: Text(items[index]),
+        );
+      },
+    );
+  }
+
+  Widget _buildLessonDropdown() {
+    return DropdownButtonFormField<String>(
+      decoration: InputDecoration(
+        labelText: 'Select a lesson',
+        border: OutlineInputBorder(),
       ),
+      value: selectedLesson,
+      items: lessons.map((lesson) {
+        return DropdownMenuItem<String>(
+          value: lesson['back_cards_header_id'].toString(),
+          child: Text('${lesson['cards_title']}'),
+        );
+      }).toList(),
+      onChanged: (String? newValue) {
+        setState(() {
+          selectedLesson = newValue;
+        });
+      },
+    );
+  }
+
+  void _addLesson() {
+    if (selectedLesson != null) {
+      setState(() {
+        Map<String, dynamic> addedLesson = lessons.firstWhere(
+          (lesson) => lesson['back_cards_header_id'].toString() == selectedLesson,
+          orElse: () => {'cards_title': 'Unknown', 'cards_id': selectedLesson},
+        );
+        selectedLessons.add(addedLesson);
+        selectedLesson = null;
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please select a lesson')),
+      );
+    }
+  }
+
+  void _submitAll() async {
+    if (isUpdating) {
+      await updateData();
+    } else {
+      await addMode();
+      await addDuration();
+      await addActivity();
+      for (var lesson in selectedLessons) {
+        await addCard(lesson['cards_id'].toString());
+      }
+      await addOutput();
+      await addInstruction();
+      await addCoachDetails();
+      await addToFolder();
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(isUpdating ? 'Data updated successfully' : 'All data submitted successfully')),
     );
   }
 }

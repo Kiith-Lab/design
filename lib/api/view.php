@@ -414,6 +414,7 @@ class Get
             $sql = "SELECT tbl_front_cards.cards_title, 
             tbl_front_cards.cards_id, 
             tbl_front_cards.cards_content,
+            tbl_back_cards_header.back_cards_header_id,
             GROUP_CONCAT(tbl_back_cards_header.back_content ORDER BY tbl_back_cards_header.back_content) AS back_content, 
             GROUP_CONCAT(tbl_back_cards_header.back_content_title ORDER BY tbl_back_cards_header.back_content_title) AS back_content_title,
             GROUP_CONCAT(tbl_back_cards_header.back_cards_header_frontId ORDER BY tbl_back_cards_header.back_cards_header_frontId) AS back_cards_header_frontId,
