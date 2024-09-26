@@ -25,20 +25,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Prepare SQL statement to prevent SQL injection
-    $stmt = $pdo->prepare("SELECT users_id, users_school_id, users_password FROM tbl_users WHERE users_school_id = :users_school_id");
+    $stmt = $pdo->prepare("SELECT users_id, users_school_id, users_password, users_roleId FROM tbl_users WHERE users_school_id = :users_school_id");
     $stmt->bindParam(':users_school_id', $username, PDO::PARAM_STR);
     $stmt->execute();
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($user) {
-        // Verify the password
+        // Verify the password (use password_verify for hashed passwords)
         if ($password === $user['users_password']) {
             // Password is correct, create a session
             session_start();
-            $_SESSION['users_id'] = $user['users_id'];
-            $_SESSION['users_school_id'] = $user['users_school_id'];
-
-            echo json_encode(['success' => true, 'message' => 'Login successful']);
+            echo json_encode([
+                'success' => true,
+                'message' => 'Login successful',
+                'data' => [
+                    'users_id' => $user['users_id'],
+                    'users_school_id' => $user['users_school_id'],
+                    'users_roleId' => $user['users_roleId']
+                ]
+            ]);
         } else {
             // Password is incorrect
             echo json_encode(['success' => false, 'message' => 'Invalid username or password']);
