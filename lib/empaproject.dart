@@ -35,7 +35,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   List<int> insertedIds = [];
 
   int? lastInsertedActivityId;
-  int? lastInsertedCardId;
+  List<int> lastInsertedCardIds = []; // Changed to List<int>
   int? lastInsertedOutputId;
   int? lastInsertedInstructionId;
   int? lastInsertedFolderId;
@@ -147,7 +147,12 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
 
     // Check if the mode has already been added
-    if (allAddedData.any((item) => item['type'] == 'Mode' && item['value'] == modes.firstWhere((mode) => mode['module_master_id'].toString() == selectedMode)['module_master_name'])) {
+    if (allAddedData.any((item) =>
+        item['type'] == 'Mode' &&
+        item['value'] ==
+            modes.firstWhere((mode) =>
+                mode['module_master_id'].toString() ==
+                selectedMode)['module_master_name'])) {
       print('Mode already added');
       return;
     }
@@ -201,7 +206,9 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
 
     // Check if the duration has already been added
-    if (allAddedData.any((item) => item['type'] == 'Duration' && item['value'] == durationController.text)) {
+    if (allAddedData.any((item) =>
+        item['type'] == 'Duration' &&
+        item['value'] == durationController.text)) {
       print('Duration already added');
       return;
     }
@@ -251,7 +258,9 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
 
     // Check if the activities have already been added
-    if (allAddedData.any((item) => item['type'] == 'Activity' && item['value'] == addedActivities.join(', '))) {
+    if (allAddedData.any((item) =>
+        item['type'] == 'Activity' &&
+        item['value'] == addedActivities.join(', '))) {
       print('Activities already added');
       return;
     }
@@ -307,7 +316,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
 
     // Check if the card has already been added
-    if (allAddedData.any((item) => item['type'] == 'Card' && item['value'] == cardId)) {
+    if (allAddedData
+        .any((item) => item['type'] == 'Card' && item['value'] == cardId)) {
       print('Card already added');
       return;
     }
@@ -348,7 +358,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
 
       print('Card added successfully');
       setState(() {
-        lastInsertedCardId = int.parse(decodedData['id']);
+        lastInsertedCardIds.add(int.parse(decodedData['id'])); // Add to list
         allAddedData.add({'type': 'Card', 'value': cardId});
       });
     } catch (e) {
@@ -364,7 +374,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
 
     // Check if the outputs have already been added
-    if (allAddedData.any((item) => item['type'] == 'Output' && item['value'] == addedOutputs.join(', '))) {
+    if (allAddedData.any((item) =>
+        item['type'] == 'Output' && item['value'] == addedOutputs.join(', '))) {
       print('Outputs already added');
       return;
     }
@@ -415,7 +426,9 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
 
     // Check if the instructions have already been added
-    if (allAddedData.any((item) => item['type'] == 'Instruction' && item['value'] == addedInstructions.join(', '))) {
+    if (allAddedData.any((item) =>
+        item['type'] == 'Instruction' &&
+        item['value'] == addedInstructions.join(', '))) {
       print('Instructions already added');
       return;
     }
@@ -461,7 +474,9 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
 
   Future<void> addCoachDetails() async {
     // Check if the coach details have already been added
-    if (allAddedData.any((item) => item['type'] == 'Coach Details' && item['value'] == addedCoachDetails.join(', '))) {
+    if (allAddedData.any((item) =>
+        item['type'] == 'Coach Details' &&
+        item['value'] == addedCoachDetails.join(', '))) {
       print('Coach Details already added');
       return;
     }
@@ -495,7 +510,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
             lastInsertedModeId!,
             lastInsertedDurationId!,
             lastInsertedActivityId!,
-            lastInsertedCardId!,
+            ...lastInsertedCardIds,
             lastInsertedOutputId!,
             lastInsertedInstructionId!,
             coachDetailsId,
@@ -556,56 +571,59 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       }
 
       String url = "http://localhost/design/lib/api/masterlist.php";
-      Map<String, String> requestBody = {
-        'operation': 'addFolder',
-        'json': jsonEncode({
-          'projectId': widget.projectId.toString(),
-          'project_moduleId': insertedIds[0].toString(),
-          'activities_detailId': lastInsertedActivityId.toString(),
-          'project_cardsId': insertedIds[3].toString(),
-          'outputId': insertedIds[4].toString(),
-          'instructionId': insertedIds[5].toString(),
-          'coach_detailsId': insertedIds[6].toString(),
-        }),
-      };
 
-      print('Adding to folder with IDs:');
-      print('projectId: ${widget.projectId}');
-      print('project_moduleId: ${insertedIds[0]}');
-      print('activities_detailId: $lastInsertedActivityId');
-      print('project_cardsId: ${insertedIds[3]}');
-      print('outputId: ${insertedIds[4]}');
-      print('instructionId: ${insertedIds[5]}');
-      print('coach_detailsId: ${insertedIds[6]}');
+      for (int cardId in lastInsertedCardIds) {
+        Map<String, String> requestBody = {
+          'operation': 'addFolder',
+          'json': jsonEncode({
+            'projectId': widget.projectId.toString(),
+            'project_moduleId': insertedIds[0].toString(),
+            'activities_detailId': lastInsertedActivityId.toString(),
+            'project_cardsId': cardId.toString(),
+            'outputId': insertedIds[insertedIds.length - 3].toString(),
+            'instructionId': insertedIds[insertedIds.length - 2].toString(),
+            'coach_detailsId': insertedIds.last.toString(),
+          }),
+        };
 
-      http.Response response = await http
-          .post(
-            Uri.parse(url),
-            body: requestBody,
-          )
-          .timeout(const Duration(seconds: 10));
+        print('Adding to folder with IDs:');
+        print('projectId: ${widget.projectId}');
+        print('project_moduleId: ${insertedIds[0]}');
+        print('activities_detailId: $lastInsertedActivityId');
+        print('project_cardsId: $cardId');
+        print('outputId: ${insertedIds[insertedIds.length - 3]}');
+        print('instructionId: ${insertedIds[insertedIds.length - 2]}');
+        print('coach_detailsId: ${insertedIds.last}');
 
-      if (response.statusCode == 200) {
-        String trimmedBody = response.body.trim();
-        if (trimmedBody.isEmpty) {
-          // Save the IDs to local storage if the response is empty
-          await storeInsertedIds();
-          throw Exception('Empty response received');
-        }
+        http.Response response = await http
+            .post(
+              Uri.parse(url),
+              body: requestBody,
+            )
+            .timeout(const Duration(seconds: 10));
 
-        var decodedData = jsonDecode(trimmedBody);
-        if (decodedData['success'] == true) {
-          print('Added to folder successfully');
-          lastInsertedFolderId = int.parse(decodedData['id']);
-          
-          // Save the folder ID along with other IDs
-          insertedIds.add(lastInsertedFolderId!);
-          await storeInsertedIds();
+        if (response.statusCode == 200) {
+          String trimmedBody = response.body.trim();
+          if (trimmedBody.isEmpty) {
+            // Save the IDs to local storage if the response is empty
+            await storeInsertedIds();
+            throw Exception('Empty response received');
+          }
+
+          var decodedData = jsonDecode(trimmedBody);
+          if (decodedData['success'] == true) {
+            print('Added to folder successfully');
+            lastInsertedFolderId = int.parse(decodedData['id']);
+
+            // Save the folder ID along with other IDs
+            insertedIds.add(lastInsertedFolderId!);
+            await storeInsertedIds();
+          } else {
+            print('Failed to add to folder: ${decodedData['error']}');
+          }
         } else {
-          print('Failed to add to folder: ${decodedData['error']}');
+          throw Exception('Failed to add to folder: ${response.statusCode}');
         }
-      } else {
-        throw Exception('Failed to add to folder: ${response.statusCode}');
       }
     } catch (e) {
       print('Error adding to folder: $e');
@@ -626,7 +644,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           'modeId': lastInsertedModeId.toString(),
           'duration': durationController.text,
           'activities': jsonEncode(addedActivities),
-          'cards': jsonEncode(selectedLessons.map((lesson) => lesson['cards_id']).toList()),
+          'cards': jsonEncode(
+              selectedLessons.map((lesson) => lesson['cards_id']).toList()),
           'outputs': jsonEncode(addedOutputs),
           'instructions': jsonEncode(addedInstructions),
           'coachDetails': jsonEncode(addedCoachDetails),
@@ -685,7 +704,9 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
             _buildLessonDropdown(),
             const SizedBox(height: 10),
             _buildAddButton('Add Lesson', _addLesson),
-            _buildList(selectedLessons.map((lesson) => lesson['cards_title'] as String).toList()),
+            _buildList(selectedLessons
+                .map((lesson) => lesson['cards_title'] as String)
+                .toList()),
             const SizedBox(height: 20),
             _buildTextField(outputsController, 'Outputs'),
             const SizedBox(height: 10),
@@ -721,7 +742,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
               onPressed: _submitAll,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green.shade600,
-                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
               ),
               child: Text('Submit All'),
             ),
@@ -752,7 +774,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
             isUpdating = false;
             if (newValue != null) {
               fetchLessons(newValue);
-              
+
               // Clear all controllers and lists when a new mode is selected
               durationController.clear();
               activitiesController.clear();
@@ -831,7 +853,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     if (selectedLesson != null) {
       setState(() {
         Map<String, dynamic> addedLesson = lessons.firstWhere(
-          (lesson) => lesson['back_cards_header_id'].toString() == selectedLesson,
+          (lesson) =>
+              lesson['back_cards_header_id'].toString() == selectedLesson,
           orElse: () => {'cards_title': 'Unknown', 'cards_id': selectedLesson},
         );
         selectedLessons.add(addedLesson);
@@ -861,7 +884,10 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(isUpdating ? 'Data updated successfully' : 'All data submitted successfully')),
+      SnackBar(
+          content: Text(isUpdating
+              ? 'Data updated successfully'
+              : 'All data submitted successfully')),
     );
   }
 }

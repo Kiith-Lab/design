@@ -326,9 +326,31 @@ class Get1
     }
 
     function addCoachDetails($json)
-    {
-        $json = json_decode($json, true);
-        try {
+{
+    $json = json_decode($json, true);
+    try {
+        // Check if coach_detail_content is an array and handle each entry
+        if (is_array($json['coach_detail_content'])) {
+            foreach ($json['coach_detail_content'] as $content) {
+                $sql = "INSERT INTO tbl_coach_detail (	
+                coach_detail_coachheaderId,
+                coach_detail_content,
+                coach_detail_renarks	
+                ) VALUES (
+                :coach_detail_coachheaderId,	
+                :coach_detail_content,	
+                :coach_detail_renarks)";
+                $stmt = $this->pdo->prepare($sql);
+                $stmt->bindParam(':coach_detail_coachheaderId', $json['coach_detail_coachheaderId'], PDO::PARAM_STR);
+                
+                // Bind each content entry separately
+                $stmt->bindParam(':coach_detail_content', $content, PDO::PARAM_STR);
+                
+                $stmt->bindParam(':coach_detail_renarks', $json['coach_detail_renarks'], PDO::PARAM_STR);
+                $stmt->execute();
+            }
+        } else {
+            // If it's not an array, insert it directly
             $sql = "INSERT INTO tbl_coach_detail (	
             coach_detail_coachheaderId,
             coach_detail_content,
@@ -342,16 +364,19 @@ class Get1
             $stmt->bindParam(':coach_detail_content', $json['coach_detail_content'], PDO::PARAM_STR);
             $stmt->bindParam(':coach_detail_renarks', $json['coach_detail_renarks'], PDO::PARAM_STR);
             $stmt->execute();
-            $lastInsertId = $this->pdo->lastInsertId();
-            return json_encode(['success' => true, 'id' => $lastInsertId]);
-        } catch (PDOException $e) {
-            error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
-            return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
-        } catch (Exception $e) {
-            error_log("General error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
-            return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
         }
+
+        // Return the last inserted ID for the last entry
+        $lastInsertId = $this->pdo->lastInsertId();
+        return json_encode(['success' => true, 'id' => $lastInsertId]);
+    } catch (PDOException $e) {
+        error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+        return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
+    } catch (Exception $e) {
+        error_log("General error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+        return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
     }
+}
     function addFolder($json)
     {
         $json = json_decode($json, true);
@@ -462,7 +487,19 @@ class Get1
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute();
             $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            return json_encode(['folders' => $returnValue]);
+
+            // Filter out duplicate project IDs
+            $uniqueFolders = [];
+            $projectIds = [];
+
+            foreach ($returnValue as $folder) {
+                if (!in_array($folder['projectId'], $projectIds)) {
+                    $uniqueFolders[] = $folder;
+                    $projectIds[] = $folder['projectId'];
+                }
+            }
+
+            return json_encode(['folders' => $uniqueFolders]);
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
             return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
@@ -471,6 +508,10 @@ class Get1
             return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
         }
     }
+    // function getCard(){
+    //     try {
+    //         $sql = 'SELECT * ';
+    // }
 
 
     
