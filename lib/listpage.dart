@@ -702,9 +702,24 @@ class FolderDetailPage extends StatelessWidget {
             ),
           ),
           back: Container(
-            width: 300,
-            height: 200,
-            color: Colors.green,
+            width: 300,  // Increased width
+            height: 600, // Increased height
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.purple, Colors.blue],
+              ),
+              borderRadius: BorderRadius.circular(15),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  spreadRadius: 3,
+                  blurRadius: 7,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
             child: Center(
               child: Text(
                 folder['back_content'] ?? 'No content',
