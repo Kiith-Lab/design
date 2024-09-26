@@ -660,7 +660,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Empathy Project'),
+        title: const Text('Empathy Project'),
         backgroundColor: Colors.green.shade600,
       ),
       body: SingleChildScrollView(
@@ -669,11 +669,11 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildModeDropdown(),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             _buildTextField(durationController, 'Duration'),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             _buildTextField(activitiesController, 'Activities'),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             _buildAddButton('Add Activity', () {
               setState(() {
                 addedActivities.add(activitiesController.text);
@@ -681,14 +681,14 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
               });
             }),
             _buildList(addedActivities),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             _buildLessonDropdown(),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             _buildAddButton('Add Lesson', _addLesson),
             _buildList(selectedLessons.map((lesson) => lesson['cards_title'] as String).toList()),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             _buildTextField(outputsController, 'Outputs'),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             _buildAddButton('Add Output', () {
               setState(() {
                 addedOutputs.add(outputsController.text);
@@ -696,9 +696,9 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
               });
             }),
             _buildList(addedOutputs),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             _buildTextField(instructionsController, 'Instructions'),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             _buildAddButton('Add Instruction', () {
               setState(() {
                 addedInstructions.add(instructionsController.text);
@@ -706,9 +706,9 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
               });
             }),
             _buildList(addedInstructions),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             _buildTextField(coachDetailsController, 'Coach Details'),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             _buildAddButton('Add Coach Detail', () {
               setState(() {
                 addedCoachDetails.add(coachDetailsController.text);
@@ -716,14 +716,14 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
               });
             }),
             _buildList(addedCoachDetails),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _submitAll,
-              child: Text('Submit All'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green.shade600,
-                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
               ),
+              child: Text('Submit All'),
             ),
           ],
         ),
@@ -733,7 +733,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
 
   Widget _buildModeDropdown() {
     return DropdownButtonFormField<String>(
-      decoration: InputDecoration(
+      decoration: const InputDecoration(
         labelText: 'Select Mode',
         border: OutlineInputBorder(),
       ),
@@ -778,7 +778,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       controller: controller,
       decoration: InputDecoration(
         labelText: label,
-        border: OutlineInputBorder(),
+        border: const OutlineInputBorder(),
       ),
       maxLines: 3,
     );
@@ -787,10 +787,10 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   Widget _buildAddButton(String label, VoidCallback onPressed) {
     return ElevatedButton(
       onPressed: onPressed,
-      child: Text(label),
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.green.shade600,
       ),
+      child: Text(label),
     );
   }
 
@@ -808,7 +808,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
 
   Widget _buildLessonDropdown() {
     return DropdownButtonFormField<String>(
-      decoration: InputDecoration(
+      decoration: const InputDecoration(
         labelText: 'Select a lesson',
         border: OutlineInputBorder(),
       ),
@@ -839,7 +839,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select a lesson')),
+        const SnackBar(content: Text('Please select a lesson')),
       );
     }
   }

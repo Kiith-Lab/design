@@ -119,7 +119,7 @@ class _AdminState extends State<Administrator> {
                                     width: 100,
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 10),
-                                    child: Column(
+                                    child: const Column(
                                       children: [
                                         SizedBox(
                                           height: 400,
@@ -130,14 +130,14 @@ class _AdminState extends State<Administrator> {
                                                   width: double.infinity,
                                                   child: Padding(
                                                     padding:
-                                                        const EdgeInsets.all(
+                                                        EdgeInsets.all(
                                                             8.0),
                                                     child: Row(
                                                       children: [
                                                         ShadAvatar(
                                                           'https://avatars.githubusercontent.com/u/124599?v=4',
                                                         ),
-                                                        const SizedBox(
+                                                        SizedBox(
                                                             width: 5),
                                                         Expanded(
                                                           child: Column(
@@ -164,14 +164,14 @@ class _AdminState extends State<Administrator> {
                                                     ),
                                                   ),
                                                 ),
-                                                const SizedBox(
+                                                SizedBox(
                                                   height: 10,
                                                 ),
                                                 ShadCard(
                                                   width: double.infinity,
                                                   child: Padding(
                                                     padding:
-                                                        const EdgeInsets.all(
+                                                        EdgeInsets.all(
                                                             8.0),
                                                     child: Row(
                                                       children: [
