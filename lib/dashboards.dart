@@ -1,11 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:http/http.dart' as http;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+
+import 'config.dart';
 
 void main() {
   runApp(const MaterialApp(home: Dashboard()));
@@ -56,7 +59,7 @@ class _DashboardsState extends State<Dashboards> {
   Future<void> fetchFolders() async {
     try {
       final response = await http.post(
-        Uri.parse('http://localhost/design/lib/api/view.php'),
+        Uri.parse('${baseUrl}lib/api/view.php'),
         body: {'operation': 'getFolders'},
       );
 
@@ -92,7 +95,7 @@ class _DashboardsState extends State<Dashboards> {
   Future<void> fetchUsers() async {
     try {
       final response = await http.post(
-        Uri.parse('http://localhost/design/lib/api/view.php'),
+        Uri.parse('${baseUrl}lib/api/view.php'),
         body: {'operation': 'getUser'},
       );
 
@@ -113,7 +116,7 @@ class _DashboardsState extends State<Dashboards> {
   Future<void> fetchSchools() async {
     try {
       final response = await http.post(
-        Uri.parse('http://localhost/design/lib/api/view.php'),
+        Uri.parse('${baseUrl}lib/api/view.php'),
         body: {'operation': 'getSchool'},
       );
 
@@ -134,7 +137,7 @@ class _DashboardsState extends State<Dashboards> {
   Future<void> fetchInstructors() async {
     try {
       final response = await http.post(
-        Uri.parse('http://localhost/design/lib/api/view.php'),
+        Uri.parse('${baseUrl}lib/api/view.php'),
         body: {'operation': 'getInstructors'},
       );
 
@@ -209,7 +212,6 @@ class _DashboardsState extends State<Dashboards> {
                   .map((item) => item['school_name']?.toString() ?? '')
                   .where((name) => name.isNotEmpty)
                   .toSet()
-                  
             ];
 
             List<String> departmentNames = [
@@ -218,7 +220,6 @@ class _DashboardsState extends State<Dashboards> {
                   .map((item) => item['department_name']?.toString() ?? '')
                   .where((name) => name.isNotEmpty)
                   .toSet()
-                  
             ];
 
             return Dialog(
