@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'config.dart';
+
 class MyProjectPage extends StatefulWidget {
   const MyProjectPage({super.key});
 
@@ -18,7 +20,7 @@ class _MyProjectPageState extends State<MyProjectPage> {
   final TextEditingController _endDateController = TextEditingController();
 
   Future<void> _addProject() async {
-    const String url = "http://localhost/design/lib/api/add.php";
+    const String url = "${baseUrl}add.php";
     final Map<String, dynamic> requestBody = {
       'operation': 'addProject',
       'json': jsonEncode({
@@ -65,7 +67,7 @@ class _MyProjectPageState extends State<MyProjectPage> {
   }
 
   Future<void> _fetchAllDataAndNavigate(int projectId) async {
-    const String url = "http://localhost/design/lib/api/view.php";
+    const String url = "${baseUrl}view.php";
     final Map<String, String> requestBody = {
       'operation': 'getProject',
     };

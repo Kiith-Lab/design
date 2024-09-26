@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import 'config.dart';
+
 void main() {
   runApp(const MaterialApp(home: UserDetailPage()));
 }
@@ -100,7 +102,7 @@ class _UserDetailPageState extends State<UserDetailPage> {
 
   Future<List<Map<String, dynamic>>> fetchUsers() async {
     final response = await http.post(
-      Uri.parse('http://localhost/design/lib/api/view.php'),
+      Uri.parse('${baseUrl}view.php'),
       body: {'operation': 'getUser'},
     );
 

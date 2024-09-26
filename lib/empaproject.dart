@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'config.dart';
+
 class EmpathyProjectPage extends StatefulWidget {
   final int projectId;
   const EmpathyProjectPage({super.key, required this.projectId});
@@ -56,7 +58,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
 
   Future<void> fetchModes() async {
     try {
-      String url = "http://localhost/design/lib/api/view.php";
+      String url = "${baseUrl}view.php";
       Map<String, String> requestBody = {
         'operation': 'GetModes',
       };
@@ -94,7 +96,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
 
   Future<void> fetchLessons(String modeId) async {
     try {
-      String url = "http://localhost/design/lib/api/view.php";
+      String url = "${baseUrl}view.php";
       Map<String, String> requestBody = {
         'operation': 'getLessons',
         'modeId': modeId,
@@ -154,7 +156,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
 
     try {
-      String url = "http://localhost/design/lib/api/masterlist.php";
+      String url = "${baseUrl}masterlist.php";
       Map<String, String> requestBody = {
         'operation': 'addMode',
         'json': jsonEncode({
@@ -208,7 +210,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
 
     try {
-      String url = "http://localhost/design/lib/api/masterlist.php";
+      String url = "${baseUrl}masterlist.php";
       Map<String, String> requestBody = {
         'operation': 'addDuration',
         'json': jsonEncode({
@@ -258,7 +260,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
 
     try {
-      String url = "http://localhost/design/lib/api/masterlist.php";
+      String url = "${baseUrl}masterlist.php";
       Map<String, String> requestBody = {
         'operation': 'addActivity',
         'json': jsonEncode({
@@ -313,7 +315,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       return;
     }
 
-    String url = "http://localhost/design/lib/api/masterlist.php";
+    String url = "${baseUrl}masterlist.php";
     Map<String, String> requestBody = {
       'operation': 'addCards',
       'json': jsonEncode({
@@ -371,7 +373,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
 
     try {
-      String url = "http://localhost/design/lib/api/masterlist.php";
+      String url = "${baseUrl}masterlist.php";
       Map<String, String> requestBody = {
         'operation': 'addOutput',
         'json': jsonEncode({
@@ -422,7 +424,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
 
     try {
-      String url = "http://localhost/design/lib/api/masterlist.php";
+      String url = "${baseUrl}masterlist.php";
       Map<String, String> requestBody = {
         'operation': 'addInstruction',
         'json': jsonEncode({
@@ -468,7 +470,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
 
     try {
-      String url = "http://localhost/design/lib/api/masterlist.php";
+      String url = "${baseUrl}masterlist.php";
       Map<String, String> requestBody = {
         'operation': 'addCoachDetails',
         'json': jsonEncode({
@@ -556,7 +558,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
         return;
       }
 
-      String url = "http://localhost/design/lib/api/masterlist.php";
+      String url = "${baseUrl}masterlist.php";
       Map<String, String> requestBody = {
         'operation': 'addFolder',
         'json': jsonEncode({
@@ -620,7 +622,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
 
     try {
-      String url = "http://localhost/design/lib/api/masterlist.php";
+      String url = "${baseUrl}masterlist.php";
       Map<String, String> requestBody = {
         'operation': 'updateData',
         'json': jsonEncode({
