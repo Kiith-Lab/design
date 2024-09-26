@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'config.dart';
+
 void main() {
   runApp(const MaterialApp(home: Empathize()));
 }
@@ -193,7 +195,7 @@ class _EmpathizeState extends State<Empathize> {
   }
 
   Future<List> getContacts() async {
-    String url = "http://localhost/design/lib/api/view.php";
+    String url = "${baseUrl}view.php";
     Map<String, String> requestBody = {
       'operation': 'getContacts',
     };
@@ -233,7 +235,7 @@ class _EmpathizeState extends State<Empathize> {
   }
 
   Future<List> getBack() async {
-    String url = "http://localhost/design/lib/api/view.php";
+    String url = "${baseUrl}view.php";
     Map<String, String> requestBody = {
       'operation': 'getBack',
     };
@@ -310,7 +312,7 @@ class _FlashcardPageState extends State<FlashcardPage>
 
   Future<void> fetchBackCards() async {
     try {
-      String url = "http://localhost/design/lib/api/view.php";
+      String url = "${baseUrl}view.php";
       Map<String, String> requestBody = {
         'operation': 'getBack4',
         'cardId': widget.cardId.toString(), // Ensure cardId is being passed

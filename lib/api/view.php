@@ -606,6 +606,27 @@ LEFT JOIN tbl_users ON tbl_project.project_userId = tbl_users.users_id";
             return json_encode(['error' => 'An error occurred']);
         }
     }
+    function getDepartments()
+    {
+        try {
+            $sql = "SELECT * FROM tbl_department";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+
+            $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            error_log("SQL Query: $sql");
+            error_log("Result: " . print_r($returnValue, true));
+
+            return json_encode($returnValue);
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            return json_encode(['error' => 'Database error occurred']);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage());
+            return json_encode(['error' => 'An error occurred']);
+        }
+    }
 
 
 }
@@ -687,6 +708,9 @@ switch ($operation) {
         break;
     case "getUserSchoolDepartment":
         echo $get->getUserSchoolDepartment();
+        break;
+    case "getDepartments":
+        echo $get->getDepartments();
         break;
     default:
         echo json_encode(['error' => 'Invalid operation']);

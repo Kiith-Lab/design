@@ -8,6 +8,9 @@ import 'package:printing/printing.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flip_card/flip_card.dart';
 
+import 'config.dart';
+
+
 class ListPage extends StatefulWidget {
   const ListPage({super.key});
 
@@ -24,14 +27,14 @@ class _ListPageState extends State<ListPage> {
     _fetchFolders();
   }
 
-  Future<void> _fetchFolders() async {
-    try {
-      final response = await http.post(
-        Uri.parse('http://localhost/design/lib/api/masterlist.php'),
-        body: {
-          'operation': 'getFolder',
-        },
-      );
+Future<void> _fetchFolders() async {
+  try {
+    final response = await http.post(
+      Uri.parse('http://localhost/design/lib/api/masterlist.php'),
+      body: {
+        'operation': 'getFolder',
+      },
+    );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
@@ -207,7 +210,7 @@ class _ListPageState extends State<ListPage> {
     };
     try {
       final response = await http.post(
-        Uri.parse('http://localhost/design/lib/api/add.php'),
+        Uri.parse('${baseUrl}add.php'),
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: {
           'operation': 'addfolder',
@@ -727,105 +730,52 @@ class FolderDetailPage extends StatelessWidget {
         ],
       ),
       body: Center(
-        child: folder['project_cardsId'] != null &&
-                (folder['project_cardsId'] as List).isNotEmpty
-            ? PageView.builder(
-                itemCount: (folder['project_cardsId'] as List).length,
-                itemBuilder: (context, index) {
-                  return FlipCard(
-                    direction: FlipDirection.HORIZONTAL,
-                    speed: 1000,
-                    onFlipDone: (status) {
-                      print(status);
-                    },
-                    front: Container(
-                      width: 300, // Increased width
-                      height: 600, // Increased height
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Colors.blue, Colors.purple],
-                        ),
-                        borderRadius: BorderRadius.circular(15),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
-                            spreadRadius: 3,
-                            blurRadius: 7,
-                            offset: Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Text(
-                          folder['cards_content'] ?? 'No content',
-                          style: TextStyle(color: Colors.white, fontSize: 18),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                    back: Container(
-                      width: 300,
-                      height: 200,
-                      color: Colors.green,
-                      child: Center(
-                        child: Text(
-                          folder['back_content'] ?? 'No content',
-                          style: TextStyle(color: Colors.white, fontSize: 18),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              )
-            : FlipCard(
-                direction: FlipDirection.HORIZONTAL,
-                speed: 1000,
-                onFlipDone: (status) {
-                  print(status);
-                },
-                front: Container(
-                  width: 300, // Increased width
-                  height: 600, // Increased height
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Colors.blue, Colors.purple],
-                    ),
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        spreadRadius: 3,
-                        blurRadius: 7,
-                        offset: Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Text(
-                      folder['cards_content'] ?? 'No content',
-                      style: TextStyle(color: Colors.white, fontSize: 18),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-                back: Container(
-                  width: 300,
-                  height: 200,
-                  color: Colors.green,
-                  child: Center(
-                    child: Text(
-                      folder['back_content'] ?? 'No content',
-                      style: TextStyle(color: Colors.white, fontSize: 18),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
+        child: FlipCard(
+          direction: FlipDirection.HORIZONTAL,
+          speed: 1000,
+          onFlipDone: (status) {
+            print(status);
+          },
+          front: Container(
+            width: 300,  // Increased width
+            height: 600, // Increased height
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.blue, Colors.purple],
               ),
+              borderRadius: BorderRadius.circular(15),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  spreadRadius: 3,
+                  blurRadius: 7,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Text(
+                folder['cards_content'] ?? 'No content',
+                style: TextStyle(color: Colors.white, fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+          back: Container(
+            width: 300,
+            height: 200,
+            color: Colors.green,
+            child: Center(
+              child: Text(
+                folder['back_content'] ?? 'No content',
+                style: TextStyle(color: Colors.white, fontSize: 18),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _addLesson(context),

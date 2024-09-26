@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'config.dart';
+
 void main() {
   runApp(const MaterialApp(home: Ideate()));
 }
@@ -192,7 +194,7 @@ class _IdeateState extends State<Ideate> {
   }
 
   Future<List> getIdeate() async {
-    String url = "http://localhost/design/lib/api/view.php";
+    String url = "${baseUrl}view.php";
     Map<String, String> requestBody = {
       'operation': 'getIdeate',
     };
@@ -230,7 +232,7 @@ class _IdeateState extends State<Ideate> {
   }
 
   Future<List> getBack2() async {
-    String url = "http://localhost/design/lib/api/view.php";
+    String url = "${baseUrl}view.php";
     Map<String, String> requestBody = {
       'operation': 'getBack2',
     };
@@ -307,7 +309,7 @@ class _FlashcardPageState extends State<FlashcardPage>
 
   Future<void> fetchBackCards() async {
     try {
-      String url = "http://localhost/design/lib/api/view.php";
+      String url = "${baseUrl}view.php";
       Map<String, String> requestBody = {
         'operation': 'getBack2',
         'cardId': widget.cardId.toString(), // Ensure cardId is being passed

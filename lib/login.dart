@@ -1,8 +1,11 @@
-import 'package:flutter/material.dart';
-import 'signup.dart'; // Import the signup page
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+import 'config.dart';
 import 'secondpage.dart'; // Import the second page
+import 'signup.dart'; // Import the signup page
 
 void main() {
   runApp(const LoginAppes());
@@ -51,7 +54,7 @@ class _LoginPageState extends State<LoginPage> {
       try {
         final response = await http.post(
           Uri.parse(
-              'http://localhost/design/lib/api/login.php'), // Use your server's address
+              '${baseUrl}login.php'), // Use your server's address
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
           },

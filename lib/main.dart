@@ -1,8 +1,12 @@
-import 'package:flutter/material.dart';
-import 'signup.dart'; // Import the signup page
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+import 'admin.dart'; // Import the admin page
+import 'config.dart';
 import 'secondpage.dart'; // Import the second page
+import 'signup.dart'; // Import the signup page
 
 void main() {
   runApp(const LoginAppes());
@@ -50,8 +54,7 @@ class _LoginPageState extends State<LoginPage> {
 
       try {
         final response = await http.post(
-          Uri.parse(
-              'http://localhost/design/lib/api/login.php'), // Use your server's address
+          Uri.parse('${baseUrl}login.php'),
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
           },
@@ -63,7 +66,8 @@ class _LoginPageState extends State<LoginPage> {
 
         if (response.statusCode == 200) {
           final result = json.decode(response.body);
-          print('Server response: $result'); // Add this line for debugging
+          print('Server response: $result');
+
           if (result['success']) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -72,13 +76,19 @@ class _LoginPageState extends State<LoginPage> {
                 backgroundColor: Colors.green,
               ),
             );
-            // Print the retrieved data
-            print('Retrieved data: ${result['data']}');
-            // Navigate to the second page on successful login
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const Secondpage()),
-            );
+
+            // Navigate based on user role
+            if (result['data']['users_roleId'] == 1) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const Administrator()),
+              );
+            } else if (result['data']['users_roleId'] == 2) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const Secondpage()),
+              );
+            }
           } else {
             showDialog(
               context: context,
@@ -99,8 +109,7 @@ class _LoginPageState extends State<LoginPage> {
             );
           }
         } else {
-          print(
-              'Server error: ${response.statusCode}'); // Add this line for debugging
+          print('Server error: ${response.statusCode}');
           throw Exception('Server error: ${response.statusCode}');
         }
       } catch (e) {
