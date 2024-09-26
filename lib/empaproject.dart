@@ -663,7 +663,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Empathy Project'),
+        title: const Text(''),
         backgroundColor: Colors.green.shade600,
       ),
       body: SingleChildScrollView(
@@ -862,6 +862,22 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       await addCoachDetails();
       await addToFolder();
     }
+
+    // Clear all text fields after submission
+    setState(() {
+      durationController.clear();
+      activitiesController.clear();
+      outputsController.clear();
+      instructionsController.clear();
+      coachDetailsController.clear();
+      addedActivities.clear();
+      addedOutputs.clear();
+      addedInstructions.clear();
+      addedCoachDetails.clear();
+      selectedLessons.clear();
+      selectedLesson = null;
+      selectedMode = null;
+    });
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(isUpdating ? 'Data updated successfully' : 'All data submitted successfully')),
