@@ -317,6 +317,7 @@ class _DashboardsState extends State<Dashboards> {
                           final role = item['role_name'];
                           final projectTitle = item['Lesson'];
                           final schoolName = item['school_name'];
+                          final departmentName = item['department_name'];
                           return Card(
                             elevation: 2,
                             margin: const EdgeInsets.symmetric(vertical: 8),
@@ -369,11 +370,22 @@ class _DashboardsState extends State<Dashboards> {
                                         fontSize: 14,
                                       ),
                                     ),
+                                  if (title == 'Schools' &&
+                                      departmentName != null)
+                                    Text(
+                                      departmentName,
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 14,
+                                      ),
+                                    ),
                                 ],
                               ),
                               onTap: () {
                                 if (title == 'Folders') {
                                   _showFolderDetails(context, item);
+                                } else if (title == 'Schools') {
+                                  _showDepartmentDetails(context, item);
                                 }
                               },
                             ),
@@ -497,6 +509,31 @@ class _DashboardsState extends State<Dashboards> {
   }
 
   Widget _buildFolderDetail(String label, String value) {
+    return ListTile(
+      title: Text(label),
+      subtitle: Text(value),
+    );
+  }
+
+  void _showDepartmentDetails(BuildContext context, dynamic school) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Department Details'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildDepartmentDetail(
+                  'Department Name', school['department_name'] ?? 'N/A'),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDepartmentDetail(String label, String value) {
     return ListTile(
       title: Text(label),
       subtitle: Text(value),
