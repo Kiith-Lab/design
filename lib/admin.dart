@@ -91,7 +91,7 @@ class _AdminState extends State<Administrator> {
                               : _selectedIndex == 1
                                   ? 'View User'
                                   : 'Project',
-                          style: TextStyle(
+                          style: const TextStyle(
                               color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                       ],
@@ -107,6 +107,14 @@ class _AdminState extends State<Administrator> {
                                 padding: const EdgeInsets.all(8.0),
                                 child: ShadDialog(
                                   title: const Text('Settings'),
+                                  actions: [
+                                    ShadButton.destructive(
+                                      child: const Text('Logout'),
+                                      onPressed: () {
+                                        Navigator.of(dialogContext).pop();
+                                      },
+                                    ),
+                                  ],
                                   child: Container(
                                     width: 100,
                                     padding: const EdgeInsets.symmetric(
@@ -179,19 +187,11 @@ class _AdminState extends State<Administrator> {
                                       ],
                                     ),
                                   ),
-                                  actions: [
-                                    ShadButton.destructive(
-                                      child: const Text('Logout'),
-                                      onPressed: () {
-                                        Navigator.of(dialogContext).pop();
-                                      },
-                                    ),
-                                  ],
                                 ),
                               ),
                             );
                           },
-                          child: CircleAvatar(
+                          child: const CircleAvatar(
                             backgroundImage: NetworkImage(
                               'https://avatars.githubusercontent.com/u/124599?v=4',
                             ),
@@ -210,7 +210,7 @@ class _AdminState extends State<Administrator> {
               child: Wrap(
                 children: [
                   BottomNavigationBar(
-                    items: <BottomNavigationBarItem>[
+                    items: const <BottomNavigationBarItem>[
                       BottomNavigationBarItem(
                         icon: Icon(Icons.home_rounded),
                         label: 'Home',

@@ -12,7 +12,7 @@ void main() {
 }
 
 class Dashboard extends StatelessWidget {
-  const Dashboard({Key? key}) : super(key: key);
+  const Dashboard({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class Dashboard extends StatelessWidget {
 }
 
 class Dashboards extends StatefulWidget {
-  const Dashboards({Key? key}) : super(key: key);
+  const Dashboards({super.key});
 
   @override
   _DashboardsState createState() => _DashboardsState();
@@ -39,10 +39,10 @@ class _DashboardsState extends State<Dashboards> {
   List<dynamic> schools = [];
   int instructorCount = 0;
   List<dynamic> instructors = [];
-  String _searchQuery = '';
-  String _sortOrder = 'all';
-  String _schoolFilter = 'all';
-  String _departmentFilter = 'all';
+  final String _searchQuery = '';
+  final String _sortOrder = 'all';
+  final String _schoolFilter = 'all';
+  final String _departmentFilter = 'all';
 
   @override
   void initState() {
@@ -209,7 +209,7 @@ class _DashboardsState extends State<Dashboards> {
                   .map((item) => item['school_name']?.toString() ?? '')
                   .where((name) => name.isNotEmpty)
                   .toSet()
-                  .toList()
+                  
             ];
 
             List<String> departmentNames = [
@@ -218,7 +218,7 @@ class _DashboardsState extends State<Dashboards> {
                   .map((item) => item['department_name']?.toString() ?? '')
                   .where((name) => name.isNotEmpty)
                   .toSet()
-                  .toList()
+                  
             ];
 
             return Dialog(
@@ -415,8 +415,7 @@ class _DashboardsState extends State<Dashboards> {
               _buildFolderDetail('Activity', folder['Activity'] ?? 'N/A'),
               _buildFolderDetail('Lesson', folder['Lesson'] ?? 'N/A'),
               _buildFolderDetail('Output', folder['Output'] ?? 'N/A'),
-              _buildFolderDetail(
-                  'Coach Header', folder['Instruction'] ?? 'N/A'),
+              _buildFolderDetail('Instruction', folder['Instruction'] ?? 'N/A'),
               _buildFolderDetail(
                   'Coach Detail', folder['CoachDetail'] ?? 'N/A'),
               ElevatedButton(
@@ -466,7 +465,7 @@ class _DashboardsState extends State<Dashboards> {
                 _buildPDFTableRow('Lesson', folder['Lesson'] ?? 'N/A'),
                 _buildPDFTableRow('Output', folder['Output'] ?? 'N/A'),
                 _buildPDFTableRow(
-                    'Coach Header', folder['Instruction'] ?? 'N/A'),
+                    'Instruction', folder['Instruction'] ?? 'N/A'),
                 _buildPDFTableRow(
                     'Coach Detail', folder['CoachDetail'] ?? 'N/A'),
               ],
@@ -603,7 +602,7 @@ class _DashboardsState extends State<Dashboards> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _buildInfoCard(
-                      'User Accounts',
+                      'Folders',
                       userCount.toString(),
                       Icons.person,
                       Colors.blue,

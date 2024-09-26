@@ -258,14 +258,14 @@ Future<void> _fetchFolders() async {
               pw.Table.fromTextArray(
                 context: context,
                 headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 14),
-                cellStyle: pw.TextStyle(fontSize: 12),
-                headerDecoration: pw.BoxDecoration(color: PdfColors.grey300),
+                cellStyle: const pw.TextStyle(fontSize: 12),
+                headerDecoration: const pw.BoxDecoration(color: PdfColors.grey300),
                 cellAlignment: pw.Alignment.centerLeft,
                 headerHeight: 25,
                 cellHeight: 40,
                 columnWidths: {
-                  0: pw.FlexColumnWidth(2),
-                  1: pw.FlexColumnWidth(1),
+                  0: const pw.FlexColumnWidth(2),
+                  1: const pw.FlexColumnWidth(1),
                 },
                 data: <List<String>>[
                   <String>['Folder Name', 'Module', 'Project Code', 'Project Description', 'Start Date', 'End Date'],
@@ -611,7 +611,7 @@ class FolderDetailPage extends StatelessWidget {
             child: Center(
               child: Text(
                 folder['cards_content'] ?? 'No content',
-                style: TextStyle(color: Colors.white, fontSize: 18),
+                style: const TextStyle(color: Colors.white, fontSize: 18),
                 textAlign: TextAlign.center,
               ),
             ),
@@ -623,7 +623,7 @@ class FolderDetailPage extends StatelessWidget {
             child: Center(
               child: Text(
                 folder['back_content'] ?? 'No content',
-                style: TextStyle(color: Colors.white, fontSize: 18),
+                style: const TextStyle(color: Colors.white, fontSize: 18),
                 textAlign: TextAlign.center,
               ),
             ),

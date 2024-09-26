@@ -9,7 +9,7 @@ void main() {
 }
 
 class UserDetailPage extends StatefulWidget {
-  const UserDetailPage({Key? key}) : super(key: key);
+  const UserDetailPage({super.key});
 
   @override
   _UserDetailPageState createState() => _UserDetailPageState();
@@ -116,7 +116,7 @@ class _UserDetailPageState extends State<UserDetailPage> {
 class UserDetailPages extends StatefulWidget {
   final Map<String, dynamic> user;
 
-  const UserDetailPages({Key? key, required this.user}) : super(key: key);
+  const UserDetailPages({super.key, required this.user});
 
   @override
   _UserDetailPagesState createState() => _UserDetailPagesState();
@@ -153,7 +153,7 @@ class _UserDetailPagesState extends State<UserDetailPages> {
                 );
               }).toList(),
             ),
-            SizedBox(
+            const SizedBox(
               height: 20,
             ),
 
