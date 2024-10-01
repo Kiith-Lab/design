@@ -551,54 +551,157 @@ class _DashboardsState extends State<Dashboards> {
     _isDialogOpen = true; // Set the flag to true when opening the dialog
 
     fetchDepartment().then((_) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Department Details'),
-            content: Container(
-              width: 300, // Set a width for the dialog
-              height: 400, // Set a height for the dialog
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: departments.length,
-                      itemBuilder: (context, index) {
-                        final department = departments[index];
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 4),
-                          child: Container(
-                            height: 75, // Fixed height for each card
-                            child: _buildDepartmentDetail(
-                              department['department_name'] ?? 'N/A',
+      if (departments.isNotEmpty) {
+        // Check if departments are available
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Department Details'),
+              content: SizedBox(
+                width: 300,
+                height: 400,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: departments.length,
+                        itemBuilder: (context, index) {
+                          final department = departments[index];
+                          return GestureDetector(
+                            onTap: () async {
+                              final departmentName =
+                                  department['department_name'];
+                              final schoolname = school['school_name'];
+
+                              final jsondata = jsonEncode({
+                                'schoolname': schoolname,
+                                'departmentname': departmentName,
+                              });
+
+                              final response = await http.post(
+                                Uri.parse('${baseUrl}view.php'),
+                                body: {
+                                  "json": jsondata,
+                                  "operation": "getUsers"
+                                },
+                              );
+
+                              print(response.body);
+
+                              if (response.statusCode == 200) {
+                                final dynamic decodedResponse =
+                                    json.decode(response.body);
+                                if (decodedResponse is List) {
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: Text('Users in $departmentName'),
+                                        content: SizedBox(
+                                          width: 300,
+                                          height: 400,
+                                          child: ListView.builder(
+                                            itemCount: decodedResponse.length,
+                                            itemBuilder: (context, index) {
+                                              final user =
+                                                  decodedResponse[index];
+                                              return ListTile(
+                                                onTap: () {
+                                                  showDialog(
+                                                    context: context,
+                                                    builder:
+                                                        (BuildContext context) {
+                                                      return AlertDialog(
+                                                        title: Text(
+                                                            '${user['users_firstname'] ?? 'N/A'} ${user['users_lastname'] ?? 'NA'}'),
+                                                        content: Text(user[
+                                                                'users_lastname'] ??
+                                                            'N/A'),
+                                                        actions: [
+                                                          TextButton(
+                                                            child: const Text(
+                                                                'Close'),
+                                                            onPressed: () {
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop();
+                                                            },
+                                                          ),
+                                                        ],
+                                                      );
+                                                    },
+                                                  );
+                                                },
+                                                title: Text(
+                                                    user['users_firstname'] ??
+                                                        'N/A'),
+                                                leading:
+                                                    const Icon(Icons.person),
+                                                trailing:
+                                                    const Icon(Icons.info),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                } else {
+                                  print(
+                                      '1Failed to fetch users for department $departmentName');
+                                }
+                              } else {
+                                print(
+                                    '2Failed to fetch users for department $departmentName');
+                              }
+                            },
+                            child: Card(
+                              margin: const EdgeInsets.symmetric(vertical: 4),
+                              child: SizedBox(
+                                height: 75,
+                                child: ListTile(
+                                  leading: const Icon(Icons.group),
+                                  title: Text(
+                                    department['department_name'] ?? 'N/A',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  subtitle: const Text(
+                                    'Tap to view users',
+                                    style: TextStyle(color: Colors.grey),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      child: const Text('Close'),
-                      onPressed: () {
-                        _isDialogOpen =
-                            false; // Reset the flag when closing the dialog
-                        Navigator.of(context).pop();
-                      },
+                    const SizedBox(height: 16),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        child: const Text('Close'),
+                        onPressed: () {
+                          _isDialogOpen = false;
+                          Navigator.of(context).pop();
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          );
-        },
-      ).then((_) {
-        _isDialogOpen = false; // Reset the flag when the dialog is dismissed
-      });
+            );
+          },
+        ).then((_) {
+          _isDialogOpen = false;
+        });
+      } else {
+        // Handle the case where there are no departments
+        print('No departments available');
+      }
     });
   }
 
