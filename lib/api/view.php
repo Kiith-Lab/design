@@ -630,14 +630,25 @@ class Get
             }
 
             $sql = "SELECT 
-                    tbl_folder.folder_id AS FolderId,
-                    tbl_project.project_title AS ProjectTitle
-                FROM 
-                    tbl_folder
-                INNER JOIN 
-                    tbl_project ON tbl_folder.projectId = tbl_project.project_id
-                INNER JOIN 
-                    tbl_users ON tbl_project.project_userId = tbl_users.users_id
+            tbl_users.users_firstname AS Name,
+            tbl_module_master.module_master_name AS Mode, 
+            tbl_activities_header.activities_header_duration AS Duration,  
+            tbl_activities_details.activities_details_content AS Activity, 
+            tbl_project.project_title AS Lesson, 
+            tbl_outputs.outputs_content AS Output, 
+            tbl_instruction.instruction_content AS Instruction, 
+            tbl_coach_detail.coach_detail_content AS CoachDetail
+            FROM 
+            tbl_folder
+            LEFT JOIN tbl_project ON tbl_folder.projectId = tbl_project.project_id
+            LEFT JOIN tbl_project_modules ON tbl_folder.project_moduleId = tbl_project_modules.project_modules_id
+            LEFT JOIN tbl_module_master ON tbl_project_modules.project_modules_masterId = tbl_module_master.module_master_id
+            LEFT JOIN tbl_activities_details ON tbl_folder.activities_detailId = tbl_activities_details.activities_details_id
+            LEFT JOIN tbl_activities_header ON tbl_activities_header.activities_header_modulesId = tbl_activities_details.activities_details_id
+            LEFT JOIN tbl_outputs ON tbl_folder.outputId = tbl_outputs.outputs_id
+            LEFT JOIN tbl_instruction ON tbl_folder.instructionId = tbl_instruction.instruction_id
+            LEFT JOIN tbl_coach_detail ON tbl_folder.coach_detailsId = tbl_coach_detail.coach_detail_id
+            LEFT JOIN tbl_users ON tbl_project.project_userId = tbl_users.users_id
                 WHERE 
                     tbl_users.users_id = :users_id";
 
@@ -793,7 +804,7 @@ switch ($operation) {
         echo $get->getUsers($json);
         break;
     case "getFolderId":
-        echo $get->getFolderId($jsonge);
+        echo $get->getFolderId($json);
         break;
     default:
         echo json_encode(['error' => 'Invalid operation']);

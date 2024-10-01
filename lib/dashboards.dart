@@ -608,31 +608,97 @@ class _DashboardsState extends State<Dashboards> {
                                               final user =
                                                   decodedResponse[index];
                                               return ListTile(
-                                                onTap: () {
-                                                  showDialog(
-                                                    context: context,
-                                                    builder:
-                                                        (BuildContext context) {
-                                                      return AlertDialog(
-                                                        title: Text(
-                                                            '${user['users_firstname'] ?? 'N/A'} ${user['users_lastname'] ?? 'NA'}'),
-                                                        content: Text(user[
-                                                                'users_lastname'] ??
-                                                            'N/A'),
-                                                        actions: [
-                                                          TextButton(
-                                                            child: const Text(
-                                                                'Close'),
-                                                            onPressed: () {
-                                                              Navigator.of(
-                                                                      context)
-                                                                  .pop();
-                                                            },
-                                                          ),
-                                                        ],
-                                                      );
+                                                onTap: () async {
+                                                  final usersId = user[
+                                                      'users_id']; // Assuming users_id is available in the user data
+
+                                                  final jsondata = jsonEncode({
+                                                    'users_id': usersId,
+                                                  });
+
+                                                  // Fetch project titles for the user
+                                                  final projectResponse =
+                                                      await http.post(
+                                                    Uri.parse(
+                                                        '${baseUrl}view.php'),
+                                                    body: {
+                                                      "json": jsondata,
+                                                      "operation": "getFolderId"
                                                     },
                                                   );
+                                                  print(
+                                                      "Projects: ${projectResponse.body}");
+
+                                                  if (projectResponse
+                                                          .statusCode ==
+                                                      200) {
+                                                    final projectData = json
+                                                        .decode(projectResponse
+                                                            .body);
+                                                    if (projectData is List) {
+                                                      // Display project titles
+                                                      showDialog(
+                                                        context: context,
+                                                        builder: (BuildContext
+                                                            context) {
+                                                          return AlertDialog(
+                                                            title: Text(
+                                                              '${user['users_firstname'] ?? 'N/A'} ${user['users_lastname'] ?? 'NA'}',
+                                                            ),
+                                                            content: SizedBox(
+                                                              width: 300,
+                                                              height: 400,
+                                                              child: ListView
+                                                                  .builder(
+                                                                itemCount:
+                                                                    projectData
+                                                                        .length,
+                                                                itemBuilder:
+                                                                    (context,
+                                                                        index) {
+                                                                  final project =
+                                                                      projectData[
+                                                                          index];
+
+                                                                  return GestureDetector(
+                                                                    onTap: () {
+                                                                      _showFolderDetails(
+                                                                          context,
+                                                                          project);
+                                                                    },
+                                                                    child:
+                                                                        ListTile(
+                                                                      title: Text(
+                                                                          project['Lesson'] ??
+                                                                              'N/A'),
+                                                                    ),
+                                                                  );
+                                                                },
+                                                              ),
+                                                            ),
+                                                            actions: [
+                                                              TextButton(
+                                                                child:
+                                                                    const Text(
+                                                                        'Close'),
+                                                                onPressed: () {
+                                                                  Navigator.of(
+                                                                          context)
+                                                                      .pop();
+                                                                },
+                                                              ),
+                                                            ],
+                                                          );
+                                                        },
+                                                      );
+                                                    } else {
+                                                      print(
+                                                          'Failed to fetch projects for user ${user['users_firstname']}');
+                                                    }
+                                                  } else {
+                                                    print(
+                                                        'Error fetching projects for user ${user['users_firstname']}');
+                                                  }
                                                 },
                                                 title: Text(
                                                     user['users_firstname'] ??
@@ -650,11 +716,11 @@ class _DashboardsState extends State<Dashboards> {
                                   );
                                 } else {
                                   print(
-                                      '1Failed to fetch users for department $departmentName');
+                                      'Failed to fetch users for department $departmentName');
                                 }
                               } else {
                                 print(
-                                    '2Failed to fetch users for department $departmentName');
+                                    'Failed to fetch users for department $departmentName');
                               }
                             },
                             child: Card(
