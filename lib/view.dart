@@ -1,79 +1,116 @@
 import 'package:flutter/material.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
-class Invoice {
-  final String invoice;
-  final String paymentStatus;
-  final String totalAmount;
-  final String paymentMethod;
-
-  Invoice({
-    required this.invoice,
-    required this.paymentStatus,
-    required this.totalAmount,
-    required this.paymentMethod,
-  });
-}
-
-final List<Invoice> invoices = [
-  Invoice(
+const invoices = [
+  (
     invoice: "INV001",
     paymentStatus: "Paid",
     totalAmount: r"$250.00",
     paymentMethod: "Credit Card",
   ),
-  Invoice(
+  (
     invoice: "INV002",
     paymentStatus: "Pending",
     totalAmount: r"$150.00",
     paymentMethod: "PayPal",
   ),
-  // ... Add the rest of the invoices here ...
+  (
+    invoice: "INV003",
+    paymentStatus: "Unpaid",
+    totalAmount: r"$350.00",
+    paymentMethod: "Bank Transfer",
+  ),
+  (
+    invoice: "INV004",
+    paymentStatus: "Paid",
+    totalAmount: r"$450.00",
+    paymentMethod: "Credit Card",
+  ),
+  (
+    invoice: "INV005",
+    paymentStatus: "Paid",
+    totalAmount: r"$550.00",
+    paymentMethod: "PayPal",
+  ),
+  (
+    invoice: "INV006",
+    paymentStatus: "Pending",
+    totalAmount: r"$200.00",
+    paymentMethod: "Bank Transfer",
+  ),
+  (
+    invoice: "INV007",
+    paymentStatus: "Unpaid",
+    totalAmount: r"$300.00",
+    paymentMethod: "Credit Card",
+  ),
 ];
 
-void main() {
-  runApp(const MaterialApp(home: ViewUserPage()));
-}
+class ViewUserPage extends StatelessWidget {
+  const ViewUserPage({
+    super.key,
+  });
 
-class ViewUserPage extends StatefulWidget {
-  const ViewUserPage({super.key});
-
-  @override
-  _ViewUserPageState createState() => _ViewUserPageState();
-}
-
-class _ViewUserPageState extends State<ViewUserPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Invoice Table')),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(
             maxWidth: 600,
+            // added just to center the table vertically
             maxHeight: 450,
           ),
-          child: Table(
-            border: TableBorder.all(),
-            children: [
-              const TableRow(
-                children: [
-                  TableCell(child: Text('Invoice')),
-                  TableCell(child: Text('Status')),
-                  TableCell(child: Text('Method')),
-                  TableCell(child: Text('Amount')),
-                ],
-              ),
-              ...invoices.map(
-                (invoice) => TableRow(
-                  children: [
-                    TableCell(child: Text(invoice.invoice)),
-                    TableCell(child: Text(invoice.paymentStatus)),
-                    TableCell(child: Text(invoice.paymentMethod)),
-                    TableCell(child: Text(invoice.totalAmount)),
-                  ],
-                ),
+          child: ShadTable.list(
+            header: const [
+              ShadTableCell.header(child: Text('Invoice')),
+              ShadTableCell.header(child: Text('Status')),
+              ShadTableCell.header(child: Text('Method')),
+              ShadTableCell.header(
+                alignment: Alignment.centerRight,
+                child: Text('Action'),
               ),
             ],
+            footer: const [
+              ShadTableCell.footer(child: Text('Total')),
+              ShadTableCell.footer(child: Text('')),
+              ShadTableCell.footer(child: Text('')),
+              ShadTableCell.footer(
+                alignment: Alignment.centerRight,
+                child: Text(r'$2500.00'),
+              ),
+            ],
+            columnSpanExtent: (index) {
+              if (index == 2) return const FixedTableSpanExtent(130);
+              if (index == 3) {
+                return const MaxTableSpanExtent(
+                  FixedTableSpanExtent(120),
+                  RemainingTableSpanExtent(),
+                );
+              }
+              // uses the default value
+              return null;
+            },
+            children: invoices.map(
+              (invoice) => [
+                ShadTableCell(
+                  child: Text(
+                    invoice.invoice,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                ShadTableCell(child: Text(invoice.paymentStatus)),
+                ShadTableCell(child: Text(invoice.paymentMethod)),
+                ShadTableCell(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    invoice.totalAmount,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
