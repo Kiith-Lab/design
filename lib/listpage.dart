@@ -7,9 +7,10 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flip_card/flip_card.dart';
+import 'package:excel/excel.dart';
+import 'dart:io';
 
 import 'config.dart';
-
 
 class ListPage extends StatefulWidget {
   const ListPage({super.key});
@@ -27,14 +28,14 @@ class _ListPageState extends State<ListPage> {
     _fetchFolders();
   }
 
-Future<void> _fetchFolders() async {
-  try {
-    final response = await http.post(
-      Uri.parse('http://localhost/design/lib/api/masterlist.php'),
-      body: {
-        'operation': 'getFolder',
-      },
-    );
+  Future<void> _fetchFolders() async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost/design/lib/api/masterlist.php'),
+        body: {
+          'operation': 'getFolder',
+        },
+      );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
@@ -257,6 +258,7 @@ Future<void> _fetchFolders() async {
       ),
     );
   }
+
   Future<void> _generatePDF() async {
     final pdf = pw.Document();
 
@@ -322,6 +324,7 @@ Future<void> _fetchFolders() async {
       print('PDF generation is not supported on this platform');
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -482,19 +485,31 @@ class FolderDetailPage extends StatelessWidget {
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child:
-                  const Text('Close', style: TextStyle(color: Colors.black87)),
-            ),
-            ElevatedButton(
-              onPressed: () => _generatePDF(context),
-              child: const Text('Generate PDF'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    Color(0xFFE6D0B3), // Slightly darker shade of pale sand
-                foregroundColor: Colors.black87,
-              ),
+            Row(
+              // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () => _generateExcel(context),
+                  child: const Text('Excel'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFFE6D0B3),
+                    foregroundColor: Colors.black87,
+                    minimumSize: Size(90, 40), // Adjust button size
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  ),
+                ),
+                SizedBox(width: 10), // Add some space between buttons
+                ElevatedButton(
+                  onPressed: () => _generatePDF(context),
+                  child: const Text('PDF'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFFE6D0B3),
+                    foregroundColor: Colors.black87,
+                    minimumSize: Size(90, 40), // Adjust button size
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  ),
+                ),
+              ],
             ),
           ],
         );
@@ -713,6 +728,84 @@ class FolderDetailPage extends StatelessWidget {
     }
   }
 
+  Future<void> _generateExcel(BuildContext context) async {
+    var excel = Excel.createExcel();
+    var sheet = excel['Sheet1'];
+
+    // Add headers
+    sheet.appendRow([
+      TextCellValue('Field'),
+      TextCellValue('Value'),
+      TextCellValue('Notes/Remarks')
+    ]);
+    // Add folder details
+    sheet.appendRow([
+      TextCellValue('Project Code'),
+      TextCellValue(folder['project_subject_code'] ?? 'No code'),
+      TextCellValue('')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Project Description'),
+      TextCellValue(folder['project_subject_description'] ?? 'No description'),
+      TextCellValue('')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Start Date'),
+      TextCellValue(folder['project_start_date'] ?? 'No start date'),
+      TextCellValue('')
+    ]);
+    sheet.appendRow([
+      TextCellValue('End Date'),
+      TextCellValue(folder['project_end_date'] ?? 'No end date'),
+      TextCellValue('')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Module'),
+      TextCellValue(folder['module_master_name'] ?? 'Unknown'),
+      TextCellValue('')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Activity'),
+      TextCellValue(folder['activities_details_content'] ?? 'No activity'),
+      TextCellValue('')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Card'),
+      TextCellValue(folder['cards_title'] ?? 'No card'),
+      TextCellValue('')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Output'),
+      TextCellValue(folder['outputs_content'] ?? 'No output'),
+      TextCellValue('')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Instruction'),
+      TextCellValue(folder['instruction_content'] ?? 'No instruction'),
+      TextCellValue('')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Coach Detail'),
+      TextCellValue(folder['coach_detail_content'] ?? 'No coach detail'),
+      TextCellValue('')
+    ]);
+
+    final directory =
+        Directory('/storage/emulated/0/Download'); // Change to Downloads folder
+    final filePath = '${directory.path}/folder_details.xlsx';
+    final file = File(filePath);
+    List<int>? fileBytes = excel.save();
+    if (fileBytes != null) {
+      file
+        ..createSync(recursive: true)
+        ..writeAsBytesSync(fileBytes);
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Excel file saved to $filePath')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -735,7 +828,7 @@ class FolderDetailPage extends StatelessWidget {
             print(status);
           },
           front: Container(
-            width: 300,  // Increased width
+            width: 300, // Increased width
             height: 600, // Increased height
             decoration: BoxDecoration(
               gradient: LinearGradient(
