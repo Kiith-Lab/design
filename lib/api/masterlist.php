@@ -508,11 +508,41 @@ class Get1
             return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
         }
     }
-    // function getCard(){
+    // function getCards()
+    // {
+    //     $cardId = isset($_POST['cardId']) ? $_POST['cardId'] : '';
+    //     $projectId = isset($_POST['cardId']) ? $_POST['projectId'] : '';
     //     try {
-    //         $sql = 'SELECT * ';
-    // }
+    //         $sql = "SELECT tbl_front_cards.cards_title, 
+    //                 tbl_front_cards.cards_id, 
+    //                 tbl_front_cards.cards_content,
+    //                 tbl_back_cards_header.back_content, 
+    //                 tbl_back_cards_header.back_content_title,
+    //                 tbl_back_cards_header.back_cards_header_frontId,
+    //                 tbl_back_cards_header.back_cards_header_title
+    //         FROM tbl_back_cards_header 
+    //         INNER JOIN tbl_front_cards ON tbl_front_cards.cards_id = tbl_back_cards_header.back_cards_header_frontId
+    //         WHERE tbl_back_cards_header.back_cards_header_frontId = :cardId 
+    //         AND ";
 
+    //         $stmt = $this->pdo->prepare($sql);
+    //         $stmt->bindParam(':cardId', $cardId, PDO::PARAM_INT);
+    //         $stmt->execute();
+
+    //         $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    //         error_log("SQL Query: $sql");
+    //         error_log("Result: " . print_r($returnValue, true));
+
+    //         return json_encode($returnValue);
+    //     } catch (PDOException $e) {
+    //         error_log("Database error: " . $e->getMessage());
+    //         return json_encode(['error' => 'Database error occurred']);
+    //     } catch (Exception $e) {
+    //         error_log("General error: " . $e->getMessage());
+    //         return json_encode(['error' => 'An error occurred']);
+    //     }
+    // }
 
     
 

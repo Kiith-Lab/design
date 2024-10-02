@@ -1,11 +1,8 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'config.dart';
 
 class EmpathyProjectPage extends StatefulWidget {
   final int projectId;
@@ -58,7 +55,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
 
   Future<void> fetchModes() async {
     try {
-      String url = "${baseUrl}view.php";
+      String url = "http://localhost/design/lib/api/view.php";
       Map<String, String> requestBody = {
         'operation': 'GetModes',
       };
@@ -96,7 +93,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
 
   Future<void> fetchLessons(String modeId) async {
     try {
-      String url = "${baseUrl}view.php";
+      String url = "http://localhost/design/lib/api/view.php";
       Map<String, String> requestBody = {
         'operation': 'getLessons',
         'modeId': modeId,
@@ -161,7 +158,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
 
     try {
-      String url = "${baseUrl}masterlist.php";
+      String url = "http://localhost/design/lib/api/masterlist.php";
       Map<String, String> requestBody = {
         'operation': 'addMode',
         'json': jsonEncode({
@@ -217,7 +214,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
 
     try {
-      String url = "${baseUrl}masterlist.php";
+      String url = "http://localhost/design/lib/api/masterlist.php";
       Map<String, String> requestBody = {
         'operation': 'addDuration',
         'json': jsonEncode({
@@ -269,7 +266,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
 
     try {
-      String url = "${baseUrl}masterlist.php";
+      String url = "http://localhost/design/lib/api/masterlist.php";
       Map<String, String> requestBody = {
         'operation': 'addActivity',
         'json': jsonEncode({
@@ -325,7 +322,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       return;
     }
 
-    String url = "${baseUrl}masterlist.php";
+    String url = "http://localhost/design/lib/api/masterlist.php";
     Map<String, String> requestBody = {
       'operation': 'addCards',
       'json': jsonEncode({
@@ -384,7 +381,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
 
     try {
-      String url = "${baseUrl}masterlist.php";
+      String url = "http://localhost/design/lib/api/masterlist.php";
       Map<String, String> requestBody = {
         'operation': 'addOutput',
         'json': jsonEncode({
@@ -437,7 +434,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
 
     try {
-      String url = "${baseUrl}masterlist.php";
+      String url = "http://localhost/design/lib/api/masterlist.php";
       Map<String, String> requestBody = {
         'operation': 'addInstruction',
         'json': jsonEncode({
@@ -485,7 +482,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
 
     try {
-      String url = "${baseUrl}masterlist.php";
+      String url = "http://localhost/design/lib/api/masterlist.php";
       Map<String, String> requestBody = {
         'operation': 'addCoachDetails',
         'json': jsonEncode({
@@ -574,18 +571,20 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       }
 
       String url = "http://localhost/design/lib/api/masterlist.php";
-      Map<String, String> requestBody = {
-        'operation': 'addFolder',
-        'json': jsonEncode({
-          'projectId': widget.projectId.toString(),
-          'project_moduleId': insertedIds[0].toString(),
-          'activities_detailId': lastInsertedActivityId.toString(),
-          'project_cardsId': insertedIds[3].toString(),
-          'outputId': insertedIds[4].toString(),
-          'instructionId': insertedIds[5].toString(),
-          'coach_detailsId': insertedIds[6].toString(),
-        }),
-      };
+
+      for (int cardId in lastInsertedCardIds) {
+        Map<String, String> requestBody = {
+          'operation': 'addFolder',
+          'json': jsonEncode({
+            'projectId': widget.projectId.toString(),
+            'project_moduleId': insertedIds[0].toString(),
+            'activities_detailId': lastInsertedActivityId.toString(),
+            'project_cardsId': cardId.toString(),
+            'outputId': insertedIds[insertedIds.length - 3].toString(),
+            'instructionId': insertedIds[insertedIds.length - 2].toString(),
+            'coach_detailsId': insertedIds.last.toString(),
+          }),
+        };
 
         print('Adding to folder with IDs:');
         print('projectId: ${widget.projectId}');
@@ -638,7 +637,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
 
     try {
-      String url = "${baseUrl}masterlist.php";
+      String url = "http://localhost/design/lib/api/masterlist.php";
       Map<String, String> requestBody = {
         'operation': 'updateData',
         'json': jsonEncode({
@@ -680,7 +679,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(''),
+        title: const Text('Empathy Project'),
         backgroundColor: Colors.green.shade600,
       ),
       body: SingleChildScrollView(
@@ -838,8 +837,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       value: selectedLesson,
       items: lessons.map((lesson) {
         return DropdownMenuItem<String>(
-          value: lesson['back_cards_header_id'].toString(),
-          child: Text('${lesson['cards_title']}'),
+          value: lesson['cards_id'].toString(),
+          child: Text('${lesson['cards_title']} ${lesson['cards_id']}'),
         );
       }).toList(),
       onChanged: (String? newValue) {
@@ -854,8 +853,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     if (selectedLesson != null) {
       setState(() {
         Map<String, dynamic> addedLesson = lessons.firstWhere(
-          (lesson) =>
-              lesson['back_cards_header_id'].toString() == selectedLesson,
+          (lesson) => lesson['cards_id'].toString() == selectedLesson,
           orElse: () => {'cards_title': 'Unknown', 'cards_id': selectedLesson},
         );
         selectedLessons.add(addedLesson);
@@ -883,22 +881,6 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       await addCoachDetails();
       await addToFolder();
     }
-
-    // Clear all text fields after submission
-    setState(() {
-      durationController.clear();
-      activitiesController.clear();
-      outputsController.clear();
-      instructionsController.clear();
-      coachDetailsController.clear();
-      addedActivities.clear();
-      addedOutputs.clear();
-      addedInstructions.clear();
-      addedCoachDetails.clear();
-      selectedLessons.clear();
-      selectedLesson = null;
-      selectedMode = null;
-    });
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
