@@ -74,6 +74,9 @@ class _ListPageState extends State<ListPage> {
                           item['back_cards_header_title'] ?? '',
                       'back_content_title': item['back_content_title'] ?? '',
                       'back_content': item['back_content'] ?? '',
+                      'projectId': item['projectId'] ?? '',
+                      'back_cards_header_frontId':
+                          item['back_cards_header_frontId'] ?? '',
                     })
                 .toList());
           });
@@ -99,6 +102,9 @@ class _ListPageState extends State<ListPage> {
             print(
                 'back_cards_header_title: ${folder['back_cards_header_title']}');
             print('back_content_title: ${folder['back_content_title']}');
+            print('Project ID: ${folder['projectId']}');
+            print(
+                'Back Cards Header Front ID: ${folder['back_cards_header_frontId']}');
             print('---');
           }
         } else {
@@ -137,75 +143,6 @@ class _ListPageState extends State<ListPage> {
         });
       }
     }
-
-    // showDialog(
-    //   context: context,
-    //   builder: (BuildContext context) {
-    //     return AlertDialog(
-    //       title: const Text('Create New Folder'),
-    //       content: Form(
-    //         key: formKey,
-    //         child: Column(
-    //           mainAxisSize: MainAxisSize.min,
-    //           children: [
-    //             TextFormField(
-    //               controller: nameController,
-    //               decoration: const InputDecoration(
-    //                 labelText: 'Folder Name',
-    //                 border: OutlineInputBorder(),
-    //                 prefixIcon: Icon(Icons.folder),
-    //               ),
-    //               validator: (value) {
-    //                 if (value == null || value.isEmpty) {
-    //                   return 'Please enter a folder name';
-    //                 }
-    //                 return null;
-    //               },
-    //             ),
-    //             const SizedBox(height: 16),
-    //             TextFormField(
-    //               controller: dateController,
-    //               decoration: const InputDecoration(
-    //                 labelText: 'Creation Date',
-    //                 border: OutlineInputBorder(),
-    //                 prefixIcon: Icon(Icons.calendar_today),
-    //               ),
-    //               onTap: () {
-    //                 selectDate(context);
-    //               },
-    //               readOnly: true,
-    //               validator: (value) {
-    //                 if (value == null || value.isEmpty) {
-    //                   return 'Please select a date';
-    //                 }
-    //                 return null;
-    //               },
-    //             ),
-    //           ],
-    //         ),
-    //       ),
-    //       actions: [
-    //         TextButton(
-    //           onPressed: () {
-    //             Navigator.of(context).pop();
-    //           },
-    //           child: const Text('Cancel'),
-    //         ),
-    //         ElevatedButton(
-    //           onPressed: () async {
-    //             if (formKey.currentState!.validate()) {
-    //               String folderName = nameController.text;
-    //               String creationTime = dateController.text;
-    //               await _addFolder(folderName, creationTime);
-    //               Navigator.of(context).pop();
-    //             }
-    //           },
-    //           child: const Text('Create'),
-    //         ),
-    //       ],
-    //     );
-    //   },
-    // );
   }
 
   Future<void> _addFolder(String folderName, String creationTime) async {
@@ -439,15 +376,92 @@ class _ListPageState extends State<ListPage> {
   }
 }
 
-class FolderDetailPage extends StatelessWidget {
+class FolderDetailPage extends StatefulWidget {
   final Map<String, dynamic> folder;
 
   const FolderDetailPage({super.key, required this.folder});
 
+  @override
+  _FolderDetailPageState createState() => _FolderDetailPageState();
+}
+
+class _FolderDetailPageState extends State<FolderDetailPage> {
+  Map<String, dynamic>? cardData;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCardData();
+  }
+
+  Future<void> _fetchCardData() async {
+    final projectId = widget.folder['projectId'];
+    final backCardsHeaderFrontId = widget.folder['back_cards_header_frontId'];
+
+    print(
+        'Fetching card data for projectId: $projectId, backCardsHeaderFrontId: $backCardsHeaderFrontId');
+
+    try {
+      // Make the HTTP POST request to your API
+      final response = await http.post(
+        Uri.parse('http://localhost/design/lib/api/masterlist.php'),
+        body: {
+          'operation': 'getCards1',
+          'projectId': projectId.toString(),
+          'cardId': backCardsHeaderFrontId.toString(),
+        },
+      );
+
+      // Check if the response status is OK (HTTP 200)
+      if (response.statusCode == 200) {
+        final dynamic data = json.decode(response.body);
+
+        // Check if the response is a map (expected JSON format)
+        if (data is Map<String, dynamic>) {
+          if (data['success'] == true && data['data'] != null) {
+            setState(() {
+              cardData = data['data'];
+            });
+            print('Fetched Card Data:');
+            data['data'].forEach((key, value) {
+              print('$key: $value');
+            });
+          } else {
+            print('No data found');
+            setState(() {
+              cardData = null;
+            });
+          }
+        } else {
+          // Handle unexpected data types
+          print('Unexpected data format: ${data.runtimeType}');
+          print('Data content: $data');
+          setState(() {
+            cardData = null;
+          });
+        }
+      } else {
+        // Log failure to fetch data with response details
+        print('Failed to fetch card data');
+        print('Status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        setState(() {
+          cardData = null;
+        });
+      }
+    } catch (e) {
+      // Handle and log exceptions
+      print('Database error occurred: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Database error occurred: $e')),
+      );
+    }
+  }
+
   void _addLesson(BuildContext context) {
     // TODO: Implement lesson addition logic
     print(
-        'Add lesson tapped for folder: ${folder['project_title'] ?? 'Unnamed Folder'}');
+        'Add lesson tapped for folder: ${widget.folder['project_title'] ?? 'Unnamed Folder'}');
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
           content: Text('Add lesson functionality to be implemented')),
@@ -462,7 +476,7 @@ class FolderDetailPage extends StatelessWidget {
           backgroundColor: Color(0xFFF5E6D3)
               .withOpacity(0.9), // Pale sand color with opacity
           title: Text(
-            folder['project_title'] ?? 'Unnamed Folder',
+            widget.folder['project_title'] ?? 'Unnamed Folder',
             style: TextStyle(color: Colors.black87),
           ),
           content: SingleChildScrollView(
@@ -474,24 +488,29 @@ class FolderDetailPage extends StatelessWidget {
               },
               children: [
                 _buildTableRow('Project Code',
-                    folder['project_subject_code'] ?? 'No code'),
-                _buildTableRow('Project Description',
-                    folder['project_subject_description'] ?? 'No description'),
+                    widget.folder['project_subject_code'] ?? 'No code'),
+                _buildTableRow(
+                    'Project Description',
+                    widget.folder['project_subject_description'] ??
+                        'No description'),
                 _buildTableRow('Start Date',
-                    folder['project_start_date'] ?? 'No start date'),
+                    widget.folder['project_start_date'] ?? 'No start date'),
+                _buildTableRow('End Date',
+                    widget.folder['project_end_date'] ?? 'No end date'),
                 _buildTableRow(
-                    'End Date', folder['project_end_date'] ?? 'No end date'),
+                    'Module', widget.folder['module_master_name'] ?? 'Unknown'),
                 _buildTableRow(
-                    'Module', folder['module_master_name'] ?? 'Unknown'),
-                _buildTableRow('Activity',
-                    folder['activities_details_content'] ?? 'No activity'),
-                _buildTableRow('Card', folder['cards_title'] ?? 'No card'),
+                    'Activity',
+                    widget.folder['activities_details_content'] ??
+                        'No activity'),
                 _buildTableRow(
-                    'Output', folder['outputs_content'] ?? 'No output'),
+                    'Card', widget.folder['cards_title'] ?? 'No card'),
+                _buildTableRow(
+                    'Output', widget.folder['outputs_content'] ?? 'No output'),
                 _buildTableRow('Instruction',
-                    folder['instruction_content'] ?? 'No instruction'),
+                    widget.folder['instruction_content'] ?? 'No instruction'),
                 _buildTableRow('Coach Detail',
-                    folder['coach_detail_content'] ?? 'No coach detail'),
+                    widget.folder['coach_detail_content'] ?? 'No coach detail'),
               ],
             ),
           ),
@@ -554,6 +573,8 @@ class FolderDetailPage extends StatelessWidget {
 
   Future<void> _generatePDF(BuildContext context) async {
     final pdf = pw.Document();
+    final now = DateTime.now();
+    final formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
 
     pdf.addPage(
       pw.Page(
@@ -562,36 +583,45 @@ class FolderDetailPage extends StatelessWidget {
             children: [
               pw.Header(
                 level: 0,
-                child: pw.Text(folder['project_title'] ?? 'Unnamed Folder',
+                child: pw.Text(
+                    widget.folder['project_title'] ?? 'Unnamed Folder',
                     style: pw.TextStyle(
                         fontSize: 24, fontWeight: pw.FontWeight.bold)),
               ),
+              pw.SizedBox(height: 10),
+              pw.Text('Generated on: $formattedDate',
+                  style: pw.TextStyle(
+                      fontSize: 12, fontStyle: pw.FontStyle.italic)),
               pw.SizedBox(height: 20),
               pw.Table(
                 border: pw.TableBorder.all(),
                 children: [
-                  _buildPDFTableRow(
-                      'Module:', folder['module_master_name'] ?? 'Unknown'),
-                  _buildPDFTableRow('Activity:',
-                      folder['activities_details_content'] ?? 'No activity'),
-                  _buildPDFTableRow(
-                      'Card:', folder['cards_title'] ?? 'No card'),
-                  _buildPDFTableRow(
-                      'Output:', folder['outputs_content'] ?? 'No output'),
-                  _buildPDFTableRow('Instruction:',
-                      folder['instruction_content'] ?? 'No instruction'),
-                  _buildPDFTableRow('Coach Detail:',
-                      folder['coach_detail_content'] ?? 'No coach detail'),
                   _buildPDFTableRow('Project Code:',
-                      folder['project_subject_code'] ?? 'No code'),
+                      widget.folder['project_subject_code'] ?? 'No code'),
                   _buildPDFTableRow(
                       'Project Description:',
-                      folder['project_subject_description'] ??
+                      widget.folder['project_subject_description'] ??
                           'No description'),
                   _buildPDFTableRow('Start Date:',
-                      folder['project_start_date'] ?? 'No start date'),
+                      widget.folder['project_start_date'] ?? 'No start date'),
+                  _buildPDFTableRow('End Date:',
+                      widget.folder['project_end_date'] ?? 'No end date'),
+                  _buildPDFTableRow('Module:',
+                      widget.folder['module_master_name'] ?? 'Unknown'),
                   _buildPDFTableRow(
-                      'End Date:', folder['project_end_date'] ?? 'No end date'),
+                      'Activity:',
+                      widget.folder['activities_details_content'] ??
+                          'No activity'),
+                  _buildPDFTableRow(
+                      'Card:', widget.folder['cards_title'] ?? 'No card'),
+                  _buildPDFTableRow('Output:',
+                      widget.folder['outputs_content'] ?? 'No output'),
+                  _buildPDFTableRow('Instruction:',
+                      widget.folder['instruction_content'] ?? 'No instruction'),
+                  _buildPDFTableRow(
+                      'Coach Detail:',
+                      widget.folder['coach_detail_content'] ??
+                          'No coach detail'),
                 ],
               ),
             ],
@@ -644,61 +674,72 @@ class FolderDetailPage extends StatelessWidget {
     var excel = Excel.createExcel();
     var sheet = excel['Sheet1'];
 
-    // Add headers
+    final now = DateTime.now();
+    final formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+
+    // Add generation date and time
     sheet.appendRow([
-      TextCellValue('Field'),
-      TextCellValue('Value'),
-      TextCellValue('Notes/Remarks')
+      TextCellValue('Generated on:'),
+      TextCellValue(formattedDate),
+      TextCellValue('')
     ]);
+    sheet.appendRow([
+      TextCellValue(''),
+      TextCellValue(''),
+      TextCellValue('')
+    ]); // Empty row for spacing
+
     // Add folder details
     sheet.appendRow([
       TextCellValue('Project Code'),
-      TextCellValue(folder['project_subject_code'] ?? 'No code'),
+      TextCellValue(widget.folder['project_subject_code'] ?? 'No code'),
       TextCellValue('')
     ]);
     sheet.appendRow([
       TextCellValue('Project Description'),
-      TextCellValue(folder['project_subject_description'] ?? 'No description'),
+      TextCellValue(
+          widget.folder['project_subject_description'] ?? 'No description'),
       TextCellValue('')
     ]);
     sheet.appendRow([
       TextCellValue('Start Date'),
-      TextCellValue(folder['project_start_date'] ?? 'No start date'),
+      TextCellValue(widget.folder['project_start_date'] ?? 'No start date'),
       TextCellValue('')
     ]);
     sheet.appendRow([
       TextCellValue('End Date'),
-      TextCellValue(folder['project_end_date'] ?? 'No end date'),
+      TextCellValue(widget.folder['project_end_date'] ?? 'No end date'),
       TextCellValue('')
     ]);
     sheet.appendRow([
-      TextCellValue('Module'),
-      TextCellValue(folder['module_master_name'] ?? 'Unknown'),
+      TextCellValue(widget.folder['module_master_name'] ?? 'Unknown'),
+      TextCellValue(''),
+      TextCellValue('NOTES/REMARKS')
+    ]);
+    sheet.appendRow([
+      TextCellValue('What activities will my students do?'),
+      TextCellValue(
+          widget.folder['activities_details_content'] ?? 'No activity'),
       TextCellValue('')
     ]);
     sheet.appendRow([
-      TextCellValue('Activity'),
-      TextCellValue(folder['activities_details_content'] ?? 'No activity'),
+      TextCellValue('What are the (2) cards will my  student use?'),
+      TextCellValue(widget.folder['cards_title'] ?? 'No card'),
       TextCellValue('')
     ]);
     sheet.appendRow([
-      TextCellValue('Card'),
-      TextCellValue(folder['cards_title'] ?? 'No card'),
+      TextCellValue('What are the expected outputs?'),
+      TextCellValue(widget.folder['outputs_content'] ?? 'No output'),
       TextCellValue('')
     ]);
     sheet.appendRow([
-      TextCellValue('Output'),
-      TextCellValue(folder['outputs_content'] ?? 'No output'),
+      TextCellValue('What instructions will I give my students?'),
+      TextCellValue(widget.folder['instruction_content'] ?? 'No instruction'),
       TextCellValue('')
     ]);
     sheet.appendRow([
-      TextCellValue('Instruction'),
-      TextCellValue(folder['instruction_content'] ?? 'No instruction'),
-      TextCellValue('')
-    ]);
-    sheet.appendRow([
-      TextCellValue('Coach Detail'),
-      TextCellValue(folder['coach_detail_content'] ?? 'No coach detail'),
+      TextCellValue('How can I coach my students while doing this activity?'),
+      TextCellValue(widget.folder['coach_detail_content'] ?? 'No coach detail'),
       TextCellValue('')
     ]);
 
@@ -727,7 +768,7 @@ class FolderDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(folder['project_title'] ?? 'Unnamed Folder'),
+        title: Text(widget.folder['project_title'] ?? 'Unnamed Folder'),
         elevation: 0,
         actions: [
           IconButton(
@@ -738,52 +779,81 @@ class FolderDetailPage extends StatelessWidget {
         ],
       ),
       body: Center(
-        child: FlipCard(
-          direction: FlipDirection.HORIZONTAL,
-          speed: 1000,
-          onFlipDone: (status) {
-            print(status);
-          },
-          front: Container(
-            width: 300, // Increased width
-            height: 600, // Increased height
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Colors.blue, Colors.purple],
-              ),
-              borderRadius: BorderRadius.circular(15),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  spreadRadius: 3,
-                  blurRadius: 7,
-                  offset: Offset(0, 3),
+        child: cardData == null
+            ? CircularProgressIndicator()
+            : FlipCard(
+                direction: FlipDirection.HORIZONTAL,
+                speed: 1000,
+                onFlipDone: (status) {
+                  print(status);
+                },
+                front: Container(
+                  width: 300,
+                  height: 600,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Colors.blue, Colors.purple],
+                    ),
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        spreadRadius: 3,
+                        blurRadius: 7,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        cardData?['cards_title'] ?? 'No title',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: 20),
+                      Text(
+                        cardData?['cards_content'] ?? 'No content',
+                        style: TextStyle(color: Colors.white, fontSize: 18),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                folder['cards_content'] ?? 'No content',
-                style: TextStyle(color: Colors.white, fontSize: 18),
-                textAlign: TextAlign.center,
+                back: Container(
+                  width: 300,
+                  height: 600,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Colors.purple, Colors.blue],
+                    ),
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        spreadRadius: 3,
+                        blurRadius: 7,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      cardData?['back_content'] ?? 'No content',
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
-          back: Container(
-            width: 300,
-            height: 200,
-            color: Colors.green,
-            child: Center(
-              child: Text(
-                folder['back_content'] ?? 'No content',
-                style: TextStyle(color: Colors.white, fontSize: 18),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _addLesson(context),

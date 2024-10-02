@@ -837,8 +837,9 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       value: selectedLesson,
       items: lessons.map((lesson) {
         return DropdownMenuItem<String>(
-          value: lesson['cards_id'].toString(),
-          child: Text('${lesson['cards_title']} ${lesson['cards_id']}'),
+          value: lesson['back_cards_header_id'].toString(),
+          child: Text(
+              '${lesson['cards_title']} ${lesson['back_cards_header_id']}'),
         );
       }).toList(),
       onChanged: (String? newValue) {
@@ -853,8 +854,12 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     if (selectedLesson != null) {
       setState(() {
         Map<String, dynamic> addedLesson = lessons.firstWhere(
-          (lesson) => lesson['cards_id'].toString() == selectedLesson,
-          orElse: () => {'cards_title': 'Unknown', 'cards_id': selectedLesson},
+          (lesson) =>
+              lesson['back_cards_header_id'].toString() == selectedLesson,
+          orElse: () => {
+            'cards_title': 'Unknown',
+            'back_cards_header_id': selectedLesson
+          },
         );
         selectedLessons.add(addedLesson);
         selectedLesson = null;
@@ -874,7 +879,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       await addDuration();
       await addActivity();
       for (var lesson in selectedLessons) {
-        await addCard(lesson['cards_id'].toString());
+        await addCard(lesson['back_cards_header_id'].toString());
       }
       await addOutput();
       await addInstruction();
