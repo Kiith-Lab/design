@@ -7,6 +7,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flip_card/flip_card.dart';
+import 'package:excel/excel.dart';
 
 import 'config.dart';
 
@@ -244,7 +245,6 @@ Future<void> _fetchFolders() async {
       ),
     );
   }
-
   Future<void> _generatePDF() async {
     final pdf = pw.Document();
 
@@ -298,7 +298,45 @@ Future<void> _fetchFolders() async {
       print('PDF generation is not supported on this platform');
     }
   }
+  Future<void> _generateExcel() async {
+  final excel = Excel.createExcel();
+  final sheet = excel['My Folders'];
 
+  // Add header row
+  sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0)).value = 'Folder Name';
+  sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: 0)).value = 'Module';
+  sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: 0)).value = 'Project Code';
+  sheet.cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: 0)).value = 'Project Description';
+  sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: 0)).value = 'Start Date';
+  sheet.cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: 0)).value = 'End Date';
+
+  // Add folder data
+  for (int i = 0; i < folders.length; i++) {
+    var folder = folders[i];
+
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: i + 1)).value = folder['project_title'] ??;
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: i + 1)).value = folder['module_master_name'] ??;
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: i + 1)).value = folder['project_subject_code'] ??;
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: i + 1)).value = folder['project_subject_description'] ??;
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: i + 1)).value = folder['project_start_date'] ??;
+    sheet.cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: i + 1)).value = folder['project_end_date'] ??;
+  }
+
+  // Save the file
+  final fileBytes = excel.save();
+  if (fileBytes != null) {
+    // Handle file saving for web and non-web platforms
+    if (kIsWeb) {
+      // For web, you can use a package like `file_saver` to save the file
+      // await FileSaver.instance.saveFile('MyFolders', fileBytes, 'xlsx');
+    } else {
+      // For non-web platforms, you can save the file to the local file system
+      // final directory = await getApplicationDocumentsDirectory();
+      // final file = File('${directory.path}/MyFolders.xlsx');
+      // await file.writeAsBytes(fileBytes);
+    }
+  }
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -314,6 +352,11 @@ Future<void> _fetchFolders() async {
             icon: const Icon(Icons.picture_as_pdf, color: Colors.white),
             onPressed: _generatePDF,
             tooltip: 'Generate PDF',
+          ),
+          IconButton(
+            icon: const Icon(Icons.table_chart, color: Colors.white),
+            onPressed: _generateExcel,
+            tooltip: 'Generate Excel',
           ),
         ],
       ),
