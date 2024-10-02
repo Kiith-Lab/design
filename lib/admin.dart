@@ -1,4 +1,5 @@
 import 'package:design/dashboards.dart';
+import 'package:design/login.dart';
 import 'package:design/project.dart';
 import 'package:design/view.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -112,6 +113,12 @@ class _AdminState extends State<Administrator> {
                                       child: const Text('Logout'),
                                       onPressed: () {
                                         Navigator.of(dialogContext).pop();
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const LoginAppes(),
+                                          ),
+                                        );
                                       },
                                     ),
                                   ],
@@ -130,15 +137,13 @@ class _AdminState extends State<Administrator> {
                                                   width: double.infinity,
                                                   child: Padding(
                                                     padding:
-                                                        EdgeInsets.all(
-                                                            8.0),
+                                                        EdgeInsets.all(8.0),
                                                     child: Row(
                                                       children: [
                                                         ShadAvatar(
                                                           'https://avatars.githubusercontent.com/u/124599?v=4',
                                                         ),
-                                                        SizedBox(
-                                                            width: 5),
+                                                        SizedBox(width: 5),
                                                         Expanded(
                                                           child: Column(
                                                             crossAxisAlignment:
@@ -171,8 +176,7 @@ class _AdminState extends State<Administrator> {
                                                   width: double.infinity,
                                                   child: Padding(
                                                     padding:
-                                                        EdgeInsets.all(
-                                                            8.0),
+                                                        EdgeInsets.all(8.0),
                                                     child: Row(
                                                       children: [
                                                         Text("Forgot Password?")
