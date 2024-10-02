@@ -7,7 +7,9 @@ import 'package:http/http.dart' as http;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-
+import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:excel/excel.dart';
+import 'dart:io';
 import 'config.dart';
 
 void main() {
@@ -461,9 +463,18 @@ class _DashboardsState extends State<Dashboards> {
               _buildFolderDetail('Instruction', folder['Instruction'] ?? 'N/A'),
               _buildFolderDetail(
                   'Coach Detail', folder['CoachDetail'] ?? 'N/A'),
-              ElevatedButton(
-                child: const Text('Print PDF'),
-                onPressed: () => _printFolderDetailsPDF(folder),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ShadButton(
+                    child: const Text('Print PDF'),
+                    onPressed: () => _printFolderDetailsPDF(folder),
+                  ),
+                  ShadButton(
+                    child: const Text('Export Excel'),
+                    onPressed: () => _exportFolderDetailsExcel(folder),
+                  ),
+                ],
               ),
             ],
           ),
@@ -535,6 +546,68 @@ class _DashboardsState extends State<Dashboards> {
           child: pw.Text(value),
         ),
       ],
+    );
+  }
+
+  Future<void> _exportFolderDetailsExcel(dynamic folder) async {
+    var excel = Excel.createExcel();
+    var sheet = excel['Sheet1'];
+
+    // Add headers
+    sheet.appendRow([
+      TextCellValue('Field'),
+      TextCellValue('Value'),
+      TextCellValue('Notes/Remarks')
+    ]);
+    // Add folder details
+    sheet.appendRow([
+      TextCellValue('Mode'),
+      TextCellValue(folder['Mode'] ?? 'N/A'),
+      TextCellValue('')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Duration'),
+      TextCellValue(folder['Duration']?.toString() ?? 'N/A'),
+      TextCellValue('')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Activity'),
+      TextCellValue(folder['Activity'] ?? 'N/A')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Lesson'),
+      TextCellValue(folder['Lesson'] ?? 'N/A'),
+      TextCellValue('')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Output'),
+      TextCellValue(folder['Output'] ?? 'N/A'),
+      TextCellValue('')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Instruction'),
+      TextCellValue(folder['Instruction'] ?? 'N/A'),
+      TextCellValue('')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Coach Detail'),
+      TextCellValue(folder['CoachDetail'] ?? 'N/A'),
+      TextCellValue('')
+    ]);
+
+    final directory =
+        Directory('/storage/emulated/0/Download'); // Change to Downloads folder
+    final filePath = '${directory.path}/folder_details.xlsx';
+    final file = File(filePath);
+    List<int>? fileBytes = excel.save();
+    if (fileBytes != null) {
+      file
+        ..createSync(recursive: true)
+        ..writeAsBytesSync(fileBytes);
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Excel file saved to $filePath')),
     );
   }
 
