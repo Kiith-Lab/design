@@ -500,6 +500,39 @@ class Get
             return json_encode(['error' => 'An error occurred']);
         }
     }
+    function getUsers($json)
+    {
+        // Decode the JSON input
+        $json = json_decode($json, true);
+        $schoolname = isset($json['schoolname']) ? $json['schoolname'] : '';
+        $departmentname = isset($json['departmentname']) ? $json['departmentname'] : '';
+
+        try {
+            $sql = "SELECT a.*, b.role_name, c.school_name, d.department_name FROM tbl_users a
+            INNER JOIN tbl_role b ON b.role_id = a.users_roleId
+            INNER JOIN tbl_school c ON c.school_id = a.users_schoolId
+            INNER JOIN tbl_department d ON d.department_id = a.users_departmantId
+            WHERE c.school_name = :schoolname AND d.department_name = :departmentname";
+            $stmt = $this->pdo->prepare($sql);
+            // Bind parameters
+            $stmt->bindParam(':schoolname', $schoolname);
+            $stmt->bindParam(':departmentname', $departmentname);
+            $stmt->execute();
+
+            $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            error_log("SQL Query: $sql");
+            error_log("Result: " . print_r($returnValue, true));
+
+            return json_encode($returnValue);
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            return json_encode(['error' => 'Database error occurred']);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage());
+            return json_encode(['error' => 'An error occurred']);
+        }
+    }
     function getSchool()
     {
         try {
@@ -550,25 +583,25 @@ class Get
     {
         try {
             $sql = "SELECT 
-    tbl_users.users_firstname AS Name,
-    tbl_module_master.module_master_name AS Mode, 
-    tbl_activities_header.activities_header_duration AS Duration,  
-    tbl_activities_details.activities_details_content AS Activity, 
-    tbl_project.project_title AS Lesson, 
-    tbl_outputs.outputs_content AS Output, 
-    tbl_instruction.instruction_content AS Instruction, 
-    tbl_coach_detail.coach_detail_content AS CoachDetail
-FROM 
-    tbl_folder
-LEFT JOIN tbl_project ON tbl_folder.projectId = tbl_project.project_id
-LEFT JOIN tbl_project_modules ON tbl_folder.project_moduleId = tbl_project_modules.project_modules_id
-LEFT JOIN tbl_module_master ON tbl_project_modules.project_modules_masterId = tbl_module_master.module_master_id
-LEFT JOIN tbl_activities_details ON tbl_folder.activities_detailId = tbl_activities_details.activities_details_id
-LEFT JOIN tbl_activities_header ON tbl_activities_header.activities_header_modulesId = tbl_activities_details.activities_details_id
-LEFT JOIN tbl_outputs ON tbl_folder.outputId = tbl_outputs.outputs_id
-LEFT JOIN tbl_instruction ON tbl_folder.instructionId = tbl_instruction.instruction_id
-LEFT JOIN tbl_coach_detail ON tbl_folder.coach_detailsId = tbl_coach_detail.coach_detail_id
-LEFT JOIN tbl_users ON tbl_project.project_userId = tbl_users.users_id";
+            tbl_users.users_firstname AS Name,
+            tbl_module_master.module_master_name AS Mode, 
+            tbl_activities_header.activities_header_duration AS Duration,  
+            tbl_activities_details.activities_details_content AS Activity, 
+            tbl_project.project_title AS Lesson, 
+            tbl_outputs.outputs_content AS Output, 
+            tbl_instruction.instruction_content AS Instruction, 
+            tbl_coach_detail.coach_detail_content AS CoachDetail
+            FROM 
+            tbl_folder
+            LEFT JOIN tbl_project ON tbl_folder.projectId = tbl_project.project_id
+            LEFT JOIN tbl_project_modules ON tbl_folder.project_moduleId = tbl_project_modules.project_modules_id
+            LEFT JOIN tbl_module_master ON tbl_project_modules.project_modules_masterId = tbl_module_master.module_master_id
+            LEFT JOIN tbl_activities_details ON tbl_folder.activities_detailId = tbl_activities_details.activities_details_id
+            LEFT JOIN tbl_activities_header ON tbl_activities_header.activities_header_modulesId = tbl_activities_details.activities_details_id
+            LEFT JOIN tbl_outputs ON tbl_folder.outputId = tbl_outputs.outputs_id
+            LEFT JOIN tbl_instruction ON tbl_folder.instructionId = tbl_instruction.instruction_id
+            LEFT JOIN tbl_coach_detail ON tbl_folder.coach_detailsId = tbl_coach_detail.coach_detail_id
+            LEFT JOIN tbl_users ON tbl_project.project_userId = tbl_users.users_id";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute();
 
@@ -586,6 +619,60 @@ LEFT JOIN tbl_users ON tbl_project.project_userId = tbl_users.users_id";
             return json_encode(['error' => 'An error occurred']);
         }
     }
+    function getFolderId($json)
+    {
+        $json = json_decode($json, true);
+        $usersId = isset($json['users_id']) ? $json['users_id'] : '';
+
+        try {
+            // Ensure usersId is not empty
+            if (empty($usersId)) {
+                return json_encode(['error' => 'User ID is required']);
+            }
+
+            $sql = "SELECT 
+            tbl_users.users_firstname AS Name,
+            tbl_module_master.module_master_name AS Mode, 
+            tbl_activities_header.activities_header_duration AS Duration,  
+            tbl_activities_details.activities_details_content AS Activity, 
+            tbl_project.project_title AS Lesson, 
+            tbl_outputs.outputs_content AS Output, 
+            tbl_instruction.instruction_content AS Instruction, 
+            tbl_coach_detail.coach_detail_content AS CoachDetail
+            FROM 
+            tbl_folder
+            LEFT JOIN tbl_project ON tbl_folder.projectId = tbl_project.project_id
+            LEFT JOIN tbl_project_modules ON tbl_folder.project_moduleId = tbl_project_modules.project_modules_id
+            LEFT JOIN tbl_module_master ON tbl_project_modules.project_modules_masterId = tbl_module_master.module_master_id
+            LEFT JOIN tbl_activities_details ON tbl_folder.activities_detailId = tbl_activities_details.activities_details_id
+            LEFT JOIN tbl_activities_header ON tbl_activities_header.activities_header_modulesId = tbl_activities_details.activities_details_id
+            LEFT JOIN tbl_outputs ON tbl_folder.outputId = tbl_outputs.outputs_id
+            LEFT JOIN tbl_instruction ON tbl_folder.instructionId = tbl_instruction.instruction_id
+            LEFT JOIN tbl_coach_detail ON tbl_folder.coach_detailsId = tbl_coach_detail.coach_detail_id
+            LEFT JOIN tbl_users ON tbl_project.project_userId = tbl_users.users_id
+                WHERE 
+                    tbl_users.users_id = :users_id";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':users_id', $usersId);
+            $stmt->execute();
+
+            $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            error_log("SQL Query: $sql");
+            error_log("Result: " . print_r($returnValue, true));
+
+            // Return results as JSON
+            return json_encode($returnValue);
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            return json_encode(['error' => 'Database error occurred']);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage());
+            return json_encode(['error' => 'An error occurred']);
+        }
+    }
+
     function getUserSchoolDepartment()
     {
         try {
@@ -641,6 +728,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 // Instantiate the Get class with the database connection
 $get = new Get($pdo);
 
+$json = isset($_POST['json']) ? $_POST['json'] : '';
 // Determine the request method and check for the operation
 $operation = '';
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -712,6 +800,12 @@ switch ($operation) {
         break;
     case "getDepartments":
         echo $get->getDepartments();
+        break;
+    case "getUsers":
+        echo $get->getUsers($json);
+        break;
+    case "getFolderId":
+        echo $get->getFolderId($json);
         break;
     default:
         echo json_encode(['error' => 'Invalid operation']);

@@ -7,7 +7,9 @@ import 'package:http/http.dart' as http;
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-
+import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:excel/excel.dart';
+import 'dart:io';
 import 'config.dart';
 
 void main() {
@@ -461,9 +463,18 @@ class _DashboardsState extends State<Dashboards> {
               _buildFolderDetail('Instruction', folder['Instruction'] ?? 'N/A'),
               _buildFolderDetail(
                   'Coach Detail', folder['CoachDetail'] ?? 'N/A'),
-              ElevatedButton(
-                child: const Text('Print PDF'),
-                onPressed: () => _printFolderDetailsPDF(folder),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ShadButton(
+                    child: const Text('Print PDF'),
+                    onPressed: () => _printFolderDetailsPDF(folder),
+                  ),
+                  ShadButton(
+                    child: const Text('Export Excel'),
+                    onPressed: () => _exportFolderDetailsExcel(folder),
+                  ),
+                ],
               ),
             ],
           ),
@@ -538,6 +549,68 @@ class _DashboardsState extends State<Dashboards> {
     );
   }
 
+  Future<void> _exportFolderDetailsExcel(dynamic folder) async {
+    var excel = Excel.createExcel();
+    var sheet = excel['Sheet1'];
+
+    // Add headers
+    sheet.appendRow([
+      TextCellValue('Field'),
+      TextCellValue('Value'),
+      TextCellValue('Notes/Remarks')
+    ]);
+    // Add folder details
+    sheet.appendRow([
+      TextCellValue('Mode'),
+      TextCellValue(folder['Mode'] ?? 'N/A'),
+      TextCellValue('')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Duration'),
+      TextCellValue(folder['Duration']?.toString() ?? 'N/A'),
+      TextCellValue('')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Activity'),
+      TextCellValue(folder['Activity'] ?? 'N/A')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Lesson'),
+      TextCellValue(folder['Lesson'] ?? 'N/A'),
+      TextCellValue('')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Output'),
+      TextCellValue(folder['Output'] ?? 'N/A'),
+      TextCellValue('')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Instruction'),
+      TextCellValue(folder['Instruction'] ?? 'N/A'),
+      TextCellValue('')
+    ]);
+    sheet.appendRow([
+      TextCellValue('Coach Detail'),
+      TextCellValue(folder['CoachDetail'] ?? 'N/A'),
+      TextCellValue('')
+    ]);
+
+    final directory =
+        Directory('/storage/emulated/0/Download'); // Change to Downloads folder
+    final filePath = '${directory.path}/folder_details.xlsx';
+    final file = File(filePath);
+    List<int>? fileBytes = excel.save();
+    if (fileBytes != null) {
+      file
+        ..createSync(recursive: true)
+        ..writeAsBytesSync(fileBytes);
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Excel file saved to $filePath')),
+    );
+  }
+
   Widget _buildFolderDetail(String label, String value) {
     return ListTile(
       title: Text(label),
@@ -551,54 +624,223 @@ class _DashboardsState extends State<Dashboards> {
     _isDialogOpen = true; // Set the flag to true when opening the dialog
 
     fetchDepartment().then((_) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Department Details'),
-            content: Container(
-              width: 300, // Set a width for the dialog
-              height: 400, // Set a height for the dialog
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: departments.length,
-                      itemBuilder: (context, index) {
-                        final department = departments[index];
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 4),
-                          child: Container(
-                            height: 75, // Fixed height for each card
-                            child: _buildDepartmentDetail(
-                              department['department_name'] ?? 'N/A',
+      if (departments.isNotEmpty) {
+        // Check if departments are available
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Department Details'),
+              content: SizedBox(
+                width: 300,
+                height: 400,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: departments.length,
+                        itemBuilder: (context, index) {
+                          final department = departments[index];
+                          return GestureDetector(
+                            onTap: () async {
+                              final departmentName =
+                                  department['department_name'];
+                              final schoolname = school['school_name'];
+
+                              final jsondata = jsonEncode({
+                                'schoolname': schoolname,
+                                'departmentname': departmentName,
+                              });
+
+                              final response = await http.post(
+                                Uri.parse('${baseUrl}view.php'),
+                                body: {
+                                  "json": jsondata,
+                                  "operation": "getUsers"
+                                },
+                              );
+
+                              print(response.body);
+
+                              if (response.statusCode == 200) {
+                                final dynamic decodedResponse =
+                                    json.decode(response.body);
+                                if (decodedResponse is List) {
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        title: Text('Users in $departmentName'),
+                                        content: SizedBox(
+                                          width: 300,
+                                          height: 400,
+                                          child: ListView.builder(
+                                            itemCount: decodedResponse.length,
+                                            itemBuilder: (context, index) {
+                                              final user =
+                                                  decodedResponse[index];
+                                              return ListTile(
+                                                onTap: () async {
+                                                  final usersId = user[
+                                                      'users_id']; // Assuming users_id is available in the user data
+
+                                                  final jsondata = jsonEncode({
+                                                    'users_id': usersId,
+                                                  });
+
+                                                  // Fetch project titles for the user
+                                                  final projectResponse =
+                                                      await http.post(
+                                                    Uri.parse(
+                                                        '${baseUrl}view.php'),
+                                                    body: {
+                                                      "json": jsondata,
+                                                      "operation": "getFolderId"
+                                                    },
+                                                  );
+                                                  print(
+                                                      "Projects: ${projectResponse.body}");
+
+                                                  if (projectResponse
+                                                          .statusCode ==
+                                                      200) {
+                                                    final projectData = json
+                                                        .decode(projectResponse
+                                                            .body);
+                                                    if (projectData is List) {
+                                                      // Display project titles
+                                                      showDialog(
+                                                        context: context,
+                                                        builder: (BuildContext
+                                                            context) {
+                                                          return AlertDialog(
+                                                            title: Text(
+                                                              '${user['users_firstname'] ?? 'N/A'} ${user['users_lastname'] ?? 'NA'}',
+                                                            ),
+                                                            content: SizedBox(
+                                                              width: 300,
+                                                              height: 400,
+                                                              child: ListView
+                                                                  .builder(
+                                                                itemCount:
+                                                                    projectData
+                                                                        .length,
+                                                                itemBuilder:
+                                                                    (context,
+                                                                        index) {
+                                                                  final project =
+                                                                      projectData[
+                                                                          index];
+
+                                                                  return GestureDetector(
+                                                                    onTap: () {
+                                                                      _showFolderDetails(
+                                                                          context,
+                                                                          project);
+                                                                    },
+                                                                    child:
+                                                                        ListTile(
+                                                                      title: Text(
+                                                                          project['Lesson'] ??
+                                                                              'N/A'),
+                                                                    ),
+                                                                  );
+                                                                },
+                                                              ),
+                                                            ),
+                                                            actions: [
+                                                              TextButton(
+                                                                child:
+                                                                    const Text(
+                                                                        'Close'),
+                                                                onPressed: () {
+                                                                  Navigator.of(
+                                                                          context)
+                                                                      .pop();
+                                                                },
+                                                              ),
+                                                            ],
+                                                          );
+                                                        },
+                                                      );
+                                                    } else {
+                                                      print(
+                                                          'Failed to fetch projects for user ${user['users_firstname']}');
+                                                    }
+                                                  } else {
+                                                    print(
+                                                        'Error fetching projects for user ${user['users_firstname']}');
+                                                  }
+                                                },
+                                                title: Text(
+                                                    user['users_firstname'] ??
+                                                        'N/A'),
+                                                leading:
+                                                    const Icon(Icons.person),
+                                                trailing:
+                                                    const Icon(Icons.info),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                } else {
+                                  print(
+                                      'Failed to fetch users for department $departmentName');
+                                }
+                              } else {
+                                print(
+                                    'Failed to fetch users for department $departmentName');
+                              }
+                            },
+                            child: Card(
+                              margin: const EdgeInsets.symmetric(vertical: 4),
+                              child: SizedBox(
+                                height: 75,
+                                child: ListTile(
+                                  leading: const Icon(Icons.group),
+                                  title: Text(
+                                    department['department_name'] ?? 'N/A',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  subtitle: const Text(
+                                    'Tap to view users',
+                                    style: TextStyle(color: Colors.grey),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      child: const Text('Close'),
-                      onPressed: () {
-                        _isDialogOpen =
-                            false; // Reset the flag when closing the dialog
-                        Navigator.of(context).pop();
-                      },
+                    const SizedBox(height: 16),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        child: const Text('Close'),
+                        onPressed: () {
+                          _isDialogOpen = false;
+                          Navigator.of(context).pop();
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          );
-        },
-      ).then((_) {
-        _isDialogOpen = false; // Reset the flag when the dialog is dismissed
-      });
+            );
+          },
+        ).then((_) {
+          _isDialogOpen = false;
+        });
+      } else {
+        // Handle the case where there are no departments
+        print('No departments available');
+      }
     });
   }
 
