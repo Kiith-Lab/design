@@ -9,6 +9,10 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flip_card/flip_card.dart';
 import 'package:excel/excel.dart';
 import 'dart:io';
+import 'dart:html' as html;
+import 'package:open_file/open_file.dart';
+import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'config.dart';
 
@@ -314,14 +318,27 @@ class _ListPageState extends State<ListPage> {
       ),
     );
 
-    if (kIsWeb) {
-      await Printing.layoutPdf(
-        onLayout: (PdfPageFormat format) async => pdf.save(),
+    try {
+      if (kIsWeb) {
+        final bytes = await pdf.save();
+        final blob = html.Blob([bytes], 'application/pdf');
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        html.window.open(url, '_blank');
+        html.Url.revokeObjectUrl(url);
+      } else {
+        final output = await getTemporaryDirectory();
+        final file = File('${output.path}/my_folders.pdf');
+        await file.writeAsBytes(await pdf.save());
+        OpenFile.open(file.path);
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('PDF generated successfully')),
       );
-    } else {
-      // Handle non-web platforms here
-      // For example, you could save the PDF to a file or use a different printing method
-      print('PDF generation is not supported on this platform');
+    } catch (e) {
+      print('Error generating PDF: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to generate PDF: $e')),
+      );
     }
   }
 
@@ -339,8 +356,9 @@ class _ListPageState extends State<ListPage> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.picture_as_pdf, color: Colors.white),
-            onPressed: _generatePDF,
+            icon: const Icon(Icons.picture_as_pdf,
+                color: Color.fromARGB(255, 3, 3, 3)),
+            onPressed: () => _generatePDF(),
             tooltip: 'Generate PDF',
           ),
         ],
@@ -416,13 +434,6 @@ class _ListPageState extends State<ListPage> {
                 );
               },
             ),
-      // floatingActionButton: FloatingActionButton.extended(
-      //   onPressed: _createFolder,
-      //   tooltip: 'Create New Folder',
-      //   icon: const Icon(Icons.create_new_folder),
-      //   label: const Text('New Folder'),
-      //   backgroundColor: Colors.teal,
-      // ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
@@ -486,7 +497,6 @@ class FolderDetailPage extends StatelessWidget {
           ),
           actions: [
             Row(
-              // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
                   onPressed: () => _generateExcel(context),
@@ -494,18 +504,18 @@ class FolderDetailPage extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFFE6D0B3),
                     foregroundColor: Colors.black87,
-                    minimumSize: Size(90, 40), // Adjust button size
+                    minimumSize: Size(90, 40),
                     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   ),
                 ),
-                SizedBox(width: 10), // Add some space between buttons
+                SizedBox(width: 10),
                 ElevatedButton(
                   onPressed: () => _generatePDF(context),
                   child: const Text('PDF'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFFE6D0B3),
                     foregroundColor: Colors.black87,
-                    minimumSize: Size(90, 40), // Adjust button size
+                    minimumSize: Size(90, 40),
                     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   ),
                 ),
@@ -560,155 +570,28 @@ class FolderDetailPage extends StatelessWidget {
               pw.Table(
                 border: pw.TableBorder.all(),
                 children: [
-                  pw.TableRow(
-                    children: [
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text('Module:',
-                            style:
-                                pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child:
-                            pw.Text(folder['module_master_name'] ?? 'Unknown'),
-                      ),
-                    ],
-                  ),
-                  pw.TableRow(
-                    children: [
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text('Activity:',
-                            style:
-                                pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text(folder['activities_details_content'] ??
-                            'No activity'),
-                      ),
-                    ],
-                  ),
-                  pw.TableRow(
-                    children: [
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text('Card:',
-                            style:
-                                pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text(folder['cards_title'] ?? 'No card'),
-                      ),
-                    ],
-                  ),
-                  pw.TableRow(
-                    children: [
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text('Output:',
-                            style:
-                                pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child:
-                            pw.Text(folder['outputs_content'] ?? 'No output'),
-                      ),
-                    ],
-                  ),
-                  pw.TableRow(
-                    children: [
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text('Instruction:',
-                            style:
-                                pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text(
-                            folder['instruction_content'] ?? 'No instruction'),
-                      ),
-                    ],
-                  ),
-                  pw.TableRow(
-                    children: [
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text('Coach Detail:',
-                            style:
-                                pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text(folder['coach_detail_content'] ??
-                            'No coach detail'),
-                      ),
-                    ],
-                  ),
-                  pw.TableRow(
-                    children: [
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text('Project Code:',
-                            style:
-                                pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text(
-                            folder['project_subject_code'] ?? 'No code'),
-                      ),
-                    ],
-                  ),
-                  pw.TableRow(
-                    children: [
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text('Project Description:',
-                            style:
-                                pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text(folder['project_subject_description'] ??
-                            'No description'),
-                      ),
-                    ],
-                  ),
-                  pw.TableRow(
-                    children: [
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text('Start Date:',
-                            style:
-                                pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text(
-                            folder['project_start_date'] ?? 'No start date'),
-                      ),
-                    ],
-                  ),
-                  pw.TableRow(
-                    children: [
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text('End Date:',
-                            style:
-                                pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text(
-                            folder['project_end_date'] ?? 'No end date'),
-                      ),
-                    ],
-                  ),
+                  _buildPDFTableRow(
+                      'Module:', folder['module_master_name'] ?? 'Unknown'),
+                  _buildPDFTableRow('Activity:',
+                      folder['activities_details_content'] ?? 'No activity'),
+                  _buildPDFTableRow(
+                      'Card:', folder['cards_title'] ?? 'No card'),
+                  _buildPDFTableRow(
+                      'Output:', folder['outputs_content'] ?? 'No output'),
+                  _buildPDFTableRow('Instruction:',
+                      folder['instruction_content'] ?? 'No instruction'),
+                  _buildPDFTableRow('Coach Detail:',
+                      folder['coach_detail_content'] ?? 'No coach detail'),
+                  _buildPDFTableRow('Project Code:',
+                      folder['project_subject_code'] ?? 'No code'),
+                  _buildPDFTableRow(
+                      'Project Description:',
+                      folder['project_subject_description'] ??
+                          'No description'),
+                  _buildPDFTableRow('Start Date:',
+                      folder['project_start_date'] ?? 'No start date'),
+                  _buildPDFTableRow(
+                      'End Date:', folder['project_end_date'] ?? 'No end date'),
                 ],
               ),
             ],
@@ -717,15 +600,44 @@ class FolderDetailPage extends StatelessWidget {
       ),
     );
 
-    if (kIsWeb) {
-      await Printing.layoutPdf(
-        onLayout: (PdfPageFormat format) async => pdf.save(),
+    try {
+      if (kIsWeb) {
+        final bytes = await pdf.save();
+        final blob = html.Blob([bytes], 'application/pdf');
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        html.window.open(url, '_blank');
+        html.Url.revokeObjectUrl(url);
+      } else {
+        final output = await getTemporaryDirectory();
+        final file = File('${output.path}/folder_details.pdf');
+        await file.writeAsBytes(await pdf.save());
+        OpenFile.open(file.path);
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('PDF generated successfully')),
       );
-    } else {
-      // Handle non-web platforms here
-      // For example, you could save the PDF to a file or use a different printing method
-      print('PDF generation is not supported on this platform');
+    } catch (e) {
+      print('Error generating PDF: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to generate PDF: $e')),
+      );
     }
+  }
+
+  pw.TableRow _buildPDFTableRow(String label, String value) {
+    return pw.TableRow(
+      children: [
+        pw.Padding(
+          padding: const pw.EdgeInsets.all(8),
+          child: pw.Text(label,
+              style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.all(8),
+          child: pw.Text(value),
+        ),
+      ],
+    );
   }
 
   Future<void> _generateExcel(BuildContext context) async {
@@ -789,6 +701,11 @@ class FolderDetailPage extends StatelessWidget {
       TextCellValue(folder['coach_detail_content'] ?? 'No coach detail'),
       TextCellValue('')
     ]);
+
+    // Set column widths
+    sheet.setColumnWidth(0, 50);
+    sheet.setColumnWidth(1, 50);
+    sheet.setColumnWidth(2, 50);
 
     final directory =
         Directory('/storage/emulated/0/Download'); // Change to Downloads folder
