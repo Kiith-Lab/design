@@ -174,14 +174,14 @@ class Get1
             $stmt->bindParam(':activities_details_headerId', $json['activities_details_headerId'], PDO::PARAM_STR);
             $stmt->execute();
             $lastInsertId = $this->pdo->lastInsertId();
-            
+
             // Fetch the newly inserted activity
             $selectSql = "SELECT * FROM tbl_activities_details WHERE activities_details_id = :id";
             $selectStmt = $this->pdo->prepare($selectSql);
             $selectStmt->bindParam(':id', $lastInsertId, PDO::PARAM_INT);
             $selectStmt->execute();
             $activity = $selectStmt->fetch(PDO::FETCH_ASSOC);
-            
+
             return json_encode(['success' => true, 'id' => $lastInsertId, 'activity' => $activity]);
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
@@ -210,14 +210,14 @@ class Get1
             $stmt->bindParam(':project_cards_cardId', $json['project_cards_cardId'], PDO::PARAM_STR);
             $stmt->execute();
             $lastInsertId = $this->pdo->lastInsertId();
-            
+
             // Fetch the newly inserted card
             $selectSql = "SELECT * FROM tbl_project_cards WHERE project_cards_id = :id";
             $selectStmt = $this->pdo->prepare($selectSql);
             $selectStmt->bindParam(':id', $lastInsertId, PDO::PARAM_INT);
             $selectStmt->execute();
             $card = $selectStmt->fetch(PDO::FETCH_ASSOC);
-            
+
             return json_encode(['success' => true, 'id' => $lastInsertId, 'card' => $card]);
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
@@ -246,14 +246,14 @@ class Get1
             $stmt->bindParam(':outputs_content', $json['outputs_content'], PDO::PARAM_STR);
             $stmt->execute();
             $lastInsertId = $this->pdo->lastInsertId();
-            
+
             // Fetch the newly inserted output
             $selectSql = "SELECT * FROM tbl_outputs WHERE outputs_id = :id";
             $selectStmt = $this->pdo->prepare($selectSql);
             $selectStmt->bindParam(':id', $lastInsertId, PDO::PARAM_INT);
             $selectStmt->execute();
             $output = $selectStmt->fetch(PDO::FETCH_ASSOC);
-            
+
             return json_encode(['success' => true, 'id' => $lastInsertId, 'output' => $output]);
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
@@ -282,14 +282,14 @@ class Get1
             $stmt->bindParam(':instruction_content', $json['instruction_content'], PDO::PARAM_STR);
             $stmt->execute();
             $lastInsertId = $this->pdo->lastInsertId();
-            
+
             // Fetch the newly inserted instruction
             $selectSql = "SELECT * FROM tbl_instruction WHERE instruction_id = :id";
             $selectStmt = $this->pdo->prepare($selectSql);
             $selectStmt->bindParam(':id', $lastInsertId, PDO::PARAM_INT);
             $selectStmt->execute();
             $instruction = $selectStmt->fetch(PDO::FETCH_ASSOC);
-            
+
             return json_encode(['success' => true, 'id' => $lastInsertId, 'instruction' => $instruction]);
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
@@ -326,13 +326,13 @@ class Get1
     }
 
     function addCoachDetails($json)
-{
-    $json = json_decode($json, true);
-    try {
-        // Check if coach_detail_content is an array and handle each entry
-        if (is_array($json['coach_detail_content'])) {
-            foreach ($json['coach_detail_content'] as $content) {
-                $sql = "INSERT INTO tbl_coach_detail (	
+    {
+        $json = json_decode($json, true);
+        try {
+            // Check if coach_detail_content is an array and handle each entry
+            if (is_array($json['coach_detail_content'])) {
+                foreach ($json['coach_detail_content'] as $content) {
+                    $sql = "INSERT INTO tbl_coach_detail (	
                 coach_detail_coachheaderId,
                 coach_detail_content,
                 coach_detail_renarks	
@@ -340,18 +340,18 @@ class Get1
                 :coach_detail_coachheaderId,	
                 :coach_detail_content,	
                 :coach_detail_renarks)";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->bindParam(':coach_detail_coachheaderId', $json['coach_detail_coachheaderId'], PDO::PARAM_STR);
-                
-                // Bind each content entry separately
-                $stmt->bindParam(':coach_detail_content', $content, PDO::PARAM_STR);
-                
-                $stmt->bindParam(':coach_detail_renarks', $json['coach_detail_renarks'], PDO::PARAM_STR);
-                $stmt->execute();
-            }
-        } else {
-            // If it's not an array, insert it directly
-            $sql = "INSERT INTO tbl_coach_detail (	
+                    $stmt = $this->pdo->prepare($sql);
+                    $stmt->bindParam(':coach_detail_coachheaderId', $json['coach_detail_coachheaderId'], PDO::PARAM_STR);
+
+                    // Bind each content entry separately
+                    $stmt->bindParam(':coach_detail_content', $content, PDO::PARAM_STR);
+
+                    $stmt->bindParam(':coach_detail_renarks', $json['coach_detail_renarks'], PDO::PARAM_STR);
+                    $stmt->execute();
+                }
+            } else {
+                // If it's not an array, insert it directly
+                $sql = "INSERT INTO tbl_coach_detail (	
             coach_detail_coachheaderId,
             coach_detail_content,
             coach_detail_renarks	
@@ -359,24 +359,24 @@ class Get1
             :coach_detail_coachheaderId,	
             :coach_detail_content,	
             :coach_detail_renarks)";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->bindParam(':coach_detail_coachheaderId', $json['coach_detail_coachheaderId'], PDO::PARAM_STR);
-            $stmt->bindParam(':coach_detail_content', $json['coach_detail_content'], PDO::PARAM_STR);
-            $stmt->bindParam(':coach_detail_renarks', $json['coach_detail_renarks'], PDO::PARAM_STR);
-            $stmt->execute();
-        }
+                $stmt = $this->pdo->prepare($sql);
+                $stmt->bindParam(':coach_detail_coachheaderId', $json['coach_detail_coachheaderId'], PDO::PARAM_STR);
+                $stmt->bindParam(':coach_detail_content', $json['coach_detail_content'], PDO::PARAM_STR);
+                $stmt->bindParam(':coach_detail_renarks', $json['coach_detail_renarks'], PDO::PARAM_STR);
+                $stmt->execute();
+            }
 
-        // Return the last inserted ID for the last entry
-        $lastInsertId = $this->pdo->lastInsertId();
-        return json_encode(['success' => true, 'id' => $lastInsertId]);
-    } catch (PDOException $e) {
-        error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
-        return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
-    } catch (Exception $e) {
-        error_log("General error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
-        return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
+            // Return the last inserted ID for the last entry
+            $lastInsertId = $this->pdo->lastInsertId();
+            return json_encode(['success' => true, 'id' => $lastInsertId]);
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
+        }
     }
-}
     function addFolder($json)
     {
         $json = json_decode($json, true);
@@ -471,35 +471,53 @@ class Get1
     function getFolder()
     {
         try {
-            $sql = "SELECT *
+            $sql = "SELECT 
+                tbl_folder.*,
+                tbl_project_modules.*,
+                tbl_activities_details.*,
+                tbl_project_cards.*,
+                tbl_outputs.*,
+                tbl_instruction.*,
+                tbl_coach_detail.*,
+                tbl_project.*,
+                tbl_module_master.*,
+                tbl_front_cards.*,
+                tbl_back_cards_header.*
             FROM tbl_folder
-            INNER JOIN tbl_project_modules ON tbl_folder.project_moduleId = tbl_project_modules.project_modules_id
-            INNER JOIN tbl_activities_details ON tbl_folder.activities_detailId = tbl_activities_details.activities_details_id
-            INNER JOIN tbl_project_cards ON tbl_folder.project_cardsId = tbl_project_cards.project_cards_id
-            INNER JOIN tbl_outputs ON tbl_folder.outputId = tbl_outputs.outputs_id
-            INNER JOIN tbl_instruction ON tbl_folder.instructionId = tbl_instruction.instruction_id
-            INNER JOIN tbl_coach_detail ON tbl_folder.coach_detailsId = tbl_coach_detail.coach_detail_id
-            INNER JOIN tbl_project ON tbl_project.project_id = tbl_folder.projectId
-            INNER JOIN tbl_module_master ON tbl_module_master.module_master_id = tbl_project_modules.project_modules_masterId
-            INNER JOIN tbl_front_cards ON tbl_project_cards.project_cards_cardId = tbl_front_cards.cards_id
-            INNER JOIN tbl_back_cards_header ON tbl_back_cards_header.back_cards_header_id = tbl_project_cards.project_cards_cardId";
-            
+            LEFT JOIN tbl_project_modules ON tbl_folder.project_moduleId = tbl_project_modules.project_modules_id
+            LEFT JOIN tbl_activities_details ON tbl_folder.activities_detailId = tbl_activities_details.activities_details_id
+            LEFT JOIN tbl_project_cards ON tbl_folder.project_cardsId = tbl_project_cards.project_cards_id
+            LEFT JOIN tbl_outputs ON tbl_folder.outputId = tbl_outputs.outputs_id
+            LEFT JOIN tbl_instruction ON tbl_folder.instructionId = tbl_instruction.instruction_id
+            LEFT JOIN tbl_coach_detail ON tbl_folder.coach_detailsId = tbl_coach_detail.coach_detail_id
+            LEFT JOIN tbl_project ON tbl_project.project_id = tbl_folder.projectId
+            LEFT JOIN tbl_module_master ON tbl_module_master.module_master_id = tbl_project_modules.project_modules_masterId
+            LEFT JOIN tbl_front_cards ON tbl_project_cards.project_cards_cardId = tbl_front_cards.cards_id
+            LEFT JOIN tbl_back_cards_header ON tbl_back_cards_header.back_cards_header_id = tbl_project_cards.project_cards_cardId";
+
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute();
             $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // Filter out duplicate project IDs
-            $uniqueFolders = [];
-            $projectIds = [];
-
+            // Group folders by project ID to handle multiple cards per project
+            $groupedFolders = [];
             foreach ($returnValue as $folder) {
-                if (!in_array($folder['projectId'], $projectIds)) {
-                    $uniqueFolders[] = $folder;
-                    $projectIds[] = $folder['projectId'];
+                $projectId = $folder['projectId'];
+                if (!isset($groupedFolders[$projectId])) {
+                    $groupedFolders[$projectId] = $folder;
+                    $groupedFolders[$projectId]['cards'] = [];
+                }
+                if ($folder['cards_id']) {
+                    $groupedFolders[$projectId]['cards'][] = [
+                        'cards_id' => $folder['cards_id'],
+                        'cards_title' => $folder['cards_title'],
+                        'back_cards_header_id' => $folder['back_cards_header_id'],
+                        'back_cards_header_title' => $folder['back_cards_header_title']
+                    ];
                 }
             }
 
-            return json_encode(['folders' => $uniqueFolders]);
+            return json_encode(['folders' => array_values($groupedFolders)]);
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
             return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
@@ -508,45 +526,43 @@ class Get1
             return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
         }
     }
-    // function getCards()
-    // {
-    //     $cardId = isset($_POST['cardId']) ? $_POST['cardId'] : '';
-    //     $projectId = isset($_POST['cardId']) ? $_POST['projectId'] : '';
-    //     try {
-    //         $sql = "SELECT tbl_front_cards.cards_title, 
-    //                 tbl_front_cards.cards_id, 
-    //                 tbl_front_cards.cards_content,
-    //                 tbl_back_cards_header.back_content, 
-    //                 tbl_back_cards_header.back_content_title,
-    //                 tbl_back_cards_header.back_cards_header_frontId,
-    //                 tbl_back_cards_header.back_cards_header_title
-    //         FROM tbl_back_cards_header 
-    //         INNER JOIN tbl_front_cards ON tbl_front_cards.cards_id = tbl_back_cards_header.back_cards_header_frontId
-    //         WHERE tbl_back_cards_header.back_cards_header_frontId = :cardId 
-    //         AND ";
-
-    //         $stmt = $this->pdo->prepare($sql);
-    //         $stmt->bindParam(':cardId', $cardId, PDO::PARAM_INT);
-    //         $stmt->execute();
-
-    //         $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    //         error_log("SQL Query: $sql");
-    //         error_log("Result: " . print_r($returnValue, true));
-
-    //         return json_encode($returnValue);
-    //     } catch (PDOException $e) {
-    //         error_log("Database error: " . $e->getMessage());
-    //         return json_encode(['error' => 'Database error occurred']);
-    //     } catch (Exception $e) {
-    //         error_log("General error: " . $e->getMessage());
-    //         return json_encode(['error' => 'An error occurred']);
-    //     }
-    // }
-
+    function getCards1()
+    {
+        $cardId = isset($_POST['cardId']) ? $_POST['cardId'] : '';
+        $projectId = isset($_POST['projectId']) ? $_POST['projectId'] : '';
+        try {
+            $sql = "SELECT *
+            FROM tbl_folder
+            INNER JOIN tbl_project_cards ON tbl_folder.project_cardsId = tbl_project_cards.project_cards_id
+            INNER JOIN tbl_back_cards_header ON tbl_back_cards_header.back_cards_header_id = tbl_project_cards.project_cards_cardId
+            INNER JOIN tbl_front_cards ON tbl_front_cards.cards_id = tbl_back_cards_header.back_cards_header_frontId
+            WHERE tbl_folder.projectId = :projectId 
+            AND tbl_back_cards_header.back_cards_header_frontId = :cardId";
     
 
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':cardId', $cardId, PDO::PARAM_INT);
+            $stmt->bindParam(':projectId', $projectId, PDO::PARAM_INT);
+            $stmt->execute();
 
+            $returnValue = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            error_log("SQL Query: $sql");
+            error_log("Result: " . print_r($returnValue, true));
+
+            if ($returnValue === false) {
+                return json_encode(['success' => false, 'message' => 'No data found']);
+            }
+
+            return json_encode(['success' => true, 'data' => $returnValue]);
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            return json_encode(['success' => false, 'error' => 'Database error occurred: ' . $e->getMessage()]);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            return json_encode(['success' => false, 'error' => 'An error occurred: ' . $e->getMessage()]);
+        }
+    }
 }
 
 // Handle preflight requests for CORS (for OPTIONS request)
@@ -609,10 +625,13 @@ switch ($operation) {
     case "addCoachDetails":
         echo $get->addCoachDetails($json);
         break;
-        case "addFolder":
-            echo $get->addFolder($json);
-            break;
-            case "updateData":
-                echo $get->updateData($json);
-                break;
+    case "addFolder":
+        echo $get->addFolder($json);
+        break;
+    case "updateData":
+        echo $get->updateData($json);
+        break;
+    case "getCards1":
+        echo $get->getCards1();
+        break;
 }

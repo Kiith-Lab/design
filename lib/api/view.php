@@ -411,26 +411,33 @@ class Get
     {
         $modeId = isset($_POST['modeId']) ? $_POST['modeId'] : '';
         try {
-            $sql = "SELECT tbl_front_cards.cards_title, 
-            tbl_front_cards.cards_id, 
-            tbl_front_cards.cards_content,
-            tbl_back_cards_header.back_cards_header_id,
-            tbl_back_cards_header.back_content_title,
-            GROUP_CONCAT(tbl_back_cards_header.back_content ORDER BY tbl_back_cards_header.back_content) AS back_content, 
-            GROUP_CONCAT(tbl_back_cards_header.back_content_title ORDER BY tbl_back_cards_header.back_content_title) AS back_content_title,
-            GROUP_CONCAT(tbl_back_cards_header.back_cards_header_frontId ORDER BY tbl_back_cards_header.back_cards_header_frontId) AS back_cards_header_frontId,
-            GROUP_CONCAT(tbl_back_cards_header.back_cards_header_title ORDER BY tbl_back_cards_header.back_cards_header_title) AS back_cards_header_title,
-            GROUP_CONCAT(tbl_module_master.module_master_name ORDER BY tbl_module_master.module_master_id) AS module_master_name,
-            tbl_front_cards.cards_masterId
-                FROM tbl_back_cards_header 
-                INNER JOIN tbl_front_cards ON tbl_front_cards.cards_id = tbl_back_cards_header.back_cards_header_frontId
-                INNER JOIN tbl_module_master ON tbl_module_master.module_master_id = tbl_front_cards.cards_masterId
-                WHERE tbl_front_cards.cards_masterId = :modeId
-                GROUP BY tbl_front_cards.cards_id, 
-                tbl_front_cards.cards_title, 
-                tbl_front_cards.cards_content,
-                tbl_front_cards.cards_masterId
-                ORDER BY tbl_front_cards.cards_title;";
+            $sql = "SELECT 
+    tbl_front_cards.cards_title, 
+    tbl_front_cards.cards_id, 
+    tbl_front_cards.cards_content,
+    MIN(tbl_back_cards_header.back_cards_header_id) AS back_cards_header_id, -- Use MIN or any aggregate function to avoid duplicates
+    GROUP_CONCAT(DISTINCT tbl_back_cards_header.back_content ORDER BY tbl_back_cards_header.back_content SEPARATOR ', ') AS back_content, 
+    GROUP_CONCAT(DISTINCT tbl_back_cards_header.back_content_title ORDER BY tbl_back_cards_header.back_content_title SEPARATOR ', ') AS back_content_title,
+    tbl_back_cards_header.back_cards_header_frontId, -- Include this field for grouping
+    GROUP_CONCAT(DISTINCT tbl_back_cards_header.back_cards_header_title ORDER BY tbl_back_cards_header.back_cards_header_title SEPARATOR ', ') AS back_cards_header_title,
+    GROUP_CONCAT(DISTINCT tbl_module_master.module_master_name ORDER BY tbl_module_master.module_master_id SEPARATOR ', ') AS module_master_name,
+    tbl_front_cards.cards_masterId
+FROM 
+    tbl_back_cards_header 
+LEFT JOIN 
+    tbl_front_cards ON tbl_front_cards.cards_id = tbl_back_cards_header.back_cards_header_frontId
+LEFT JOIN 
+    tbl_module_master ON tbl_module_master.module_master_id = tbl_front_cards.cards_masterId
+WHERE tbl_front_cards.cards_masterId = :modeId
+GROUP BY 
+    tbl_back_cards_header.back_cards_header_frontId, -- Group by unique identifier
+    tbl_front_cards.cards_id, 
+    tbl_front_cards.cards_title, 
+    tbl_front_cards.cards_content,
+    tbl_front_cards.cards_masterId
+ORDER BY 
+    tbl_front_cards.cards_title;
+";
 
             $stmt = $this->pdo->prepare($sql);
             $stmt->bindParam(':modeId', $modeId, PDO::PARAM_INT);
@@ -715,8 +722,6 @@ class Get
             return json_encode(['error' => 'An error occurred']);
         }
     }
-
-
 }
 
 // Handle preflight requests for CORS (for OPTIONS request)
