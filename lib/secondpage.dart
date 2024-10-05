@@ -131,7 +131,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 MaterialPageRoute(builder: (context) => const MyProjectPage()),
               );
             },
-            label: 'MY PROJECT',
+            label: 'CREATE PROJECT',
             labelStyle: const TextStyle(fontWeight: FontWeight.w500),
             labelBackgroundColor: Colors.white,
           ),

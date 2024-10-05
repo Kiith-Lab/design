@@ -54,6 +54,7 @@ dependencies:
   open_file: ^3.5.7
   foundation: ^0.0.5
   html: ^0.15.4
+  hexcolor: ^3.0.1
 
 dev_dependencies:
   flutter_test:

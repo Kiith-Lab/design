@@ -13,6 +13,7 @@ import 'dart:html' as html;
 import 'package:open_file/open_file.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:hexcolor/hexcolor.dart';
 
 import 'config.dart';
 
@@ -609,17 +610,19 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                   _buildPDFTableRow('Module:',
                       widget.folder['module_master_name'] ?? 'Unknown'),
                   _buildPDFTableRow(
-                      'Activity:',
+                      'What Activities will my students do?:',
                       widget.folder['activities_details_content'] ??
                           'No activity'),
                   _buildPDFTableRow(
-                      'Card:', widget.folder['cards_title'] ?? 'No card'),
-                  _buildPDFTableRow('Output:',
+                      'What are the (2) cards will my student use?:',
+                      widget.folder['cards_title'] ?? 'No card'),
+                  _buildPDFTableRow('What are the expected Outputs?:',
                       widget.folder['outputs_content'] ?? 'No output'),
-                  _buildPDFTableRow('Instruction:',
+                  _buildPDFTableRow(
+                      'What instructions will i give my students?:',
                       widget.folder['instruction_content'] ?? 'No instruction'),
                   _buildPDFTableRow(
-                      'Coach Detail:',
+                      'How can I coach my students while doing this activity?:',
                       widget.folder['coach_detail_content'] ??
                           'No coach detail'),
                 ],
