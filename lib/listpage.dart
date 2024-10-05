@@ -1,19 +1,17 @@
+import 'package:excel_dart/excel_dart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flip_card/flip_card.dart';
-import 'package:excel/excel.dart';
 import 'dart:io';
 import 'dart:html' as html;
 import 'package:open_file/open_file.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:hexcolor/hexcolor.dart';
 
 import 'config.dart';
 
@@ -81,7 +79,7 @@ class _ListPageState extends State<ListPage> {
                     })
                 .toList());
           });
-          // Print the fetched details
+// Print the fetched details
           print('Fetched Folder Details:');
           for (var folder in folders) {
             print('Folder ID: ${folder['folder_id']}');
@@ -119,7 +117,7 @@ class _ListPageState extends State<ListPage> {
       }
     } catch (e) {
       print('Error fetching folders: $e');
-      // You might want to show an error message to the user here
+// You might want to show an error message to the user here
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error fetching folders: $e')),
       );
@@ -146,50 +144,50 @@ class _ListPageState extends State<ListPage> {
     }
   }
 
-  Future<void> _addFolder(String folderName, String creationTime) async {
-    Map<String, dynamic> data = {
-      'folder_name': folderName,
-      'folder_date': creationTime,
-    };
-    try {
-      final response = await http.post(
-        Uri.parse('${baseUrl}add.php'),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: {
-          'operation': 'addfolder',
-          'json': jsonEncode(data),
-        },
-      );
+// Future<void> _addFolder(String folderName, String creationTime) async {
+// Map<String, dynamic> data = {
+// 'folder_name': folderName,
+// 'folder_date': creationTime,
+// };
+// try {
+// final response = await http.post(
+// Uri.parse('${baseUrl}add.php'),
+// headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+// body: {
+// 'operation': 'addfolder',
+// 'json': jsonEncode(data),
+// },
+// );
 
-      if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        if (responseData['success'] == true) {
-          print('Folder created successfully with ID: ${responseData['id']}');
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Folder created successfully')),
-          );
-          await _fetchFolders(); // Refresh the folder list
-        } else {
-          print('Failed to create folder: ${responseData['error']}');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content:
-                    Text('Failed to create folder: ${responseData['error']}')),
-          );
-        }
-      } else {
-        print('Failed to create folder: Server error ${response.statusCode}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Server error occurred')),
-        );
-      }
-    } catch (e) {
-      print('Error adding folder: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred: $e')),
-      );
-    }
-  }
+// if (response.statusCode == 200) {
+// final responseData = json.decode(response.body);
+// if (responseData['success'] == true) {
+// print('Folder created successfully with ID: ${responseData['id']}');
+// ScaffoldMessenger.of(context).showSnackBar(
+// const SnackBar(content: Text('Folder created successfully')),
+// );
+// await _fetchFolders(); // Refresh the folder list
+// } else {
+// print('Failed to create folder: ${responseData['error']}');
+// ScaffoldMessenger.of(context).showSnackBar(
+// SnackBar(
+// content:
+// Text('Failed to create folder: ${responseData['error']}')),
+// );
+// }
+// } else {
+// print('Failed to create folder: Server error ${response.statusCode}');
+// ScaffoldMessenger.of(context).showSnackBar(
+// const SnackBar(content: Text('Server error occurred')),
+// );
+// }
+// } catch (e) {
+// print('Error adding folder: $e');
+// ScaffoldMessenger.of(context).showSnackBar(
+// SnackBar(content: Text('An error occurred: $e')),
+// );
+// }
+// }
 
   void _onFolderTap(Map<String, dynamic> folder) {
     print('Folder tapped: ${folder['project_title']}');
@@ -403,7 +401,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
         'Fetching card data for projectId: $projectId, backCardsHeaderFrontId: $backCardsHeaderFrontId');
 
     try {
-      // Make the HTTP POST request to your API
+// Make the HTTP POST request to your API
       final response = await http.post(
         Uri.parse('http://localhost/design/lib/api/masterlist.php'),
         body: {
@@ -413,11 +411,11 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
         },
       );
 
-      // Check if the response status is OK (HTTP 200)
+// Check if the response status is OK (HTTP 200)
       if (response.statusCode == 200) {
         final dynamic data = json.decode(response.body);
 
-        // Check if the response is a map (expected JSON format)
+// Check if the response is a map (expected JSON format)
         if (data is Map<String, dynamic>) {
           if (data['success'] == true && data['data'] != null) {
             setState(() {
@@ -434,7 +432,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
             });
           }
         } else {
-          // Handle unexpected data types
+// Handle unexpected data types
           print('Unexpected data format: ${data.runtimeType}');
           print('Data content: $data');
           setState(() {
@@ -442,7 +440,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
           });
         }
       } else {
-        // Log failure to fetch data with response details
+// Log failure to fetch data with response details
         print('Failed to fetch card data');
         print('Status code: ${response.statusCode}');
         print('Response body: ${response.body}');
@@ -451,7 +449,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
         });
       }
     } catch (e) {
-      // Handle and log exceptions
+// Handle and log exceptions
       print('Database error occurred: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Database error occurred: $e')),
@@ -460,7 +458,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
   }
 
   void _addLesson(BuildContext context) {
-    // TODO: Implement lesson addition logic
+// TODO: Implement lesson addition logic
     print(
         'Add lesson tapped for folder: ${widget.folder['project_title'] ?? 'Unnamed Folder'}');
     ScaffoldMessenger.of(context).showSnackBar(
@@ -610,19 +608,17 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                   _buildPDFTableRow('Module:',
                       widget.folder['module_master_name'] ?? 'Unknown'),
                   _buildPDFTableRow(
-                      'What Activities will my students do?:',
+                      'Activity:',
                       widget.folder['activities_details_content'] ??
                           'No activity'),
                   _buildPDFTableRow(
-                      'What are the (2) cards will my student use?:',
-                      widget.folder['cards_title'] ?? 'No card'),
-                  _buildPDFTableRow('What are the expected Outputs?:',
+                      'Card:', widget.folder['cards_title'] ?? 'No card'),
+                  _buildPDFTableRow('Output:',
                       widget.folder['outputs_content'] ?? 'No output'),
-                  _buildPDFTableRow(
-                      'What instructions will i give my students?:',
+                  _buildPDFTableRow('Instruction:',
                       widget.folder['instruction_content'] ?? 'No instruction'),
                   _buildPDFTableRow(
-                      'How can I coach my students while doing this activity?:',
+                      'Coach Detail:',
                       widget.folder['coach_detail_content'] ??
                           'No coach detail'),
                 ],
@@ -677,91 +673,91 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
     var excel = Excel.createExcel();
     var sheet = excel['Sheet1'];
 
+// Current date and time formatted
     final now = DateTime.now();
     final formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
 
-    // Add generation date and time
-    sheet.appendRow([
-      TextCellValue('Generated on:'),
-      TextCellValue(formattedDate),
-      TextCellValue('')
-    ]);
-    sheet.appendRow([
-      TextCellValue(''),
-      TextCellValue(''),
-      TextCellValue('')
-    ]); // Empty row for spacing
+// Add generation date and time
+    sheet.appendRow(['Generated on:', formattedDate]);
+    sheet.appendRow(['', '']); // Empty row for spacing
 
-    // Add folder details
-    sheet.appendRow([
-      TextCellValue('Project Code'),
-      TextCellValue(widget.folder['project_subject_code'] ?? 'No code'),
-      TextCellValue('')
-    ]);
-    sheet.appendRow([
-      TextCellValue('Project Description'),
-      TextCellValue(
-          widget.folder['project_subject_description'] ?? 'No description'),
-      TextCellValue('')
-    ]);
-    sheet.appendRow([
-      TextCellValue('Start Date'),
-      TextCellValue(widget.folder['project_start_date'] ?? 'No start date'),
-      TextCellValue('')
-    ]);
-    sheet.appendRow([
-      TextCellValue('End Date'),
-      TextCellValue(widget.folder['project_end_date'] ?? 'No end date'),
-      TextCellValue('')
-    ]);
-    sheet.appendRow([
-      TextCellValue(widget.folder['module_master_name'] ?? 'Unknown'),
-      TextCellValue(''),
-      TextCellValue('NOTES/REMARKS')
-    ]);
-    sheet.appendRow([
-      TextCellValue('What activities will my students do?'),
-      TextCellValue(
-          widget.folder['activities_details_content'] ?? 'No activity'),
-      TextCellValue('')
-    ]);
-    sheet.appendRow([
-      TextCellValue('What are the (2) cards will my  student use?'),
-      TextCellValue(widget.folder['cards_title'] ?? 'No card'),
-      TextCellValue('')
-    ]);
-    sheet.appendRow([
-      TextCellValue('What are the expected outputs?'),
-      TextCellValue(widget.folder['outputs_content'] ?? 'No output'),
-      TextCellValue('')
-    ]);
-    sheet.appendRow([
-      TextCellValue('What instructions will I give my students?'),
-      TextCellValue(widget.folder['instruction_content'] ?? 'No instruction'),
-      TextCellValue('')
-    ]);
-    sheet.appendRow([
-      TextCellValue('How can I coach my students while doing this activity?'),
-      TextCellValue(widget.folder['coach_detail_content'] ?? 'No coach detail'),
-      TextCellValue('')
-    ]);
+// Define column widths (optional)
+    sheet.setColWidth(0, 25); // First column width
+    sheet.setColWidth(1, 50); // Second column width
+    sheet.setColWidth(2, 50); // Third column for Notes/Remarks
 
-    // Set column widths
-    sheet.setColumnWidth(0, 50);
-    sheet.setColumnWidth(1, 50);
-    sheet.setColumnWidth(2, 50);
+// Define a style for the row with your desired color
+    CellStyle rowStyle = CellStyle(
+      backgroundColorHex: "#FF5733", // Change to your desired color
+      fontFamily: getFontFamily(FontFamily.Calibri),
+      fontColorHex: "#FFFFFF", // Set font color to white for better contrast
+      bold: true, // Optional: make the text bold
+    );
 
+// Add folder details
+    final folderDetails = {
+      'Project Code': [widget.folder['project_subject_code'] ?? 'No code'],
+      'Project Description': [
+        widget.folder['project_subject_description'] ?? 'No description'
+      ],
+      'Start Date': [widget.folder['project_start_date'] ?? 'No start date'],
+      'End Date': [widget.folder['project_end_date'] ?? 'No end date'],
+      'Activities Details': [
+        widget.folder['activities_details_content'] ?? 'No activity'
+      ],
+      'Cards Used': [widget.folder['cards_title'] ?? 'No card'],
+      'Expected Outputs': [widget.folder['outputs_content'] ?? 'No output'],
+      'Instructions': [
+        widget.folder['instruction_content'] ?? 'No instruction'
+      ],
+      'Coaching Details': [
+        widget.folder['coach_detail_content'] ?? 'No coach detail'
+      ],
+    };
+
+// Append folder details to the sheet
+    folderDetails.forEach((key, value) {
+      if (key == 'Activities Details') {
+// Add the module_master_name in the first column and 'NOTES/REMARKS' in the third column
+        sheet.appendRow([
+          widget.folder['module_master_name'] ?? 'Unknown',
+          '', // Leave this cell empty for the second column
+          'NOTES/REMARKS', // Place NOTES/REMARKS in the third column
+        ]); // Module name and notes in one row
+
+// Apply style to the cells in the newly appended row
+        var rowIndex = sheet.maxRows - 1; // Get the index of the last row
+        sheet
+            .cell(
+                CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: rowIndex))
+            .cellStyle = rowStyle; // First column
+        sheet
+            .cell(
+                CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: rowIndex))
+            .cellStyle = rowStyle; // Second column
+        sheet
+            .cell(
+                CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: rowIndex))
+            .cellStyle = rowStyle; // Third column
+      } else {
+        sheet.appendRow([key, value[0]]); // Add 2 columns for other rows
+      }
+    });
+
+// Define the directory and file path
     final directory =
         Directory('/storage/emulated/0/Download'); // Change to Downloads folder
-    final filePath = '${directory.path}/folder_details.xlsx';
+    final filePath = '${directory.path}/folder_details_with_remarks.xlsx';
     final file = File(filePath);
+
+// Save the Excel file
     List<int>? fileBytes = excel.save();
     if (fileBytes != null) {
-      file
-        ..createSync(recursive: true)
-        ..writeAsBytesSync(fileBytes);
+      file.createSync(recursive: true);
+      file.writeAsBytesSync(fileBytes);
     }
 
+// Show a snackbar message
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Excel file saved to $filePath')),
     );

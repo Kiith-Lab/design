@@ -4,11 +4,13 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:excel/excel.dart';
+import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xlsio;
 import 'dart:io';
 import 'config.dart';
 
@@ -149,7 +151,7 @@ class _DashboardsState extends State<Dashboards> {
 
       if (response.statusCode == 200) {
         final List<dynamic> fetchedDepartments = json.decode(response.body);
-        // print(fetchedDepartments);
+// print(fetchedDepartments);
         setState(() {
           departments = fetchedDepartments;
           departmentCount = departments.length;
@@ -472,8 +474,8 @@ class _DashboardsState extends State<Dashboards> {
                   ),
                   ShadButton(
                     child: const Text('Export Excel'),
-                    onPressed: () => _exportFolderDetailsExcel(folder),
-                  ),
+                    onPressed: () => _exportFolderDetailsExcel(context, folder),
+                  )
                 ],
               ),
             ],
@@ -549,63 +551,61 @@ class _DashboardsState extends State<Dashboards> {
     );
   }
 
-  Future<void> _exportFolderDetailsExcel(dynamic folder) async {
-    var excel = Excel.createExcel();
-    var sheet = excel['Sheet1'];
+  Future<void> _exportFolderDetailsExcel(
+      BuildContext context, dynamic folder) async {
+// Create a new Excel document
+    final xlsio.Workbook workbook = xlsio.Workbook();
+    final xlsio.Worksheet sheet = workbook.worksheets[0];
 
-    // Add headers
-    sheet.appendRow([
-      TextCellValue('Field'),
-      TextCellValue('Value'),
-      TextCellValue('Notes/Remarks')
-    ]);
-    // Add folder details
-    sheet.appendRow([
-      TextCellValue('Mode'),
-      TextCellValue(folder['Mode'] ?? 'N/A'),
-      TextCellValue('')
-    ]);
-    sheet.appendRow([
-      TextCellValue('Duration'),
-      TextCellValue(folder['Duration']?.toString() ?? 'N/A'),
-      TextCellValue('')
-    ]);
-    sheet.appendRow([
-      TextCellValue('Activity'),
-      TextCellValue(folder['Activity'] ?? 'N/A')
-    ]);
-    sheet.appendRow([
-      TextCellValue('Lesson'),
-      TextCellValue(folder['Lesson'] ?? 'N/A'),
-      TextCellValue('')
-    ]);
-    sheet.appendRow([
-      TextCellValue('Output'),
-      TextCellValue(folder['Output'] ?? 'N/A'),
-      TextCellValue('')
-    ]);
-    sheet.appendRow([
-      TextCellValue('Instruction'),
-      TextCellValue(folder['Instruction'] ?? 'N/A'),
-      TextCellValue('')
-    ]);
-    sheet.appendRow([
-      TextCellValue('Coach Detail'),
-      TextCellValue(folder['CoachDetail'] ?? 'N/A'),
-      TextCellValue('')
-    ]);
+// Add headers
+    sheet.getRangeByIndex(0, 0).setText('Field');
+    sheet.getRangeByIndex(0, 1).setText('Value');
+    sheet.getRangeByIndex(0, 2).setText('Notes/Remarks');
 
-    final directory =
-        Directory('/storage/emulated/0/Download'); // Change to Downloads folder
+// Add folder details
+    sheet.getRangeByIndex(1, 0).setText('Mode');
+    sheet.getRangeByIndex(1, 1).setText(folder['Mode'] ?? 'N/A');
+    sheet.getRangeByIndex(1, 2).setText('');
+
+    sheet.getRangeByIndex(2, 0).setText('Duration');
+    sheet
+        .getRangeByIndex(2, 1)
+        .setText(folder['Duration']?.toString() ?? 'N/A');
+    sheet.getRangeByIndex(2, 2).setText('');
+
+    sheet.getRangeByIndex(3, 0).setText('Activity');
+    sheet.getRangeByIndex(3, 1).setText(folder['Activity'] ?? 'N/A');
+    sheet.getRangeByIndex(3, 2).setText('');
+
+    sheet.getRangeByIndex(4, 0).setText('Lesson');
+    sheet.getRangeByIndex(4, 1).setText(folder['Lesson'] ?? 'N/A');
+    sheet.getRangeByIndex(4, 2).setText('');
+
+    sheet.getRangeByIndex(5, 0).setText('Output');
+    sheet.getRangeByIndex(5, 1).setText(folder['Output'] ?? 'N/A');
+    sheet.getRangeByIndex(5, 2).setText('');
+
+    sheet.getRangeByIndex(6, 0).setText('Instruction');
+    sheet.getRangeByIndex(6, 1).setText(folder['Instruction'] ?? 'N/A');
+    sheet.getRangeByIndex(6, 2).setText('');
+
+    sheet.getRangeByIndex(7, 0).setText('Coach Detail');
+    sheet.getRangeByIndex(7, 1).setText(folder['CoachDetail'] ?? 'N/A');
+    sheet.getRangeByIndex(7, 2).setText('');
+
+// Save the Excel file
+    final List<int> bytes = workbook.saveAsStream();
+    workbook.dispose(); // Dispose to free up resources
+
+// Get the directory for saving the Excel file
+    final directory = await getApplicationDocumentsDirectory();
     final filePath = '${directory.path}/folder_details.xlsx';
     final file = File(filePath);
-    List<int>? fileBytes = excel.save();
-    if (fileBytes != null) {
-      file
-        ..createSync(recursive: true)
-        ..writeAsBytesSync(fileBytes);
-    }
 
+// Write the bytes to the file
+    await file.writeAsBytes(bytes, flush: true);
+
+// Provide feedback to the user
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Excel file saved to $filePath')),
     );
@@ -625,12 +625,12 @@ class _DashboardsState extends State<Dashboards> {
 
     fetchDepartment().then((_) {
       if (departments.isNotEmpty) {
-        // Check if departments are available
+// Check if departments are available
         showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Text('Department Detailss'),
+              title: const Text('Department Details'),
               content: SizedBox(
                 width: 300,
                 height: 400,
@@ -689,7 +689,7 @@ class _DashboardsState extends State<Dashboards> {
                                                     'users_id': usersId,
                                                   });
 
-                                                  // Fetch project titles for the user
+// Fetch project titles for the user
                                                   final projectResponse =
                                                       await http.post(
                                                     Uri.parse(
@@ -709,7 +709,7 @@ class _DashboardsState extends State<Dashboards> {
                                                         .decode(projectResponse
                                                             .body);
                                                     if (projectData is List) {
-                                                      // Display project titles
+// Display project titles
                                                       showDialog(
                                                         context: context,
                                                         builder: (BuildContext
@@ -838,7 +838,7 @@ class _DashboardsState extends State<Dashboards> {
           _isDialogOpen = false;
         });
       } else {
-        // Handle the case where there are no departments
+// Handle the case where there are no departments
         print('No departments available');
       }
     });
