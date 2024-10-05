@@ -630,7 +630,7 @@ class _DashboardsState extends State<Dashboards> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Text('Department Details'),
+              title: const Text('Department Detailss'),
               content: SizedBox(
                 width: 300,
                 height: 400,
