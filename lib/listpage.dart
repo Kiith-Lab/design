@@ -1,19 +1,18 @@
-import 'package:excel_dart/excel_dart.dart';
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:html' as html;
+import 'dart:io';
+
+import 'package:excel_dart/excel_dart.dart';
+import 'package:flip_card/flip_card.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flip_card/flip_card.dart';
-import 'dart:io';
-import 'dart:html' as html;
-import 'package:flutter/foundation.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:printing/printing.dart'; // Ensure this import is included for printing
-
-import 'config.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
@@ -712,8 +711,43 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
     final Excel excel = Excel.createExcel();
     Sheet sheet = excel['Sheet1'];
 
-    // Add headers and folder details
-    // ... existing Excel generation code ...
+    // Add headers for Excel table
+    final headers = ['Field', 'Details'];
+
+    // Add header row
+    sheet.appendRow(headers);
+
+    // Add the folder details in a similar structure to the PDF
+    final folderDetails = [
+      ['Project Title:', widget.folder['project_title'] ?? 'Unnamed Folder'],
+      ['Project Code:', widget.folder['project_subject_code'] ?? 'No code'],
+      [
+        'Project Description:',
+        widget.folder['project_subject_description'] ?? 'No description'
+      ],
+      ['Start Date:', widget.folder['project_start_date'] ?? 'No start date'],
+      ['End Date:', widget.folder['project_end_date'] ?? 'No end date'],
+      ['Module:', widget.folder['module_master_name'] ?? 'Unknown'],
+      [
+        'Activity:',
+        widget.folder['activities_details_content'] ?? 'No activity'
+      ],
+      ['Card:', widget.folder['cards_title'] ?? 'No card'],
+      ['Output:', widget.folder['outputs_content'] ?? 'No output'],
+      [
+        'Instruction:',
+        widget.folder['instruction_content'] ?? 'No instruction'
+      ],
+      [
+        'Coach Detail:',
+        widget.folder['coach_detail_content'] ?? 'No coach detail'
+      ],
+    ];
+
+    // Append each row with folder details to the Excel sheet
+    for (var row in folderDetails) {
+      sheet.appendRow(row);
+    }
 
     try {
       if (kIsWeb) {
