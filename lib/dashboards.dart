@@ -628,220 +628,419 @@ class _DashboardsState extends State<Dashboards> {
 
     fetchDepartment().then((_) {
       if (departments.isNotEmpty) {
-// Check if departments are available
+        // Check if departments are available
         showDialog(
           context: context,
           builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Department Details'),
-              content: SizedBox(
-                width: 300,
-                height: 400,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: departments.length,
-                        itemBuilder: (context, index) {
-                          final department = departments[index];
-                          return GestureDetector(
-                            onTap: () async {
-                              final departmentName =
-                                  department['department_name'];
-                              final schoolname = school['school_name'];
+            String departmentSearchQuery = '';
+            return StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+                List<dynamic> filteredDepartments =
+                    departments.where((department) {
+                  final departmentName =
+                      department['department_name']?.toString().toLowerCase() ??
+                          '';
+                  return departmentName
+                      .contains(departmentSearchQuery.toLowerCase());
+                }).toList();
 
-                              final jsondata = jsonEncode({
-                                'schoolname': schoolname,
-                                'departmentname': departmentName,
+                return Dialog(
+                  insetPadding: EdgeInsets.zero, // Remove default padding
+                  child: SizedBox(
+                    width:
+                        MediaQuery.of(context).size.width, // Full screen width
+                    height: MediaQuery.of(context)
+                        .size
+                        .height, // Full screen height
+                    child: Column(
+                      children: [
+                        AppBar(
+                          title: const Text('Department Details'),
+                          automaticallyImplyLeading: false,
+                          backgroundColor: Colors.teal,
+                          actions: [
+                            IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: () {
+                                _isDialogOpen = false;
+                                Navigator.of(context).pop();
+                              },
+                            )
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Search Departments...',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(30),
+                                borderSide: BorderSide.none,
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey[200],
+                              prefixIcon:
+                                  const Icon(Icons.search, color: Colors.teal),
+                            ),
+                            onChanged: (value) {
+                              setState(() {
+                                departmentSearchQuery = value;
                               });
+                            },
+                          ),
+                        ),
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: filteredDepartments.length,
+                            itemBuilder: (context, index) {
+                              final department = filteredDepartments[index];
+                              return GestureDetector(
+                                onTap: () async {
+                                  final departmentName =
+                                      department['department_name'];
+                                  final schoolname = school['school_name'];
 
-                              final response = await http.post(
-                                Uri.parse('${baseUrl}view.php'),
-                                body: {
-                                  "json": jsondata,
-                                  "operation": "getUsers"
-                                },
-                              );
+                                  final jsondata = jsonEncode({
+                                    'schoolname': schoolname,
+                                    'departmentname': departmentName,
+                                  });
 
-                              print(response.body);
-
-                              if (response.statusCode == 200) {
-                                final dynamic decodedResponse =
-                                    json.decode(response.body);
-                                if (decodedResponse is List) {
-                                  showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return AlertDialog(
-                                        title: Text('Users in $departmentName'),
-                                        content: SizedBox(
-                                          width: 300,
-                                          height: 400,
-                                          child: ListView.builder(
-                                            itemCount: decodedResponse.length,
-                                            itemBuilder: (context, index) {
-                                              final user =
-                                                  decodedResponse[index];
-                                              return ListTile(
-                                                onTap: () async {
-                                                  final usersId = user[
-                                                      'users_id']; // Assuming users_id is available in the user data
-
-                                                  final jsondata = jsonEncode({
-                                                    'users_id': usersId,
-                                                  });
-
-// Fetch project titles for the user
-                                                  final projectResponse =
-                                                      await http.post(
-                                                    Uri.parse(
-                                                        '${baseUrl}view.php'),
-                                                    body: {
-                                                      "json": jsondata,
-                                                      "operation": "getFolderId"
-                                                    },
-                                                  );
-                                                  print(
-                                                      "Projects: ${projectResponse.body}");
-
-                                                  if (projectResponse
-                                                          .statusCode ==
-                                                      200) {
-                                                    final projectData = json
-                                                        .decode(projectResponse
-                                                            .body);
-                                                    if (projectData is List) {
-// Display project titles
-                                                      showDialog(
-                                                        context: context,
-                                                        builder: (BuildContext
-                                                            context) {
-                                                          return AlertDialog(
-                                                            title: Text(
-                                                              '${user['users_firstname'] ?? 'N/A'} ${user['users_lastname'] ?? 'NA'}',
-                                                            ),
-                                                            content: SizedBox(
-                                                              width: 300,
-                                                              height: 400,
-                                                              child: ListView
-                                                                  .builder(
-                                                                itemCount:
-                                                                    projectData
-                                                                        .length,
-                                                                itemBuilder:
-                                                                    (context,
-                                                                        index) {
-                                                                  final project =
-                                                                      projectData[
-                                                                          index];
-
-                                                                  return GestureDetector(
-                                                                    onTap: () {
-                                                                      _showFolderDetails(
-                                                                          context,
-                                                                          project);
-                                                                    },
-                                                                    child:
-                                                                        ListTile(
-                                                                      title: Text(
-                                                                          project['Lesson'] ??
-                                                                              'N/A'),
-                                                                    ),
-                                                                  );
-                                                                },
-                                                              ),
-                                                            ),
-                                                            actions: [
-                                                              TextButton(
-                                                                child:
-                                                                    const Text(
-                                                                        'Close'),
-                                                                onPressed: () {
-                                                                  Navigator.of(
-                                                                          context)
-                                                                      .pop();
-                                                                },
-                                                              ),
-                                                            ],
-                                                          );
-                                                        },
-                                                      );
-                                                    } else {
-                                                      print(
-                                                          'Failed to fetch projects for user ${user['users_firstname']}');
-                                                    }
-                                                  } else {
-                                                    print(
-                                                        'Error fetching projects for user ${user['users_firstname']}');
-                                                  }
-                                                },
-                                                title: Text(
-                                                    user['users_firstname'] ??
-                                                        'N/A'),
-                                                leading:
-                                                    const Icon(Icons.person),
-                                                trailing:
-                                                    const Icon(Icons.info),
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                      );
+                                  final response = await http.post(
+                                    Uri.parse('${baseUrl}view.php'),
+                                    body: {
+                                      "json": jsondata,
+                                      "operation": "getUsers"
                                     },
                                   );
-                                } else {
-                                  print(
-                                      'Failed to fetch users for department $departmentName');
-                                }
-                              } else {
-                                print(
-                                    'Failed to fetch users for department $departmentName');
-                              }
-                            },
-                            child: Card(
-                              margin: const EdgeInsets.symmetric(vertical: 4),
-                              child: SizedBox(
-                                height: 75,
-                                child: ListTile(
-                                  leading: const Icon(Icons.group),
-                                  title: Text(
-                                    department['department_name'] ?? 'N/A',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  subtitle: const Text(
-                                    'Tap to view users',
-                                    style: TextStyle(color: Colors.grey),
+
+                                  print(response.body);
+
+                                  if (response.statusCode == 200) {
+                                    final dynamic decodedResponse =
+                                        json.decode(response.body);
+                                    if (decodedResponse is List) {
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          String userSearchQuery = '';
+                                          return StatefulBuilder(
+                                            builder: (BuildContext context,
+                                                StateSetter setState) {
+                                              List<dynamic> filteredUsers =
+                                                  decodedResponse.where((user) {
+                                                final userName =
+                                                    user['users_firstname']
+                                                            ?.toString()
+                                                            .toLowerCase() ??
+                                                        '';
+                                                return userName.contains(
+                                                    userSearchQuery
+                                                        .toLowerCase());
+                                              }).toList();
+
+                                              return Dialog(
+                                                insetPadding: EdgeInsets.zero,
+                                                child: SizedBox(
+                                                  width: MediaQuery.of(context)
+                                                      .size
+                                                      .width,
+                                                  height: MediaQuery.of(context)
+                                                      .size
+                                                      .height,
+                                                  child: Column(
+                                                    children: [
+                                                      AppBar(
+                                                        title: Text(
+                                                          '$departmentName',
+                                                          style:
+                                                              const TextStyle(
+                                                            fontSize: 15,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color: Colors.black,
+                                                          ),
+                                                        ),
+                                                        backgroundColor:
+                                                            Colors.teal,
+                                                        actions: [
+                                                          IconButton(
+                                                            icon: const Icon(
+                                                                Icons.close),
+                                                            onPressed: () {
+                                                              Navigator.of(
+                                                                      context)
+                                                                  .pop();
+                                                            },
+                                                          )
+                                                        ],
+                                                      ),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(8.0),
+                                                        child: TextField(
+                                                          decoration:
+                                                              InputDecoration(
+                                                            hintText:
+                                                                'Search Users...',
+                                                            border:
+                                                                OutlineInputBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          30),
+                                                              borderSide:
+                                                                  BorderSide
+                                                                      .none,
+                                                            ),
+                                                            filled: true,
+                                                            fillColor: Colors
+                                                                .grey[200],
+                                                            prefixIcon:
+                                                                const Icon(
+                                                                    Icons
+                                                                        .search,
+                                                                    color: Colors
+                                                                        .teal),
+                                                          ),
+                                                          onChanged: (value) {
+                                                            setState(() {
+                                                              userSearchQuery =
+                                                                  value;
+                                                            });
+                                                          },
+                                                        ),
+                                                      ),
+                                                      Expanded(
+                                                        child: ListView.builder(
+                                                          itemCount:
+                                                              filteredUsers
+                                                                  .length,
+                                                          itemBuilder:
+                                                              (context, index) {
+                                                            final user =
+                                                                filteredUsers[
+                                                                    index];
+
+                                                            return Container(
+                                                              margin:
+                                                                  const EdgeInsets
+                                                                      .symmetric(
+                                                                      vertical:
+                                                                          5,
+                                                                      horizontal:
+                                                                          10),
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                color: Colors
+                                                                    .blue
+                                                                    .shade50,
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            10),
+                                                                boxShadow: [
+                                                                  BoxShadow(
+                                                                    color: Colors
+                                                                        .grey
+                                                                        .withOpacity(
+                                                                            0.5),
+                                                                    spreadRadius:
+                                                                        2,
+                                                                    blurRadius:
+                                                                        5,
+                                                                    offset:
+                                                                        const Offset(
+                                                                            0,
+                                                                            3),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              child: ListTile(
+                                                                onTap:
+                                                                    () async {
+                                                                  final usersId =
+                                                                      user[
+                                                                          'users_id'];
+
+                                                                  final jsondata =
+                                                                      jsonEncode({
+                                                                    'users_id':
+                                                                        usersId,
+                                                                  });
+
+                                                                  final projectResponse =
+                                                                      await http
+                                                                          .post(
+                                                                    Uri.parse(
+                                                                        '${baseUrl}view.php'),
+                                                                    body: {
+                                                                      "json":
+                                                                          jsondata,
+                                                                      "operation":
+                                                                          "getFolderId",
+                                                                    },
+                                                                  );
+
+                                                                  if (projectResponse
+                                                                          .statusCode ==
+                                                                      200) {
+                                                                    final projectData =
+                                                                        json.decode(
+                                                                            projectResponse.body);
+                                                                    if (projectData
+                                                                        is List) {
+                                                                      showDialog(
+                                                                        context:
+                                                                            context,
+                                                                        builder:
+                                                                            (BuildContext
+                                                                                context) {
+                                                                          return Dialog(
+                                                                            insetPadding:
+                                                                                EdgeInsets.zero,
+                                                                            child:
+                                                                                SizedBox(
+                                                                              width: MediaQuery.of(context).size.width,
+                                                                              height: MediaQuery.of(context).size.height,
+                                                                              child: Column(
+                                                                                children: [
+                                                                                  AppBar(
+                                                                                    title: Text(
+                                                                                      '${user['users_firstname'] ?? 'N/A'} ${user['users_lastname'] ?? 'N/A'}',
+                                                                                      style: const TextStyle(
+                                                                                        fontSize: 18,
+                                                                                        fontWeight: FontWeight.bold,
+                                                                                        color: Colors.greenAccent,
+                                                                                      ),
+                                                                                    ),
+                                                                                    backgroundColor: Colors.teal,
+                                                                                    actions: [
+                                                                                      IconButton(
+                                                                                        icon: const Icon(Icons.close),
+                                                                                        onPressed: () {
+                                                                                          Navigator.of(context).pop();
+                                                                                        },
+                                                                                      )
+                                                                                    ],
+                                                                                  ),
+                                                                                  Expanded(
+                                                                                    child: ListView.builder(
+                                                                                      itemCount: projectData.length,
+                                                                                      itemBuilder: (context, index) {
+                                                                                        final project = projectData[index];
+
+                                                                                        return GestureDetector(
+                                                                                          onTap: () {
+                                                                                            _showFolderDetails(context, project);
+                                                                                          },
+                                                                                          child: ListTile(
+                                                                                            title: Text(
+                                                                                              project['Lesson'] ?? 'N/A',
+                                                                                              style: const TextStyle(
+                                                                                                fontSize: 16,
+                                                                                                color: Colors.black,
+                                                                                              ),
+                                                                                            ),
+                                                                                            trailing: const Icon(
+                                                                                              Icons.arrow_forward_ios,
+                                                                                              size: 18,
+                                                                                              color: Colors.grey,
+                                                                                            ),
+                                                                                          ),
+                                                                                        );
+                                                                                      },
+                                                                                    ),
+                                                                                  ),
+                                                                                ],
+                                                                              ),
+                                                                            ),
+                                                                          );
+                                                                        },
+                                                                      );
+                                                                    }
+                                                                  }
+                                                                },
+                                                                title: Text(
+                                                                  '${user['users_lastname'] ?? 'N/A'}, ${user['users_firstname'] ?? 'N/A'}',
+                                                                  style:
+                                                                      const TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w600,
+                                                                    fontSize:
+                                                                        16,
+                                                                    color: Colors
+                                                                        .black87,
+                                                                  ),
+                                                                ),
+                                                                leading:
+                                                                    const CircleAvatar(
+                                                                  backgroundColor:
+                                                                      Colors
+                                                                          .blueAccent,
+                                                                  child: Icon(
+                                                                    Icons
+                                                                        .person,
+                                                                    color: Colors
+                                                                        .white,
+                                                                  ),
+                                                                ),
+                                                                trailing:
+                                                                    const Icon(
+                                                                  Icons
+                                                                      .info_outline,
+                                                                  color: Colors
+                                                                      .blueAccent,
+                                                                ),
+                                                              ),
+                                                            );
+                                                          },
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          );
+                                        },
+                                      );
+                                    }
+                                  }
+                                },
+                                child: Card(
+                                  margin:
+                                      const EdgeInsets.symmetric(vertical: 4),
+                                  child: SizedBox(
+                                    height: 75,
+                                    child: ListTile(
+                                      leading: const Icon(Icons.group),
+                                      title: Text(
+                                        department['department_name'] ?? 'N/A',
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      subtitle: const Text('Tap to view users',
+                                          style: TextStyle(color: Colors.grey)),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        child: const Text('Close'),
-                        onPressed: () {
-                          _isDialogOpen = false;
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             );
           },
         ).then((_) {
           _isDialogOpen = false;
         });
       } else {
-// Handle the case where there are no departments
         print('No departments available');
       }
     });
