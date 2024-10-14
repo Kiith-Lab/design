@@ -737,7 +737,6 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
     final Excel excel = Excel.createExcel();
     Sheet sheet = excel['Sheet1'];
 
-<<<<<<< HEAD
     // Add headers and folder details
     sheet.appendRow(
         ['Project Code', widget.folder['project_subject_code'] ?? 'No code']);
@@ -778,7 +777,6 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
         widget.folder['instruction_remarks'] ?? 'No remarks',
       ].join('\n') // Join remarks with a newline
     ]);
-=======
     // Add headers for Excel table
     final headers = ['Field', 'Details'];
 
@@ -816,7 +814,6 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
     for (var row in folderDetails) {
       sheet.appendRow(row);
     }
->>>>>>> 0bbc9a465523d720ab47776f435cf834ba63620e
 
     try {
       if (kIsWeb) {
