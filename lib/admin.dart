@@ -17,22 +17,24 @@ class Administrator extends StatefulWidget {
   _AdminState createState() => _AdminState();
 }
 
-class _AdminState extends State<Administrator> {
-  int _selectedIndex = 0;
-  Widget _selectedWidget = const Dashboards();
+class _AdminState extends State<Administrator>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
   late ScrollController _scrollController;
   bool _isAppBarVisible = true;
-  bool _isBottomNavBarVisible = true;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 3, vsync: this);
     _scrollController = ScrollController();
     _scrollController.addListener(_scrollListener);
+    _tabController.addListener(_handleTabSelection);
   }
 
   @override
   void dispose() {
+    _tabController.dispose();
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     super.dispose();
@@ -42,20 +44,16 @@ class _AdminState extends State<Administrator> {
     if (_scrollController.offset > 50 && _isAppBarVisible) {
       setState(() {
         _isAppBarVisible = false;
-        _isBottomNavBarVisible = false;
       });
     } else if (_scrollController.offset <= 50 && !_isAppBarVisible) {
       setState(() {
         _isAppBarVisible = true;
-        _isBottomNavBarVisible = true;
       });
     }
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+  void _handleTabSelection() {
+    setState(() {});
   }
 
   @override
@@ -87,9 +85,9 @@ class _AdminState extends State<Administrator> {
                         ),
                         const SizedBox(width: 10),
                         Text(
-                          _selectedIndex == 0
+                          _tabController.index == 0
                               ? 'Phinma Education'
-                              : _selectedIndex == 1
+                              : _tabController.index == 1
                                   ? 'View User'
                                   : 'Project',
                           style: const TextStyle(
@@ -104,7 +102,7 @@ class _AdminState extends State<Administrator> {
                           onTap: () {
                             showShadDialog(
                               context: context,
-                              builder: (BuildContext dialogContext) => Padding(
+                              builder: (BuildContext context) => Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: ShadDialog(
                                   title: const Text('Settings'),
@@ -112,7 +110,7 @@ class _AdminState extends State<Administrator> {
                                     ShadButton.destructive(
                                       child: const Text('Logout'),
                                       onPressed: () {
-                                        Navigator.of(dialogContext).pop();
+                                        Navigator.of(context).pop();
                                         Navigator.of(context).push(
                                           MaterialPageRoute(
                                             builder: (context) =>
@@ -203,57 +201,37 @@ class _AdminState extends State<Administrator> {
                         ),
                       ),
                     ],
+                    bottom: PreferredSize(
+                      preferredSize: const Size.fromHeight(50.0),
+                      child: Container(
+                        color: Colors.green,
+                        child: TabBar(
+                          controller: _tabController,
+                          indicator: BoxDecoration(
+                            color: Colors.green.shade300,
+                            // Changed from circular to rectangular
+                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                          ),
+                          indicatorSize: TabBarIndicatorSize.tab,
+                          labelColor: Colors.white,
+                          unselectedLabelColor: Colors.grey.shade400,
+                          tabs: const <Tab>[
+                            Tab(icon: FaIcon(FontAwesomeIcons.house)),
+                            Tab(icon: FaIcon(FontAwesomeIcons.user)),
+                            Tab(icon: FaIcon(FontAwesomeIcons.folder)),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ];
               },
-              body: _selectedWidget,
-            ),
-            bottomNavigationBar: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              height: _isBottomNavBarVisible ? kBottomNavigationBarHeight : 0,
-              child: Wrap(
-                children: [
-                  BottomNavigationBar(
-                    items: const <BottomNavigationBarItem>[
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.home_rounded),
-                        label: 'Home',
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.person_outline),
-                        label: 'View User',
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(FontAwesomeIcons.folder),
-                        label: 'Project',
-                      ),
-                    ],
-                    currentIndex: _selectedIndex,
-                    selectedItemColor: Colors.teal,
-                    unselectedItemColor: Colors.grey,
-                    onTap: (index) {
-                      setState(() {
-                        _selectedIndex = index;
-                      });
-                      switch (index) {
-                        case 0:
-                          setState(() {
-                            _selectedWidget = const Dashboards();
-                          });
-                          break;
-                        case 1:
-                          setState(() {
-                            _selectedWidget = const ViewUserPage();
-                          });
-                          break;
-                        case 2:
-                          setState(() {
-                            _selectedWidget = const ProjectPage();
-                          });
-                          break;
-                      }
-                    },
-                  ),
+              body: TabBarView(
+                controller: _tabController,
+                children: const <Widget>[
+                  Dashboards(),
+                  ViewUserPage(),
+                  ProjectPage(),
                 ],
               ),
             ),
