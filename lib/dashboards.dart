@@ -281,7 +281,7 @@ class _DashboardsState extends State<Dashboards> {
                       decoration: InputDecoration(
                         hintText: 'Search $title...',
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
+                          borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide.none,
                         ),
                         filled: true,
@@ -674,7 +674,7 @@ class _DashboardsState extends State<Dashboards> {
                             decoration: InputDecoration(
                               hintText: 'Search Departments...',
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30),
+                                borderRadius: BorderRadius.circular(10),
                                 borderSide: BorderSide.none,
                               ),
                               filled: true,
@@ -788,7 +788,7 @@ class _DashboardsState extends State<Dashboards> {
                                                               borderRadius:
                                                                   BorderRadius
                                                                       .circular(
-                                                                          30),
+                                                                          10),
                                                               borderSide:
                                                                   BorderSide
                                                                       .none,
@@ -1163,7 +1163,7 @@ class _DashboardsState extends State<Dashboards> {
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
+            padding: const EdgeInsets.all(24.0), // Overall padding
             child: LayoutBuilder(
               builder: (context, constraints) {
                 // Define breakpoints for responsiveness
@@ -1182,8 +1182,8 @@ class _DashboardsState extends State<Dashboards> {
                             crossAxisCount: crossAxisCount,
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            mainAxisSpacing: 16,
-                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16, // Outer vertical spacing
+                            crossAxisSpacing: 16, // Outer horizontal spacing
                             childAspectRatio: childAspectRatio,
                             children: [
                               _buildInfoCard(
@@ -1231,32 +1231,39 @@ class _DashboardsState extends State<Dashboards> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
-                                    child: _buildInfoCard(
-                                      'User Accounts',
-                                      userCount.toString(),
-                                      Icons.person,
-                                      Colors.blue,
-                                      () => _showList(
-                                          context,
-                                          'User Accounts',
-                                          users,
-                                          'users_firstname',
-                                          'role_name'),
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          right: 8.0), // Half of SizedBox width
+                                      child: _buildInfoCard(
+                                        'User Accounts',
+                                        userCount.toString(),
+                                        Icons.person,
+                                        Colors.blue,
+                                        () => _showList(
+                                            context,
+                                            'User Accounts',
+                                            users,
+                                            'users_firstname',
+                                            'role_name'),
+                                      ),
                                     ),
                                   ),
-                                  const SizedBox(width: 16),
                                   Expanded(
-                                    child: _buildInfoCard(
-                                      'Folders',
-                                      projectCount.toString(),
-                                      Icons.folder,
-                                      Colors.orange,
-                                      () => _showList(
-                                          context,
-                                          'Folders',
-                                          folders,
-                                          'project_title',
-                                          'users_firstname'),
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 8.0), // Half of SizedBox width
+                                      child: _buildInfoCard(
+                                        'Folders',
+                                        projectCount.toString(),
+                                        Icons.folder,
+                                        Colors.orange,
+                                        () => _showList(
+                                            context,
+                                            'Folders',
+                                            folders,
+                                            'project_title',
+                                            'users_firstname'),
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -1267,32 +1274,39 @@ class _DashboardsState extends State<Dashboards> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
-                                    child: _buildInfoCard(
-                                      'Instructors',
-                                      instructorCount.toString(),
-                                      FontAwesomeIcons.userPlus,
-                                      Colors.purple,
-                                      () => _showList(
-                                          context,
-                                          'Instructors',
-                                          instructors,
-                                          'users_firstname',
-                                          'role_name'),
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          right: 8.0), // Half of SizedBox width
+                                      child: _buildInfoCard(
+                                        'Instructors',
+                                        instructorCount.toString(),
+                                        FontAwesomeIcons.userPlus,
+                                        Colors.purple,
+                                        () => _showList(
+                                            context,
+                                            'Instructors',
+                                            instructors,
+                                            'users_firstname',
+                                            'role_name'),
+                                      ),
                                     ),
                                   ),
-                                  const SizedBox(width: 16),
                                   Expanded(
-                                    child: _buildInfoCard(
-                                      'Schools',
-                                      schoolCount.toString(),
-                                      FontAwesomeIcons.school,
-                                      Colors.green,
-                                      () => _showList(
-                                          context,
-                                          'Schools',
-                                          schools,
-                                          'school_name',
-                                          'school_address'),
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 8.0), // Half of SizedBox width
+                                      child: _buildInfoCard(
+                                        'Schools',
+                                        schoolCount.toString(),
+                                        FontAwesomeIcons.school,
+                                        Colors.green,
+                                        () => _showList(
+                                            context,
+                                            'Schools',
+                                            schools,
+                                            'school_name',
+                                            'school_address'),
+                                      ),
                                     ),
                                   ),
                                 ],
