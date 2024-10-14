@@ -977,13 +977,28 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                   SizedBox(
                     height: 10,
                   ),
-                  SizedBox(
+                  Container(
+                    padding: EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                      color:
+                          Colors.white.withOpacity(0.5), // Added glass effect
+                      boxShadow: [
+                        BoxShadow(
+                          color:
+                              Color.fromARGB(255, 23, 128, 23).withOpacity(0.5),
+                          spreadRadius: 1,
+                          blurRadius: 5,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                    ),
                     child: _buildTextField(activitiesController, 'Activities'),
                   ),
                   SizedBox(
                     height: 10,
                   ),
-                  SizedBox(
+                  Center(
                     child: _buildAddButton('Add Activity', () {
                       setState(() {
                         addedActivities.add(activitiesController.text);
@@ -994,9 +1009,12 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                   SizedBox(
                     height: 10,
                   ),
-                  const Text(
-                    'Activity List',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  Center(
+                    child: const Text(
+                      'Activity List',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
                   ),
                   SizedBox(
                     height: 10,
@@ -1014,7 +1032,22 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                   SizedBox(
                     height: 10,
                   ),
-                  SizedBox(
+                  Container(
+                    padding: EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                      color:
+                          Colors.white.withOpacity(0.5), // Added glass effect
+                      boxShadow: [
+                        BoxShadow(
+                          color:
+                              Color.fromARGB(255, 23, 128, 23).withOpacity(0.5),
+                          spreadRadius: 1,
+                          blurRadius: 5,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                    ),
                     child: _buildTextField(remarksActivityController,
                         'Remarks'), // Updated to use new controller
                   ),
@@ -1024,36 +1057,27 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           ),
         ),
         SizedBox(height: 20), // Added height spacing
-        Column(
+        Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            ElevatedButton(
+            FloatingActionButton(
               onPressed: () {
                 setState(() {
                   currentStep--;
                 });
               },
-              child: Text(
-                'Back',
-                style: TextStyle(color: myCustomButtonTextColor),
-              ),
-              style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 30), // Set the button size smaller
-                  backgroundColor: myCustomButtonColor),
+              child: Icon(Icons.arrow_back, color: myCustomButtonTextColor),
+              backgroundColor: myCustomButtonColor,
             ),
-            ElevatedButton(
+            FloatingActionButton(
               onPressed: () {
                 _viewAllData(); // Method to view all entered data
               },
-              child: Text(
-                'View Data',
-                style: TextStyle(color: myCustomButtonTextColor),
-              ),
-              style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 30), // Set the button size smaller
-                  backgroundColor: myCustomButtonColor),
+              child: Icon(Icons.remove_red_eye_outlined,
+                  color: myCustomButtonTextColor),
+              backgroundColor: myCustomButtonColor,
             ),
-            ElevatedButton(
+            FloatingActionButton(
               onPressed: () {
                 // Validation check for activities
                 if (addedActivities.isEmpty) {
@@ -1067,13 +1091,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                   currentStep++;
                 });
               },
-              child: Text(
-                'Proceed to Lessons',
-                style: TextStyle(color: myCustomButtonTextColor),
-              ),
-              style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 30), // Set the button size smaller
-                  backgroundColor: myCustomButtonColor),
+              child: Icon(Icons.arrow_forward, color: myCustomButtonTextColor),
+              backgroundColor: myCustomButtonColor,
             ),
           ],
         ),
@@ -1098,11 +1117,32 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   SizedBox(height: 10),
-                  SizedBox(
-                    child: _buildLessonDropdown(),
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      color: Colors.white
+                          .withOpacity(0.5), // Added opacity for glass effect
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color.fromARGB(255, 23, 128, 23)
+                              .withOpacity(0.5), // Added shadow for depth
+                          spreadRadius: -2.0,
+                          blurRadius: 4.0,
+                          offset: Offset(0, 3), // changes position of shadow
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          child: _buildLessonDropdown(),
+                        ),
+                      ],
+                    ),
                   ),
                   SizedBox(height: 10), // Added height spacing
-                  SizedBox(
+                  Center(
                     child: _buildAddButton('Add Lesson', _addLesson),
                   ),
                   SizedBox(height: 10), // Added height spacing
@@ -1121,59 +1161,70 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                     'Notes/Remarks',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
-                  SizedBox(height: 10), // Added height spacing
-                  SizedBox(
-                    child: _buildTextField(remarksLessonController,
-                        'Remarks'), // Updated to use new controller
+                  SizedBox(height: 10),
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      color: Colors.white
+                          .withOpacity(0.5), // Added opacity for glass effect
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color.fromARGB(255, 23, 128, 23)
+                              .withOpacity(0.5), // Added shadow for depth
+                          spreadRadius: -2.0,
+                          blurRadius: 4.0,
+                          offset: Offset(0, 3), // changes position of shadow
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          child: _buildTextField(remarksLessonController,
+                              'Remarks'), // Updated to use new controller
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ],
           ),
         ),
+
         SizedBox(height: 20), // Added height spacing
-        Column(
+        Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            ElevatedButton(
+            FloatingActionButton(
               onPressed: () {
                 setState(() {
                   currentStep--;
                 });
               },
-              child: Text(
-                'Back',
-                style: TextStyle(color: myCustomButtonTextColor),
-              ),
-              style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 30), // Set the button size smaller
-                  backgroundColor: myCustomButtonColor),
+              child: Icon(Icons.arrow_back, color: myCustomButtonTextColor),
+              backgroundColor: myCustomButtonColor,
+              shape: CircleBorder(), // Changed to circular button
             ),
-            ElevatedButton(
+            FloatingActionButton(
               onPressed: () {
                 _viewAllData(); // Method to view all entered data
               },
-              child: Text(
-                'View Data',
-                style: TextStyle(color: myCustomButtonTextColor),
-              ),
-              style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 30), // Set the button size smaller
-                  backgroundColor: myCustomButtonColor),
+              child: Icon(Icons.remove_red_eye_outlined,
+                  color: myCustomButtonTextColor),
+              backgroundColor: myCustomButtonColor,
+              shape: CircleBorder(), // Changed to circular button
             ),
-            ElevatedButton(
+            FloatingActionButton(
               onPressed: () {
                 setState(() {
                   currentStep++;
                 });
               },
-              child: Text(
-                'Proceed to Outputs',
-                style: TextStyle(color: myCustomButtonTextColor),
-              ),
-              style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 30), // Set the button size smaller
-                  backgroundColor: myCustomButtonColor),
+              child: Icon(Icons.arrow_forward, color: myCustomButtonTextColor),
+              backgroundColor: myCustomButtonColor,
+              shape: CircleBorder(), // Changed to circular button
             ),
           ],
         ),
@@ -1198,11 +1249,33 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   SizedBox(height: 10),
-                  SizedBox(
-                    child: _buildTextField(outputsController, 'Outputs'),
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      color: Colors.white
+                          .withOpacity(0.5), // Added opacity for glass effect
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color.fromARGB(255, 23, 128, 23)
+                              .withOpacity(0.5), // Added shadow for depth
+                          spreadRadius: -2.0,
+                          blurRadius: 4.0,
+                          offset: Offset(0, 3), // changes position of shadow
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          child: _buildTextField(outputsController, 'Outputs'),
+                        ),
+                        SizedBox(height: 10), // Added height spacing
+                      ],
+                    ),
                   ),
                   SizedBox(height: 10), // Added height spacing
-                  SizedBox(
+                  Center(
                     child: _buildAddButton('Add Output', () {
                       setState(() {
                         addedOutputs.add(outputsController.text);
@@ -1225,9 +1298,30 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   SizedBox(height: 10),
-                  SizedBox(
-                    child: _buildTextField(remarksOutputController,
-                        'Remarks'), // Updated to use new controller
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      color: Colors.white
+                          .withOpacity(0.5), // Added opacity for glass effect
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color.fromARGB(255, 23, 128, 23)
+                              .withOpacity(0.5), // Added shadow for depth
+                          spreadRadius: -2.0,
+                          blurRadius: 4.0,
+                          offset: Offset(0, 3), // changes position of shadow
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          child: _buildTextField(remarksOutputController,
+                              'Remarks'), // Updated to use new controller
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -1235,48 +1329,37 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           ),
         ),
         SizedBox(height: 20), // Added height spacing
-        Column(
+        Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            ElevatedButton(
+            FloatingActionButton(
               onPressed: () {
                 setState(() {
                   currentStep--;
                 });
               },
-              child: Text(
-                'Back',
-                style: TextStyle(color: myCustomButtonTextColor),
-              ),
-              style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 30), // Set the button size smaller
-                  backgroundColor: myCustomButtonColor),
+              child: Icon(Icons.arrow_back, color: myCustomButtonTextColor),
+              backgroundColor: myCustomButtonColor,
+              shape: CircleBorder(), // Changed to circular button
             ),
-            ElevatedButton(
+            FloatingActionButton(
               onPressed: () {
                 _viewAllData(); // Method to view all entered data
               },
-              child: Text(
-                'View Data',
-                style: TextStyle(color: myCustomButtonTextColor),
-              ),
-              style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 30), // Set the button size smaller
-                  backgroundColor: myCustomButtonColor),
+              child: Icon(Icons.remove_red_eye_outlined,
+                  color: myCustomButtonTextColor),
+              backgroundColor: myCustomButtonColor,
+              shape: CircleBorder(), // Changed to circular button
             ),
-            ElevatedButton(
+            FloatingActionButton(
               onPressed: () {
                 setState(() {
                   currentStep++;
                 });
               },
-              child: Text(
-                'Proceed to Instructions',
-                style: TextStyle(color: myCustomButtonTextColor),
-              ),
-              style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 30), // Set the button size smaller
-                  backgroundColor: myCustomButtonColor),
+              child: Icon(Icons.arrow_forward, color: myCustomButtonTextColor),
+              backgroundColor: myCustomButtonColor,
+              shape: CircleBorder(), // Changed to circular button
             ),
           ],
         ),
@@ -1293,94 +1376,123 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'What instructions will I give my students?',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  SizedBox(height: 10),
-                  SizedBox(
-                    child:
-                        _buildTextField(instructionsController, 'Instructions'),
-                  ),
-                  SizedBox(height: 10), // Added height spacing
-                  SizedBox(
-                    child: _buildAddButton('Add Instruction', () {
-                      setState(() {
-                        addedInstructions.add(instructionsController.text);
-                        instructionsController.clear();
-                      });
-                    }),
-                  ),
-                  SizedBox(height: 10), // Added height spacing
-                  const Text(
-                    'Instruction List',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  SizedBox(height: 10),
-                  SizedBox(
-                    child: _buildList(addedInstructions),
-                  ),
-                  SizedBox(height: 10), // Added height spacing
-                  const Text(
-                    'Notes/Remarks',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  SizedBox(height: 10),
-                  SizedBox(
-                    child: _buildTextField(remarksInstructionController,
-                        'Remarks'), // Updated to use new controller
-                  ),
-                ],
+              // Container for 'What instructions will I give my students?'
+              Container(
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                  color: Colors.white.withOpacity(0.5), // Added glass effect
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color.fromARGB(255, 23, 128, 23).withOpacity(0.5),
+                      spreadRadius: 1,
+                      blurRadius: 5,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'What instructions will I give my students?',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    SizedBox(height: 10),
+                    SizedBox(
+                      child: _buildTextField(
+                          instructionsController, 'Instructions'),
+                    ),
+                    SizedBox(height: 10), // Added height spacing
+                  ],
+                ),
+              ),
+              SizedBox(height: 10), // Added height spacing for button
+              SizedBox(
+                child: _buildAddButton('Add Instruction', () {
+                  setState(() {
+                    addedInstructions.add(instructionsController.text);
+                    instructionsController.clear();
+                  });
+                }),
+              ),
+              SizedBox(height: 10), // Added height spacing for list
+              const Text(
+                'Instruction List',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              SizedBox(height: 10),
+              SizedBox(
+                child: _buildList(addedInstructions),
+              ),
+              SizedBox(height: 20), // Added height spacing
+              // Container for 'Notes/Remarks'
+              Container(
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                  color: Colors.white.withOpacity(0.5), // Added glass effect
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color.fromARGB(255, 23, 128, 23).withOpacity(0.5),
+                      spreadRadius: 1,
+                      blurRadius: 5,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Notes/Remarks',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    SizedBox(height: 10),
+                    SizedBox(
+                      child: _buildTextField(remarksInstructionController,
+                          'Remarks'), // Updated to use new controller
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
         ),
         SizedBox(height: 20), // Added height spacing
-        Column(
+        Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            ElevatedButton(
+            FloatingActionButton(
               onPressed: () {
                 setState(() {
                   currentStep--;
                 });
               },
-              child: Text(
-                'Back',
-                style: TextStyle(color: myCustomButtonTextColor),
-              ),
-              style: ElevatedButton.styleFrom(
-                  minimumSize: Size(80, 30), // Set the button size smaller
-                  backgroundColor: myCustomButtonColor),
+              child: Icon(Icons.arrow_back, color: myCustomButtonTextColor),
+              backgroundColor: myCustomButtonColor,
+              shape: CircleBorder(), // Changed to circular button
             ),
-            ElevatedButton(
+            FloatingActionButton(
               onPressed: () {
                 _viewAllData(); // Method to view all entered data
               },
-              child: Text(
-                'View',
-                style: TextStyle(color: myCustomButtonTextColor),
-              ),
-              style: ElevatedButton.styleFrom(
-                  minimumSize: Size(80, 30), // Set the button size smaller
-                  backgroundColor: myCustomButtonColor),
+              child: Icon(Icons.remove_red_eye_outlined,
+                  color: myCustomButtonTextColor),
+              backgroundColor: myCustomButtonColor,
+              shape: CircleBorder(), // Changed to circular button
             ),
-            ElevatedButton(
+            FloatingActionButton(
               onPressed: () {
                 setState(() {
                   currentStep++;
                 });
               },
-              child: Text(
-                'Proceed to Coach Details',
-                style: TextStyle(color: myCustomButtonTextColor),
-              ),
-              style: ElevatedButton.styleFrom(
-                  minimumSize: Size(80, 30), // Set the button size smaller
-                  backgroundColor: myCustomButtonColor),
+              child: Icon(Icons.arrow_forward, color: myCustomButtonTextColor),
+              backgroundColor: myCustomButtonColor,
+              shape: CircleBorder(), // Changed to circular button
             ),
           ],
         ),
@@ -1405,12 +1517,34 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   SizedBox(height: 10),
-                  SizedBox(
-                    child: _buildTextField(
-                        coachDetailsController, 'Coach Details'),
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      color: Colors.white
+                          .withOpacity(0.5), // Added opacity for glass effect
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color.fromARGB(255, 23, 128, 23)
+                              .withOpacity(0.5), // Added shadow for depth
+                          spreadRadius: -2.0,
+                          blurRadius: 4.0,
+                          offset: Offset(0, 3), // changes position of shadow
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          child: _buildTextField(
+                              coachDetailsController, 'Coach Details'),
+                        ),
+                        SizedBox(height: 10), // Added height spacing
+                      ],
+                    ),
                   ),
                   SizedBox(height: 10), // Added height spacing
-                  SizedBox(
+                  Center(
                     child: _buildAddButton('Add Coach Detail', () {
                       setState(() {
                         addedCoachDetails.add(coachDetailsController.text);
@@ -1433,9 +1567,30 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   SizedBox(height: 10),
-                  SizedBox(
-                    child: _buildTextField(remarksCoachDetailsController,
-                        'Remarks'), // Updated to use new controller
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      color: Colors.white
+                          .withOpacity(0.5), // Added opacity for glass effect
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color.fromARGB(255, 23, 128, 23)
+                              .withOpacity(0.5), // Added shadow for depth
+                          spreadRadius: -2.0,
+                          blurRadius: 4.0,
+                          offset: Offset(0, 3), // changes position of shadow
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          child: _buildTextField(remarksCoachDetailsController,
+                              'Remarks'), // Updated to use new controller
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -1443,46 +1598,36 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           ),
         ),
         SizedBox(height: 20), // Added height spacing
-        Column(
+        Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            ElevatedButton(
+            FloatingActionButton(
               onPressed: () {
                 setState(() {
                   currentStep--;
                 });
               },
-              child: Text(
-                'Back',
-                style: TextStyle(color: myCustomButtonTextColor),
-              ),
-              style: ElevatedButton.styleFrom(
-                  minimumSize: Size(80, 30), // Set the button size smaller
-                  backgroundColor: myCustomButtonColor),
+              child: Icon(Icons.arrow_back, color: myCustomButtonTextColor),
+              backgroundColor: myCustomButtonColor,
+              shape: CircleBorder(), // Changed to circular button
             ),
-            ElevatedButton(
+            FloatingActionButton(
               onPressed: () {
                 _viewAllData(); // Method to view all entered data
               },
-              child: Text(
-                'View',
-                style: TextStyle(color: myCustomButtonTextColor),
-              ),
-              style: ElevatedButton.styleFrom(
-                  minimumSize: Size(80, 30), // Set the button size smaller
-                  backgroundColor: myCustomButtonColor),
+              child: Icon(Icons.remove_red_eye_outlined,
+                  color: myCustomButtonTextColor),
+              backgroundColor: myCustomButtonColor,
+              shape: CircleBorder(), // Changed to circular button
             ),
-            ElevatedButton(
+            FloatingActionButton(
               onPressed: () {
                 _submitAll(); // Submit all data
               },
-              child: Text(
-                'Submit All',
-                style: TextStyle(color: myCustomButtonTextColor),
-              ),
-              style: ElevatedButton.styleFrom(
-                  minimumSize: Size(80, 30), // Set the button size smaller
-                  backgroundColor: myCustomButtonColor),
+              child: Icon(Icons.check_circle_outline,
+                  color: myCustomButtonTextColor),
+              backgroundColor: myCustomButtonColor,
+              shape: CircleBorder(), // Changed to circular button
             ),
           ],
         ),
@@ -1637,19 +1782,40 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   }
 
   void _viewAllData() {
-    // Show a dialog to display all entered data
+    // Show a dialog to display all entered data in a more presentable way
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Entered Data'),
+          title: const Text('Added to List',
+              style: TextStyle(fontWeight: FontWeight.bold)),
           content: SingleChildScrollView(
-            child: ListBody(
+            child: Column(
               children: [
-                Text('Activities: ${addedActivities.join(', ')}'),
-                Text('Outputs: ${addedOutputs.join(', ')}'),
-                Text('Instructions: ${addedInstructions.join(', ')}'),
-                Text('Coach Details: ${addedCoachDetails.join(', ')}'),
+                ListTile(
+                  leading:
+                      Icon(Icons.check_circle_outline, color: Colors.green),
+                  title: Text('Activities: ${addedActivities.join(', ')}',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+                ListTile(
+                  leading:
+                      Icon(Icons.check_circle_outline, color: Colors.green),
+                  title: Text('Outputs: ${addedOutputs.join(', ')}',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+                ListTile(
+                  leading:
+                      Icon(Icons.check_circle_outline, color: Colors.green),
+                  title: Text('Instructions: ${addedInstructions.join(', ')}',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+                ListTile(
+                  leading:
+                      Icon(Icons.check_circle_outline, color: Colors.green),
+                  title: Text('Coach Details: ${addedCoachDetails.join(', ')}',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
                 // Add more data as needed
               ],
             ),
@@ -1659,7 +1825,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child: const Text('Close'),
+              child: const Text('Close',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         );
