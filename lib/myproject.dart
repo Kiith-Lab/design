@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:design/empaproject.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -138,12 +140,22 @@ class _MyProjectPageState extends State<MyProjectPage> {
               color: Color.fromARGB(255, 14, 14, 14)),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        backgroundColor: const Color(0xFF0A6338),
+        backgroundColor: Colors.green.shade700,
         elevation: 0.0,
       ),
       body: Container(
         width: double.infinity,
         height: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xfff4faf3),
+              Color(0xfff4faf3),
+            ],
+          ),
+        ),
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -154,160 +166,151 @@ class _MyProjectPageState extends State<MyProjectPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
                     const SizedBox(height: 90),
-                    const Text(
-                      'PROJECT:',
-                      style: TextStyle(
-                          fontSize: 15,
+                    const Center(
+                      child: Text(
+                        'C R E A T E  L I S T',
+                        style: TextStyle(
+                          fontSize: 30, // Increased font size to make it bigger
                           fontWeight: FontWeight.bold,
-                          color: Colors.green),
-                    ),
-                    const SizedBox(height: 10),
-                    Card(
-                      child: TextField(
-                        controller: _projectNameController,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
-                          ),
-                          labelText: 'Enter Project Name',
-                          labelStyle: TextStyle(color: Colors.green.shade700),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
-                            borderRadius: BorderRadius.circular(15),
-                          ),
+                          color: Colors.black, // Changed color to black
                         ),
                       ),
                     ),
                     const SizedBox(height: 10),
-                    const Text(
-                      'PROJECT DESCRIPTION:',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green),
-                    ),
-                    const SizedBox(height: 10),
-                    Card(
-                      child: TextField(
-                        controller: _descriptionController,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
+
+                    // Container to wrap all TextFields
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(15),
+                        border:
+                            Border.all(color: Colors.white.withOpacity(0.3)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color.fromARGB(255, 0, 148, 32)
+                                .withOpacity(0.1),
+                            spreadRadius: 5,
+                            blurRadius: 7,
+                            offset: const Offset(0, 3),
                           ),
-                          labelText: 'Enter Project Description',
-                          labelStyle: TextStyle(color: Colors.green.shade700),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
-                            borderRadius: BorderRadius.circular(15),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Text(
+                            'PROJECT:',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black, // Changed color to black
+                            ),
                           ),
-                        ),
+                          const SizedBox(height: 10),
+                          TextField(
+                            controller: _projectNameController,
+                            decoration: InputDecoration(
+                              labelText: 'Enter Project Name',
+                              labelStyle: TextStyle(
+                                  color:
+                                      Colors.black), // Changed color to black
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            'PROJECT DESCRIPTION:',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black, // Changed color to black
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          TextField(
+                            controller: _descriptionController,
+                            decoration: InputDecoration(
+                              labelText: 'Enter Project Description',
+                              labelStyle: TextStyle(
+                                  color:
+                                      Colors.black), // Changed color to black
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            'SUBJECT:',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black, // Changed color to black
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          TextField(
+                            controller: _subjectController,
+                            decoration: InputDecoration(
+                              labelText: 'Enter Subject',
+                              labelStyle: TextStyle(
+                                  color:
+                                      Colors.black), // Changed color to black
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            'START DATE:',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black, // Changed color to black
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          TextField(
+                            controller: _startDateController,
+                            decoration: InputDecoration(
+                              labelText: 'Enter Start Date',
+                              labelStyle: TextStyle(
+                                  color:
+                                      Colors.black), // Changed color to black
+                            ),
+                            onTap: () {
+                              _selectDate(context, _startDateController);
+                            },
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            'END DATE:',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black, // Changed color to black
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          TextField(
+                            controller: _endDateController,
+                            decoration: InputDecoration(
+                              labelText: 'Enter End Date',
+                              labelStyle: TextStyle(
+                                  color:
+                                      Colors.black), // Changed color to black
+                            ),
+                            onTap: () {
+                              _selectDate(context, _endDateController);
+                            },
+                          ),
+                        ],
                       ),
                     ),
-                    const Text(
-                      'SUBJECT:',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green),
-                    ),
-                    const SizedBox(height: 10),
-                    Card(
-                      child: TextField(
-                        controller: _subjectController,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
-                          ),
-                          labelText: 'Enter Subject',
-                          labelStyle: TextStyle(color: Colors.green.shade700),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'START DATE:',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green),
-                    ),
-                    const SizedBox(height: 10),
-                    Card(
-                      child: TextField(
-                        controller: _startDateController,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
-                          ),
-                          labelText: 'Enter Start Date',
-                          labelStyle: TextStyle(color: Colors.green.shade700),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        ),
-                        onTap: () {
-                          _selectDate(context, _startDateController);
-                        },
-                        readOnly: true,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'END DATE:',
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green),
-                    ),
-                    const SizedBox(height: 10),
-                    Card(
-                      child: TextField(
-                        controller: _endDateController,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
-                          ),
-                          labelText: 'Enter End Date',
-                          labelStyle: TextStyle(color: Colors.green.shade700),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide:
-                                BorderSide(color: Colors.green.shade700),
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                        ),
-                        onTap: () {
-                          _selectDate(context, _endDateController);
-                        },
-                        readOnly: true,
-                      ),
-                    ),
+
                     const SizedBox(height: 10),
                     Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(15),
-                        color: Colors.green.shade700.withOpacity(0.3),
+                        color: Color(0xFF76BC6C).withOpacity(0.1),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.green.shade700.withOpacity(0.1),
+                            color: Color(0xFF76BC6C).withOpacity(0.1),
                             spreadRadius: 5,
                             blurRadius: 7,
                             offset: const Offset(0, 3),
@@ -319,8 +322,8 @@ class _MyProjectPageState extends State<MyProjectPage> {
                           await _addProject();
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green.shade700,
-                          shadowColor: Colors.green.shade700.withOpacity(0.1),
+                          backgroundColor: Color(0xFF76BC6C).withOpacity(0.3),
+                          shadowColor: Color(0xFF76BC6C).withOpacity(0.1),
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),
@@ -331,7 +334,7 @@ class _MyProjectPageState extends State<MyProjectPage> {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: Colors.black, // Changed color to black
                           ),
                         ),
                       ),

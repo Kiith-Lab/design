@@ -693,10 +693,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   title: const Text('Create a'),
-      //   backgroundColor: Colors.green.shade600,
-      // ),
+      backgroundColor: Color(0xFFE6F5E3), // Set the background color
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -764,7 +761,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
         ),
         // No remarks text field here
         const SizedBox(height: 20), // Add some spacing
-        Row(
+        Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ElevatedButton(
@@ -774,7 +771,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
               child: Text('View Data',
                   style: TextStyle(color: myCustomButtonTextColor)),
               style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 40),
+                  minimumSize: Size(100, 30), // Set the button size smaller
                   backgroundColor: myCustomButtonColor),
             ),
             ElevatedButton(
@@ -795,7 +792,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 style: TextStyle(color: myCustomButtonTextColor),
               ),
               style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 40), // Set the button size
+                  minimumSize: Size(100, 30), // Set the button size smaller
                   backgroundColor: myCustomButtonColor),
             ),
           ],
@@ -822,7 +819,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           ],
         ),
         SizedBox(height: 20), // Added height spacing
-        Row(
+        Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ElevatedButton(
@@ -836,7 +833,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 style: TextStyle(color: myCustomButtonTextColor),
               ),
               style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 40), // Set the button size
+                  minimumSize: Size(100, 30), // Set the button size smaller
                   backgroundColor: myCustomButtonColor),
             ),
             ElevatedButton(
@@ -848,7 +845,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 style: TextStyle(color: myCustomButtonTextColor),
               ),
               style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 40), // Set the button size
+                  minimumSize: Size(100, 30), // Set the button size smaller
                   backgroundColor: myCustomButtonColor),
             ),
             ElevatedButton(
@@ -869,7 +866,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 style: TextStyle(color: myCustomButtonTextColor),
               ),
               style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 40), // Set the button size
+                  minimumSize: Size(100, 30), // Set the button size smaller
                   backgroundColor: myCustomButtonColor),
             ),
           ],
@@ -915,7 +912,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           ],
         ),
         SizedBox(height: 20), // Added height spacing
-        Row(
+        Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ElevatedButton(
@@ -929,7 +926,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 style: TextStyle(color: myCustomButtonTextColor),
               ),
               style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 40), // Set the button size
+                  minimumSize: Size(100, 30), // Set the button size smaller
                   backgroundColor: myCustomButtonColor),
             ),
             ElevatedButton(
@@ -941,7 +938,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 style: TextStyle(color: myCustomButtonTextColor),
               ),
               style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 40), // Set the button size
+                  minimumSize: Size(100, 30), // Set the button size smaller
                   backgroundColor: myCustomButtonColor),
             ),
             ElevatedButton(
@@ -963,7 +960,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 style: TextStyle(color: myCustomButtonTextColor),
               ),
               style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 40), // Set the button size
+                  minimumSize: Size(100, 30), // Set the button size smaller
                   backgroundColor: myCustomButtonColor),
             ),
           ],
@@ -1000,7 +997,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           ],
         ),
         SizedBox(height: 20), // Added height spacing
-        Row(
+        Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ElevatedButton(
@@ -1014,7 +1011,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 style: TextStyle(color: myCustomButtonTextColor),
               ),
               style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 40), // Set the button size
+                  minimumSize: Size(100, 30), // Set the button size smaller
                   backgroundColor: myCustomButtonColor),
             ),
             ElevatedButton(
@@ -1026,7 +1023,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 style: TextStyle(color: myCustomButtonTextColor),
               ),
               style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 40), // Set the button size
+                  minimumSize: Size(100, 30), // Set the button size smaller
                   backgroundColor: myCustomButtonColor),
             ),
             ElevatedButton(
@@ -1040,7 +1037,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 style: TextStyle(color: myCustomButtonTextColor),
               ),
               style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 40), // Set the button size
+                  minimumSize: Size(100, 30), // Set the button size smaller
                   backgroundColor: myCustomButtonColor),
             ),
           ],
@@ -1080,7 +1077,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           ],
         ),
         SizedBox(height: 20), // Added height spacing
-        Row(
+        Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ElevatedButton(
@@ -1094,7 +1091,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 style: TextStyle(color: myCustomButtonTextColor),
               ),
               style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 40), // Set the button size
+                  minimumSize: Size(100, 30), // Set the button size smaller
                   backgroundColor: myCustomButtonColor),
             ),
             ElevatedButton(
@@ -1106,7 +1103,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 style: TextStyle(color: myCustomButtonTextColor),
               ),
               style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 40), // Set the button size
+                  minimumSize: Size(100, 30), // Set the button size smaller
                   backgroundColor: myCustomButtonColor),
             ),
             ElevatedButton(
@@ -1120,7 +1117,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 style: TextStyle(color: myCustomButtonTextColor),
               ),
               style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 40), // Set the button size
+                  minimumSize: Size(100, 30), // Set the button size smaller
                   backgroundColor: myCustomButtonColor),
             ),
           ],
@@ -1160,7 +1157,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           ],
         ),
         SizedBox(height: 20), // Added height spacing
-        Row(
+        Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ElevatedButton(
@@ -1174,7 +1171,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 style: TextStyle(color: myCustomButtonTextColor),
               ),
               style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 40), // Set the button size
+                  minimumSize: Size(80, 30), // Set the button size smaller
                   backgroundColor: myCustomButtonColor),
             ),
             ElevatedButton(
@@ -1182,11 +1179,11 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 _viewAllData(); // Method to view all entered data
               },
               child: Text(
-                'View Data',
+                'View',
                 style: TextStyle(color: myCustomButtonTextColor),
               ),
               style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 40), // Set the button size
+                  minimumSize: Size(80, 30), // Set the button size smaller
                   backgroundColor: myCustomButtonColor),
             ),
             ElevatedButton(
@@ -1200,7 +1197,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 style: TextStyle(color: myCustomButtonTextColor),
               ),
               style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 40), // Set the button size
+                  minimumSize: Size(80, 30), // Set the button size smaller
                   backgroundColor: myCustomButtonColor),
             ),
           ],
@@ -1240,7 +1237,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           ],
         ),
         SizedBox(height: 20), // Added height spacing
-        Row(
+        Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ElevatedButton(
@@ -1254,7 +1251,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 style: TextStyle(color: myCustomButtonTextColor),
               ),
               style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 40), // Set the button size
+                  minimumSize: Size(80, 30), // Set the button size smaller
                   backgroundColor: myCustomButtonColor),
             ),
             ElevatedButton(
@@ -1266,7 +1263,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 style: TextStyle(color: myCustomButtonTextColor),
               ),
               style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 40), // Set the button size
+                  minimumSize: Size(80, 30), // Set the button size smaller
                   backgroundColor: myCustomButtonColor),
             ),
             ElevatedButton(
@@ -1278,7 +1275,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 style: TextStyle(color: myCustomButtonTextColor),
               ),
               style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 40), // Set the button size
+                  minimumSize: Size(80, 30), // Set the button size smaller
                   backgroundColor: myCustomButtonColor),
             ),
           ],
