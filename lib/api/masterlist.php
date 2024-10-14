@@ -526,9 +526,8 @@ class Get1
             return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
         }
     }
-    function getCards1()
+        function getCards1()
     {
-        $cardId = isset($_POST['cardId']) ? $_POST['cardId'] : '';
         $projectId = isset($_POST['projectId']) ? $_POST['projectId'] : '';
         try {
             $sql = "SELECT *
@@ -536,21 +535,18 @@ class Get1
             INNER JOIN tbl_project_cards ON tbl_folder.project_cardsId = tbl_project_cards.project_cards_id
             INNER JOIN tbl_back_cards_header ON tbl_back_cards_header.back_cards_header_id = tbl_project_cards.project_cards_cardId
             INNER JOIN tbl_front_cards ON tbl_front_cards.cards_id = tbl_back_cards_header.back_cards_header_frontId
-            WHERE tbl_folder.projectId = :projectId 
-            AND tbl_back_cards_header.back_cards_header_frontId = :cardId";
-    
+            WHERE tbl_folder.projectId = :projectId";
 
             $stmt = $this->pdo->prepare($sql);
-            $stmt->bindParam(':cardId', $cardId, PDO::PARAM_INT);
             $stmt->bindParam(':projectId', $projectId, PDO::PARAM_INT);
             $stmt->execute();
 
-            $returnValue = $stmt->fetch(PDO::FETCH_ASSOC);
+            $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC); // Fetch all matching records
 
             error_log("SQL Query: $sql");
             error_log("Result: " . print_r($returnValue, true));
 
-            if ($returnValue === false) {
+            if (empty($returnValue)) {
                 return json_encode(['success' => false, 'message' => 'No data found']);
             }
 

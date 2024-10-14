@@ -9,11 +9,14 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flip_card/flip_card.dart';
 import 'dart:io';
 import 'dart:html' as html;
-import 'package:open_file/open_file.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:printing/printing.dart'; // Ensure this import is included for printing
 
 import 'config.dart';
+
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
 
 class ListPage extends StatefulWidget {
   const ListPage({super.key});
@@ -28,16 +31,14 @@ class _ListPageState extends State<ListPage> {
   @override
   void initState() {
     super.initState();
-    _fetchFolders();
+    fetchFolders(); // Ensure this method is called to fetch folders
   }
 
-  Future<void> _fetchFolders() async {
+  Future<void> fetchFolders() async {
     try {
       final response = await http.post(
         Uri.parse('http://localhost/design/lib/api/masterlist.php'),
-        body: {
-          'operation': 'getFolder',
-        },
+        body: {'operation': 'getFolder'},
       );
 
       if (response.statusCode == 200) {
@@ -79,6 +80,11 @@ class _ListPageState extends State<ListPage> {
                     })
                 .toList());
           });
+
+          // New print statement to show the number of project_cardsId fetched
+          print(
+              'Number of project_cardsId fetched: ${folders.map((folder) => folder['project_cardsId'].length).reduce((a, b) => a + b)}');
+
 // Print the fetched details
           print('Fetched Folder Details:');
           for (var folder in folders) {
@@ -111,15 +117,15 @@ class _ListPageState extends State<ListPage> {
           throw Exception('Invalid data format: ${response.body}');
         }
       } else {
-        print('Failed to load folders. Status code: ${response.statusCode}');
+        // Improved error handling
         throw Exception(
             'Failed to load folders. Status code: ${response.statusCode}');
       }
     } catch (e) {
       print('Error fetching folders: $e');
-// You might want to show an error message to the user here
+      // Show a more user-friendly error message
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching folders: $e')),
+        SnackBar(content: Text('Error fetching folders: ${e.toString()}')),
       );
     }
   }
@@ -144,52 +150,11 @@ class _ListPageState extends State<ListPage> {
     }
   }
 
-// Future<void> _addFolder(String folderName, String creationTime) async {
-// Map<String, dynamic> data = {
-// 'folder_name': folderName,
-// 'folder_date': creationTime,
-// };
-// try {
-// final response = await http.post(
-// Uri.parse('${baseUrl}add.php'),
-// headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-// body: {
-// 'operation': 'addfolder',
-// 'json': jsonEncode(data),
-// },
-// );
-
-// if (response.statusCode == 200) {
-// final responseData = json.decode(response.body);
-// if (responseData['success'] == true) {
-// print('Folder created successfully with ID: ${responseData['id']}');
-// ScaffoldMessenger.of(context).showSnackBar(
-// const SnackBar(content: Text('Folder created successfully')),
-// );
-// await _fetchFolders(); // Refresh the folder list
-// } else {
-// print('Failed to create folder: ${responseData['error']}');
-// ScaffoldMessenger.of(context).showSnackBar(
-// SnackBar(
-// content:
-// Text('Failed to create folder: ${responseData['error']}')),
-// );
-// }
-// } else {
-// print('Failed to create folder: Server error ${response.statusCode}');
-// ScaffoldMessenger.of(context).showSnackBar(
-// const SnackBar(content: Text('Server error occurred')),
-// );
-// }
-// } catch (e) {
-// print('Error adding folder: $e');
-// ScaffoldMessenger.of(context).showSnackBar(
-// SnackBar(content: Text('An error occurred: $e')),
-// );
-// }
-// }
-
   void _onFolderTap(Map<String, dynamic> folder) {
+    // New print statement to show the number of project_cardsId for the tapped folder
+    print(
+        'Number of project_cardsId for folder ${folder['project_title']}: ${folder['project_cardsId']?.length ?? 0}');
+
     print('Folder tapped: ${folder['project_title']}');
     Navigator.push(
       context,
@@ -259,118 +224,129 @@ class _ListPageState extends State<ListPage> {
         final bytes = await pdf.save();
         final blob = html.Blob([bytes], 'application/pdf');
         final url = html.Url.createObjectUrlFromBlob(blob);
-        html.window.open(url, '_blank');
+        final anchor = html.AnchorElement(href: url)
+          ..setAttribute('download', 'my_folders.pdf')
+          ..click();
         html.Url.revokeObjectUrl(url);
       } else {
-        final output = await getTemporaryDirectory();
-        final file = File('${output.path}/my_folders.pdf');
-        await file.writeAsBytes(await pdf.save());
-        OpenFile.open(file.path);
+        await Printing.layoutPdf(
+          onLayout: (PdfPageFormat format) async => pdf.save(),
+        );
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('PDF generated successfully')),
-      );
+      // Use the global key to show the SnackBar
+      if (scaffoldMessengerKey.currentState?.mounted ?? false) {
+        scaffoldMessengerKey.currentState?.showSnackBar(
+          const SnackBar(content: Text('PDF generated successfully')),
+        );
+      }
     } catch (e) {
       print('Error generating PDF: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to generate PDF: $e')),
-      );
+      // Use the global key to show the SnackBar
+      if (scaffoldMessengerKey.currentState?.mounted ?? false) {
+        scaffoldMessengerKey.currentState?.showSnackBar(
+          SnackBar(content: Text('Failed to generate PDF: $e')),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Project Folders',
-            style: TextStyle(
-                fontFamily: 'Montserrat', fontWeight: FontWeight.w600)),
-        elevation: 0,
-        backgroundColor: Colors.teal,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.picture_as_pdf,
-                color: Color.fromARGB(255, 3, 3, 3)),
-            onPressed: () => _generatePDF(),
-            tooltip: 'Generate PDF',
+    return ScaffoldMessenger(
+      key: scaffoldMessengerKey, // Set the key here
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('My Project Folders',
+              style: TextStyle(
+                  fontFamily: 'Montserrat', fontWeight: FontWeight.w600)),
+          elevation: 0,
+          backgroundColor: Colors.teal,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
           ),
-        ],
-      ),
-      body: folders.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.folder_open, size: 80, color: Colors.grey[400]),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No folders available',
-                    style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.grey[600],
-                        fontFamily: 'Roboto'),
-                  ),
-                ],
-              ),
-            )
-          : ListView.builder(
-              itemCount: folders.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.blue[100]!, Colors.blue[50]!],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.3),
-                          spreadRadius: 2,
-                          blurRadius: 5,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 10),
-                      leading: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.amber[300],
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.folder, color: Colors.white),
-                      ),
-                      title: Text(
-                        folders[index]['project_title'] ?? 'Unnamed Folder',
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontFamily: 'Poppins'),
-                      ),
-                      subtitle: Text(
-                        'Module: ${folders[index]['module_master_name'] ?? 'Unknown module'}',
-                        style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                            fontFamily: 'Roboto'),
-                      ),
-                      trailing: const Icon(Icons.arrow_forward_ios,
-                          size: 16, color: Colors.blue),
-                      onTap: () => _onFolderTap(folders[index]),
-                    ),
-                  ),
-                );
-              },
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.picture_as_pdf,
+                  color: Color.fromARGB(255, 3, 3, 3)),
+              onPressed: () => _generatePDF(),
+              tooltip: 'Generate PDF',
             ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          ],
+        ),
+        body: folders.isEmpty
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.folder_open, size: 80, color: Colors.grey[400]),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No folders available',
+                      style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.grey[600],
+                          fontFamily: 'Roboto'),
+                    ),
+                  ],
+                ),
+              )
+            : ListView.builder(
+                itemCount: folders.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.blue[100]!, Colors.blue[50]!],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.3),
+                            spreadRadius: 2,
+                            blurRadius: 5,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
+                        leading: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.amber[300],
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.folder, color: Colors.white),
+                        ),
+                        title: Text(
+                          folders[index]['project_title'] ?? 'Unnamed Folder',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Poppins'),
+                        ),
+                        subtitle: Text(
+                          'Module: ${folders[index]['module_master_name'] ?? 'Unknown module'}',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                              fontFamily: 'Roboto'),
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios,
+                            size: 16, color: Colors.blue),
+                        onTap: () => _onFolderTap(folders[index]),
+                      ),
+                    ),
+                  );
+                },
+              ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      ),
     );
   }
 }
@@ -385,7 +361,7 @@ class FolderDetailPage extends StatefulWidget {
 }
 
 class _FolderDetailPageState extends State<FolderDetailPage> {
-  Map<String, dynamic>? cardData;
+  List<Map<String, dynamic>>? cardData; // Change to List to hold multiple cards
 
   @override
   void initState() {
@@ -395,35 +371,38 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
 
   Future<void> _fetchCardData() async {
     final projectId = widget.folder['projectId'];
-    final backCardsHeaderFrontId = widget.folder['back_cards_header_frontId'];
+    final projectCardsIds =
+        widget.folder['project_cardsId']; // Get the list of project_cardsId
 
     print(
-        'Fetching card data for projectId: $projectId, backCardsHeaderFrontId: $backCardsHeaderFrontId');
+        'Fetching card data for projectId: $projectId, projectCardsIds: $projectCardsIds');
 
     try {
-// Make the HTTP POST request to your API
+      // Make the HTTP POST request to your API
       final response = await http.post(
         Uri.parse('http://localhost/design/lib/api/masterlist.php'),
         body: {
           'operation': 'getCards1',
           'projectId': projectId.toString(),
-          'cardId': backCardsHeaderFrontId.toString(),
+          'cardIds': json.encode(projectCardsIds), // Send the list of card IDs
         },
       );
 
-// Check if the response status is OK (HTTP 200)
+      // Check if the response status is OK (HTTP 200)
       if (response.statusCode == 200) {
         final dynamic data = json.decode(response.body);
 
-// Check if the response is a map (expected JSON format)
+        // Check if the response is a map (expected JSON format)
         if (data is Map<String, dynamic>) {
           if (data['success'] == true && data['data'] != null) {
             setState(() {
-              cardData = data['data'];
+              cardData = List<Map<String, dynamic>>.from(
+                  data['data']); // Store multiple cards
             });
             print('Fetched Card Data:');
-            data['data'].forEach((key, value) {
-              print('$key: $value');
+            cardData?.forEach((card) {
+              print('Card Title: ${card['cards_title']}');
+              print('Card Content: ${card['cards_content']}');
             });
           } else {
             print('No data found');
@@ -432,7 +411,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
             });
           }
         } else {
-// Handle unexpected data types
+          // Handle unexpected data types
           print('Unexpected data format: ${data.runtimeType}');
           print('Data content: $data');
           setState(() {
@@ -440,7 +419,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
           });
         }
       } else {
-// Log failure to fetch data with response details
+        // Log failure to fetch data with response details
         print('Failed to fetch card data');
         print('Status code: ${response.statusCode}');
         print('Response body: ${response.body}');
@@ -449,7 +428,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
         });
       }
     } catch (e) {
-// Handle and log exceptions
+      // Handle and log exceptions
       print('Database error occurred: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Database error occurred: $e')),
@@ -468,6 +447,15 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
   }
 
   void _showFolderDetails(BuildContext context) {
+    // Gather all card titles for the same projectId
+    final projectId = widget.folder['projectId'];
+    final cardTitles = cardData
+            ?.where((card) => card['projectId'] == projectId)
+            .map((card) => card['cards_title'])
+            .toList() ??
+        [];
+    final cardTitlesString = cardTitles.join(', '); // Join titles with a comma
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -476,68 +464,113 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
               .withOpacity(0.9), // Pale sand color with opacity
           title: Text(
             widget.folder['project_title'] ?? 'Unnamed Folder',
-            style: TextStyle(color: Colors.black87),
+            style: TextStyle(
+                color: Colors.black87,
+                fontSize: 20,
+                fontWeight: FontWeight.bold), // Increased font size and bold
           ),
           content: SingleChildScrollView(
-            child: Table(
-              border: TableBorder.all(color: Colors.black87),
-              columnWidths: const {
-                0: FlexColumnWidth(1),
-                1: FlexColumnWidth(2),
-              },
-              children: [
-                _buildTableRow('Project Code',
-                    widget.folder['project_subject_code'] ?? 'No code'),
-                _buildTableRow(
-                    'Project Description',
-                    widget.folder['project_subject_description'] ??
-                        'No description'),
-                _buildTableRow('Start Date',
-                    widget.folder['project_start_date'] ?? 'No start date'),
-                _buildTableRow('End Date',
-                    widget.folder['project_end_date'] ?? 'No end date'),
-                _buildTableRow(
-                    'Module', widget.folder['module_master_name'] ?? 'Unknown'),
-                _buildTableRow(
-                    'Activity',
-                    widget.folder['activities_details_content'] ??
-                        'No activity'),
-                _buildTableRow(
-                    'Card', widget.folder['cards_title'] ?? 'No card'),
-                _buildTableRow(
-                    'Output', widget.folder['outputs_content'] ?? 'No output'),
-                _buildTableRow('Instruction',
-                    widget.folder['instruction_content'] ?? 'No instruction'),
-                _buildTableRow('Coach Detail',
-                    widget.folder['coach_detail_content'] ?? 'No coach detail'),
-              ],
+            child: Padding(
+              // Added padding for better spacing
+              padding: const EdgeInsets.all(16.0),
+              child: Table(
+                border: TableBorder.all(color: Colors.black87), // Table border
+                columnWidths: const {
+                  0: FlexColumnWidth(1),
+                  1: FlexColumnWidth(2),
+                },
+                children: [
+                  // Header Row
+                  TableRow(
+                    decoration: BoxDecoration(
+                        color: Colors.teal[100]), // Header background color
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text('Field',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87)),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text('Value',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87)),
+                      ),
+                    ],
+                  ),
+                  // Data Rows
+                  // Data Rows
+                  _buildTableRow('Project Code',
+                      widget.folder['project_subject_code'] ?? 'No code'),
+                  _buildTableRow(
+                      'Project Description',
+                      widget.folder['project_subject_description'] ??
+                          'No description'),
+                  _buildTableRow('Start Date',
+                      widget.folder['project_start_date'] ?? 'No start date'),
+                  _buildTableRow('End Date',
+                      widget.folder['project_end_date'] ?? 'No end date'),
+                  _buildTableRow('Module',
+                      widget.folder['module_master_name'] ?? 'Unknown'),
+                  _buildTableRow(
+                      'Activity',
+                      widget.folder['activities_details_content'] ??
+                          'No activity'),
+                  // Updated to display card titles in bullet form
+                  _buildTableRow(
+                      'Card Titles',
+                      cardTitles.isNotEmpty
+                          ? cardTitles.map((title) => '• $title').join('\n')
+                          : 'No cards available'), // Display concatenated titles
+                  _buildTableRow('Output',
+                      widget.folder['outputs_content'] ?? 'No output'),
+                  _buildTableRow('Instruction',
+                      widget.folder['instruction_content'] ?? 'No instruction'),
+                  _buildTableRow(
+                      'Coach Detail',
+                      widget.folder['coach_detail_content'] ??
+                          'No coach detail'),
+                ],
+              ),
             ),
           ),
           actions: [
-            Row(
-              children: [
-                ElevatedButton(
-                  onPressed: () => _generateExcel(context),
-                  child: const Text('Excel'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFFE6D0B3),
-                    foregroundColor: Colors.black87,
-                    minimumSize: Size(90, 40),
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            Padding(
+              // Added padding around the button row
+              padding:
+                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment:
+                    MainAxisAlignment.spaceBetween, // Space buttons evenly
+                children: [
+                  ElevatedButton(
+                    onPressed: () => _generateExcel(context),
+                    child: const Text('Generate Excel'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFFE6D0B3),
+                      foregroundColor: Colors.black87,
+                      minimumSize: Size(90, 40),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    ),
                   ),
-                ),
-                SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: () => _generatePDF(context),
-                  child: const Text('PDF'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFFE6D0B3),
-                    foregroundColor: Colors.black87,
-                    minimumSize: Size(90, 40),
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  SizedBox(width: 10), // Space between buttons
+                  ElevatedButton(
+                    onPressed: () => _generatePDF(context),
+                    child: const Text('Generate PDF'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFFE6D0B3),
+                      foregroundColor: Colors.black87,
+                      minimumSize: Size(90, 40),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         );
@@ -571,85 +604,90 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
   }
 
   Future<void> _generatePDF(BuildContext context) async {
-    final pdf = pw.Document();
-    final now = DateTime.now();
-    final formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
-
-    pdf.addPage(
-      pw.Page(
-        build: (pw.Context context) {
-          return pw.Column(
-            children: [
-              pw.Header(
-                level: 0,
-                child: pw.Text(
-                    widget.folder['project_title'] ?? 'Unnamed Folder',
-                    style: pw.TextStyle(
-                        fontSize: 24, fontWeight: pw.FontWeight.bold)),
-              ),
-              pw.SizedBox(height: 10),
-              pw.Text('Generated on: $formattedDate',
-                  style: pw.TextStyle(
-                      fontSize: 12, fontStyle: pw.FontStyle.italic)),
-              pw.SizedBox(height: 20),
-              pw.Table(
-                border: pw.TableBorder.all(),
-                children: [
-                  _buildPDFTableRow('Project Code:',
-                      widget.folder['project_subject_code'] ?? 'No code'),
-                  _buildPDFTableRow(
-                      'Project Description:',
-                      widget.folder['project_subject_description'] ??
-                          'No description'),
-                  _buildPDFTableRow('Start Date:',
-                      widget.folder['project_start_date'] ?? 'No start date'),
-                  _buildPDFTableRow('End Date:',
-                      widget.folder['project_end_date'] ?? 'No end date'),
-                  _buildPDFTableRow('Module:',
-                      widget.folder['module_master_name'] ?? 'Unknown'),
-                  _buildPDFTableRow(
-                      'Activity:',
-                      widget.folder['activities_details_content'] ??
-                          'No activity'),
-                  _buildPDFTableRow(
-                      'Card:', widget.folder['cards_title'] ?? 'No card'),
-                  _buildPDFTableRow('Output:',
-                      widget.folder['outputs_content'] ?? 'No output'),
-                  _buildPDFTableRow('Instruction:',
-                      widget.folder['instruction_content'] ?? 'No instruction'),
-                  _buildPDFTableRow(
-                      'Coach Detail:',
-                      widget.folder['coach_detail_content'] ??
-                          'No coach detail'),
-                ],
-              ),
-            ],
-          );
-        },
-      ),
-    );
-
     try {
+      final pdf = pw.Document();
+      final now = DateTime.now();
+      final formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+
+      pdf.addPage(
+        pw.Page(
+          build: (pw.Context context) {
+            return pw.Column(
+              children: [
+                pw.Header(
+                  level: 0,
+                  child: pw.Text(
+                      widget.folder['project_title'] ?? 'Unnamed Folder',
+                      style: pw.TextStyle(
+                          fontSize: 24, fontWeight: pw.FontWeight.bold)),
+                ),
+                pw.SizedBox(height: 10),
+                pw.Text('Generated on: $formattedDate',
+                    style: pw.TextStyle(
+                        fontSize: 12, fontStyle: pw.FontStyle.italic)),
+                pw.SizedBox(height: 20),
+                pw.Table(
+                  border: pw.TableBorder.all(),
+                  children: [
+                    _buildPDFTableRow('Project Code:',
+                        widget.folder['project_subject_code'] ?? 'No code'),
+                    _buildPDFTableRow(
+                        'Project Description:',
+                        widget.folder['project_subject_description'] ??
+                            'No description'),
+                    _buildPDFTableRow('Start Date:',
+                        widget.folder['project_start_date'] ?? 'No start date'),
+                    _buildPDFTableRow('End Date:',
+                        widget.folder['project_end_date'] ?? 'No end date'),
+                    _buildPDFTableRow('Module:',
+                        widget.folder['module_master_name'] ?? 'Unknown'),
+                    _buildPDFTableRow(
+                        'Activity:',
+                        widget.folder['activities_details_content'] ??
+                            'No activity'),
+                    _buildPDFTableRow(
+                        'Card:', widget.folder['cards_title'] ?? 'No card'),
+                    _buildPDFTableRow('Output:',
+                        widget.folder['outputs_content'] ?? 'No output'),
+                    _buildPDFTableRow(
+                        'Instruction:',
+                        widget.folder['instruction_content'] ??
+                            'No instruction'),
+                    _buildPDFTableRow(
+                        'Coach Detail:',
+                        widget.folder['coach_detail_content'] ??
+                            'No coach detail'),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
+      );
+
       if (kIsWeb) {
         final bytes = await pdf.save();
         final blob = html.Blob([bytes], 'application/pdf');
         final url = html.Url.createObjectUrlFromBlob(blob);
-        html.window.open(url, '_blank');
+        final anchor = html.AnchorElement(href: url)
+          ..setAttribute('download', 'folder_details.pdf')
+          ..click();
         html.Url.revokeObjectUrl(url);
       } else {
-        final output = await getTemporaryDirectory();
-        final file = File('${output.path}/folder_details.pdf');
-        await file.writeAsBytes(await pdf.save());
-        OpenFile.open(file.path);
+        await Printing.layoutPdf(
+          onLayout: (PdfPageFormat format) async => pdf.save(),
+        );
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('PDF generated successfully')),
-      );
+      // Removed the Snackbar display
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(content: Text('PDF generated successfully')),
+      // );
     } catch (e) {
       print('Error generating PDF: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to generate PDF: $e')),
-      );
+      // Removed the Snackbar display
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text('Failed to generate PDF: $e')),
+      // );
     }
   }
 
@@ -670,97 +708,37 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
   }
 
   Future<void> _generateExcel(BuildContext context) async {
-    var excel = Excel.createExcel();
-    var sheet = excel['Sheet1'];
+    // Create a new Excel document
+    final Excel excel = Excel.createExcel();
+    Sheet sheet = excel['Sheet1'];
 
-// Current date and time formatted
-    final now = DateTime.now();
-    final formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+    // Add headers and folder details
+    // ... existing Excel generation code ...
 
-// Add generation date and time
-    sheet.appendRow(['Generated on:', formattedDate]);
-    sheet.appendRow(['', '']); // Empty row for spacing
-
-// Define column widths (optional)
-    sheet.setColWidth(0, 25); // First column width
-    sheet.setColWidth(1, 50); // Second column width
-    sheet.setColWidth(2, 50); // Third column for Notes/Remarks
-
-// Define a style for the row with your desired color
-    CellStyle rowStyle = CellStyle(
-      backgroundColorHex: "#FF5733", // Change to your desired color
-      fontFamily: getFontFamily(FontFamily.Calibri),
-      fontColorHex: "#FFFFFF", // Set font color to white for better contrast
-      bold: true, // Optional: make the text bold
-    );
-
-// Add folder details
-    final folderDetails = {
-      'Project Code': [widget.folder['project_subject_code'] ?? 'No code'],
-      'Project Description': [
-        widget.folder['project_subject_description'] ?? 'No description'
-      ],
-      'Start Date': [widget.folder['project_start_date'] ?? 'No start date'],
-      'End Date': [widget.folder['project_end_date'] ?? 'No end date'],
-      'Activities Details': [
-        widget.folder['activities_details_content'] ?? 'No activity'
-      ],
-      'Cards Used': [widget.folder['cards_title'] ?? 'No card'],
-      'Expected Outputs': [widget.folder['outputs_content'] ?? 'No output'],
-      'Instructions': [
-        widget.folder['instruction_content'] ?? 'No instruction'
-      ],
-      'Coaching Details': [
-        widget.folder['coach_detail_content'] ?? 'No coach detail'
-      ],
-    };
-
-// Append folder details to the sheet
-    folderDetails.forEach((key, value) {
-      if (key == 'Activities Details') {
-// Add the module_master_name in the first column and 'NOTES/REMARKS' in the third column
-        sheet.appendRow([
-          widget.folder['module_master_name'] ?? 'Unknown',
-          '', // Leave this cell empty for the second column
-          'NOTES/REMARKS', // Place NOTES/REMARKS in the third column
-        ]); // Module name and notes in one row
-
-// Apply style to the cells in the newly appended row
-        var rowIndex = sheet.maxRows - 1; // Get the index of the last row
-        sheet
-            .cell(
-                CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: rowIndex))
-            .cellStyle = rowStyle; // First column
-        sheet
-            .cell(
-                CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: rowIndex))
-            .cellStyle = rowStyle; // Second column
-        sheet
-            .cell(
-                CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: rowIndex))
-            .cellStyle = rowStyle; // Third column
+    try {
+      if (kIsWeb) {
+        final bytes = excel.encode();
+        final blob = html.Blob([bytes]);
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement(href: url)
+          ..setAttribute('download', 'folder_details.xlsx')
+          ..click();
+        html.Url.revokeObjectUrl(url);
       } else {
-        sheet.appendRow([key, value[0]]); // Add 2 columns for other rows
+        final directory = await getApplicationDocumentsDirectory();
+        final filePath = '${directory.path}/folder_details.xlsx';
+        final file = File(filePath);
+        await file.writeAsBytes(excel.encode()!, flush: true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Excel file saved to $filePath')),
+        );
       }
-    });
-
-// Define the directory and file path
-    final directory =
-        Directory('/storage/emulated/0/Download'); // Change to Downloads folder
-    final filePath = '${directory.path}/folder_details_with_remarks.xlsx';
-    final file = File(filePath);
-
-// Save the Excel file
-    List<int>? fileBytes = excel.save();
-    if (fileBytes != null) {
-      file.createSync(recursive: true);
-      file.writeAsBytesSync(fileBytes);
+    } catch (e) {
+      print('Error generating Excel: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to generate Excel: $e')),
+      );
     }
-
-// Show a snackbar message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Excel file saved to $filePath')),
-    );
   }
 
   @override
@@ -777,88 +755,134 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
           ),
         ],
       ),
-      body: Center(
-        child: cardData == null
-            ? CircularProgressIndicator()
-            : FlipCard(
-                direction: FlipDirection.HORIZONTAL,
-                speed: 1000,
-                onFlipDone: (status) {
-                  print(status);
+      body: cardData == null
+          ? Center(child: CircularProgressIndicator())
+          : Container(
+              color: Colors.grey[200], // Set a subtle background color
+              child: PageView.builder(
+                // Use PageView for swiping cards
+                scrollDirection: Axis.horizontal,
+                itemCount: cardData!.length,
+                itemBuilder: (context, index) {
+                  final card = cardData![index];
+                  return Padding(
+                    // Add padding around each card
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 24.0), // Adjust vertical spacing
+                    child: ClipRRect(
+                      // Clip the card to have rounded corners
+                      borderRadius:
+                          BorderRadius.circular(20), // Rounded corners
+                      child: FlipCard(
+                        direction: FlipDirection.HORIZONTAL,
+                        speed: 1000,
+                        front: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Colors.blueAccent, Colors.purpleAccent],
+                            ),
+                            borderRadius:
+                                BorderRadius.circular(20), // Rounded corners
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                spreadRadius: 3,
+                                blurRadius: 10,
+                                offset: Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(
+                                    16.0), // Add padding inside the card
+                                child: Text(
+                                  card['cards_title'] ?? 'No title',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              SizedBox(height: 10),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal:
+                                        16.0), // Add padding for content
+                                child: Text(
+                                  card['cards_content'] ?? 'No content',
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 18),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        back: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Colors.purpleAccent, Colors.blueAccent],
+                            ),
+                            borderRadius:
+                                BorderRadius.circular(20), // Rounded corners
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                spreadRadius: 3,
+                                blurRadius: 10,
+                                offset: Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: SingleChildScrollView(
+                            // Make the back content scrollable
+                            child: Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(
+                                    16.0), // Add padding inside the back card
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      card['back_content_title'] ??
+                                          'No back title',
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 24),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    SizedBox(height: 10),
+                                    Text(
+                                      card['back_content'] ?? 'No back content',
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 18),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
                 },
-                front: Container(
-                  width: 300,
-                  height: 600,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Colors.blue, Colors.purple],
-                    ),
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        spreadRadius: 3,
-                        blurRadius: 7,
-                        offset: Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        cardData?['cards_title'] ?? 'No title',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
-                      ),
-                      SizedBox(height: 20),
-                      Text(
-                        cardData?['cards_content'] ?? 'No content',
-                        style: TextStyle(color: Colors.white, fontSize: 18),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-                back: Container(
-                  width: 300,
-                  height: 600,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Colors.purple, Colors.blue],
-                    ),
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        spreadRadius: 3,
-                        blurRadius: 7,
-                        offset: Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Text(
-                      cardData?['back_content'] ?? 'No content',
-                      style: TextStyle(color: Colors.white, fontSize: 18),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
               ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _addLesson(context),
-        tooltip: 'Add Lesson',
-        child: const Icon(Icons.add),
-      ),
+            ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () => _addLesson(context),
+      //   tooltip: 'Add Lesson',
+      //   child: const Icon(Icons.add),
+      // ),
     );
   }
 }

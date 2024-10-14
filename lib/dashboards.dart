@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'dart:html' as html; // Add this import for web file handling
 
+import 'package:excel_dart/excel_dart.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -9,8 +12,6 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
-import 'package:excel/excel.dart';
-import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xlsio;
 import 'dart:io';
 import 'config.dart';
 
@@ -473,8 +474,8 @@ class _DashboardsState extends State<Dashboards> {
                     onPressed: () => _printFolderDetailsPDF(folder),
                   ),
                   ShadButton(
-                    child: const Text('Export Excel'),
                     onPressed: () => _exportFolderDetailsExcel(context, folder),
+                    child: const Text('Generate Excel'),
                   )
                 ],
               ),
@@ -531,9 +532,21 @@ class _DashboardsState extends State<Dashboards> {
       ),
     );
 
-    await Printing.layoutPdf(
-      onLayout: (PdfPageFormat format) async => pdf.save(),
-    );
+    if (kIsWeb) {
+      // For web, create a Blob and download the PDF
+      final bytes = await pdf.save();
+      final blob = html.Blob([bytes], 'application/pdf');
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      final anchor = html.AnchorElement(href: url)
+        ..setAttribute('download', 'folder_details.pdf')
+        ..click();
+      html.Url.revokeObjectUrl(url);
+    } else {
+      // For mobile/desktop, use the existing printing method
+      await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async => pdf.save(),
+      );
+    }
   }
 
   pw.TableRow _buildPDFTableRow(String label, String value) {
@@ -553,62 +566,52 @@ class _DashboardsState extends State<Dashboards> {
 
   Future<void> _exportFolderDetailsExcel(
       BuildContext context, dynamic folder) async {
-// Create a new Excel document
-    final xlsio.Workbook workbook = xlsio.Workbook();
-    final xlsio.Worksheet sheet = workbook.worksheets[0];
+    // Create a new Excel document
+    final Excel excel = Excel.createExcel(); // Create a new Excel document
+    Sheet sheet = excel['Sheet1']; // Create a new sheet
 
-// Add headers
-    sheet.getRangeByIndex(0, 0).setText('Field');
-    sheet.getRangeByIndex(0, 1).setText('Value');
-    sheet.getRangeByIndex(0, 2).setText('Notes/Remarks');
+    // Add headers
+    sheet.appendRow(['Field', 'Value', 'Notes/Remarks']);
 
-// Add folder details
-    sheet.getRangeByIndex(1, 0).setText('Mode');
-    sheet.getRangeByIndex(1, 1).setText(folder['Mode'] ?? 'N/A');
-    sheet.getRangeByIndex(1, 2).setText('');
+    // Add folder details
+    List<String> fields = [
+      'Mode',
+      'Duration',
+      'Activity',
+      'Lesson',
+      'Output',
+      'Instruction',
+      'CoachDetail'
+    ];
 
-    sheet.getRangeByIndex(2, 0).setText('Duration');
-    sheet
-        .getRangeByIndex(2, 1)
-        .setText(folder['Duration']?.toString() ?? 'N/A');
-    sheet.getRangeByIndex(2, 2).setText('');
+    for (String field in fields) {
+      sheet
+          .appendRow([field, folder[field] ?? 'N/A', '']); // Add folder details
+    }
 
-    sheet.getRangeByIndex(3, 0).setText('Activity');
-    sheet.getRangeByIndex(3, 1).setText(folder['Activity'] ?? 'N/A');
-    sheet.getRangeByIndex(3, 2).setText('');
+    // Check if running on the web
+    if (kIsWeb) {
+      // Convert the Excel file to bytes
+      final bytes = excel.encode();
+      final blob = html.Blob([bytes]);
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      final anchor = html.AnchorElement(href: url)
+        ..setAttribute('download', 'folder_details.xlsx')
+        ..click();
+      html.Url.revokeObjectUrl(url);
+    } else {
+      // Get the directory for saving the Excel file
+      final directory = await getApplicationDocumentsDirectory();
+      final filePath = '${directory.path}/folder_details.xlsx';
+      final file = File(filePath);
+      // Save the Excel file
+      await file.writeAsBytes(excel.encode()!, flush: true);
 
-    sheet.getRangeByIndex(4, 0).setText('Lesson');
-    sheet.getRangeByIndex(4, 1).setText(folder['Lesson'] ?? 'N/A');
-    sheet.getRangeByIndex(4, 2).setText('');
-
-    sheet.getRangeByIndex(5, 0).setText('Output');
-    sheet.getRangeByIndex(5, 1).setText(folder['Output'] ?? 'N/A');
-    sheet.getRangeByIndex(5, 2).setText('');
-
-    sheet.getRangeByIndex(6, 0).setText('Instruction');
-    sheet.getRangeByIndex(6, 1).setText(folder['Instruction'] ?? 'N/A');
-    sheet.getRangeByIndex(6, 2).setText('');
-
-    sheet.getRangeByIndex(7, 0).setText('Coach Detail');
-    sheet.getRangeByIndex(7, 1).setText(folder['CoachDetail'] ?? 'N/A');
-    sheet.getRangeByIndex(7, 2).setText('');
-
-// Save the Excel file
-    final List<int> bytes = workbook.saveAsStream();
-    workbook.dispose(); // Dispose to free up resources
-
-// Get the directory for saving the Excel file
-    final directory = await getApplicationDocumentsDirectory();
-    final filePath = '${directory.path}/folder_details.xlsx';
-    final file = File(filePath);
-
-// Write the bytes to the file
-    await file.writeAsBytes(bytes, flush: true);
-
-// Provide feedback to the user
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Excel file saved to $filePath')),
-    );
+      // Provide feedback to the user
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Excel file saved to $filePath')),
+      );
+    }
   }
 
   Widget _buildFolderDetail(String label, String value) {

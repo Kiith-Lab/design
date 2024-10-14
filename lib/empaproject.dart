@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'color.dart';
 
 class EmpathyProjectPage extends StatefulWidget {
   final int projectId;
@@ -678,78 +679,597 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Empathy Project'),
-        backgroundColor: Colors.green.shade600,
-      ),
+      // appBar: AppBar(
+      //   title: const Text('Create a'),
+      //   backgroundColor: Colors.green.shade600,
+      // ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildModeDropdown(),
-            const SizedBox(height: 20),
-            _buildTextField(durationController, 'Duration'),
-            const SizedBox(height: 20),
-            _buildTextField(activitiesController, 'Activities'),
-            const SizedBox(height: 10),
-            _buildAddButton('Add Activity', () {
-              setState(() {
-                addedActivities.add(activitiesController.text);
-                activitiesController.clear();
-              });
-            }),
-            _buildList(addedActivities),
-            const SizedBox(height: 20),
-            _buildLessonDropdown(),
-            const SizedBox(height: 10),
-            _buildAddButton('Add Lesson', _addLesson),
-            _buildList(selectedLessons
-                .map((lesson) => lesson['cards_title'] as String)
-                .toList()),
-            const SizedBox(height: 20),
-            _buildTextField(outputsController, 'Outputs'),
-            const SizedBox(height: 10),
-            _buildAddButton('Add Output', () {
-              setState(() {
-                addedOutputs.add(outputsController.text);
-                outputsController.clear();
-              });
-            }),
-            _buildList(addedOutputs),
-            const SizedBox(height: 20),
-            _buildTextField(instructionsController, 'Instructions'),
-            const SizedBox(height: 10),
-            _buildAddButton('Add Instruction', () {
-              setState(() {
-                addedInstructions.add(instructionsController.text);
-                instructionsController.clear();
-              });
-            }),
-            _buildList(addedInstructions),
-            const SizedBox(height: 20),
-            _buildTextField(coachDetailsController, 'Coach Details'),
-            const SizedBox(height: 10),
-            _buildAddButton('Add Coach Detail', () {
-              setState(() {
-                addedCoachDetails.add(coachDetailsController.text);
-                coachDetailsController.clear();
-              });
-            }),
-            _buildList(addedCoachDetails),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _submitAll,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green.shade600,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+            SizedBox(
+                height: MediaQuery.of(context).size.height *
+                    0.08), // Responsive height
+            Text(
+              'Step ${currentStep + 1} of 7',
+              style: TextStyle(
+                fontSize: 24, // Increased font size
+                fontWeight: FontWeight.bold, // Made the text bolder
               ),
-              child: Text('Submit All'),
+            ), // Displaying the step number
+            Container(
+              width:
+                  MediaQuery.of(context).size.width * 0.8, // Responsive width
+              height: MediaQuery.of(context).size.height *
+                  0.05, // Responsive height
+              child: LinearProgressIndicator(
+                value: currentStep / 7, // Assuming there are 7 steps
+                backgroundColor: Colors.grey,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+              ),
             ),
+            SizedBox(
+                height: MediaQuery.of(context).size.height *
+                    0.05), // Added space between the Progress bar and the Input Fields
+            _buildPage(currentStep), // Use a method to build the current page
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildPage(int step) {
+    switch (step) {
+      case 0:
+        return _buildModeDropdownPage();
+      case 1:
+        return _buildDurationPage();
+      case 2:
+        return _buildActivitiesPage();
+      case 3:
+        return _buildLessonsPage();
+      case 4:
+        return _buildOutputsPage();
+      case 5:
+        return _buildInstructionsPage();
+      case 6:
+        return _buildCoachDetailsPage();
+      default:
+        return Container(); // Fallback
+    }
+  } // ... existing code ...
+
+  Widget _buildModeDropdownPage() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Container(
+          margin: EdgeInsets.only(
+              top: MediaQuery.of(context).size.height *
+                  0.2), // Responsive margin
+          child: _buildModeDropdown(),
+        ),
+        // No remarks text field here
+        const SizedBox(height: 20), // Add some spacing
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                _viewAllData(); // Method to view all entered data
+              },
+              child: Text('View Data',
+                  style: TextStyle(color: myCustomButtonTextColor)),
+              style: ElevatedButton.styleFrom(
+                  minimumSize: Size(100, 40),
+                  backgroundColor: myCustomButtonColor),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // Validation check for selected mode
+                if (selectedMode == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please select a mode')),
+                  );
+                  return;
+                }
+                setState(() {
+                  currentStep++;
+                });
+              },
+              child: Text(
+                'Proceed to Duration',
+                style: TextStyle(color: myCustomButtonTextColor),
+              ),
+              style: ElevatedButton.styleFrom(
+                  minimumSize: Size(100, 40), // Set the button size
+                  backgroundColor: myCustomButtonColor),
+            ),
+          ],
+        )
+      ],
+    );
+  }
+
+  Widget _buildDurationPage() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            SizedBox(
+              child: _buildTextField(durationController, 'Duration'),
+            ),
+            SizedBox(height: 20), // Added height spacing
+            SizedBox(
+              child: _buildTextField(
+                  TextEditingController(), 'Remarks'), // Remarks field
+            ),
+          ],
+        ),
+        SizedBox(height: 20), // Added height spacing
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  currentStep--;
+                });
+              },
+              child: Text(
+                'Back',
+                style: TextStyle(color: myCustomButtonTextColor),
+              ),
+              style: ElevatedButton.styleFrom(
+                  minimumSize: Size(100, 40), // Set the button size
+                  backgroundColor: myCustomButtonColor),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _viewAllData(); // Method to view all entered data
+              },
+              child: Text(
+                'View Data',
+                style: TextStyle(color: myCustomButtonTextColor),
+              ),
+              style: ElevatedButton.styleFrom(
+                  minimumSize: Size(100, 40), // Set the button size
+                  backgroundColor: myCustomButtonColor),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // Validation check for duration
+                if (durationController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please enter a duration')),
+                  );
+                  return;
+                }
+                setState(() {
+                  currentStep++;
+                });
+              },
+              child: Text(
+                'Proceed to Activities',
+                style: TextStyle(color: myCustomButtonTextColor),
+              ),
+              style: ElevatedButton.styleFrom(
+                  minimumSize: Size(100, 40), // Set the button size
+                  backgroundColor: myCustomButtonColor),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActivitiesPage() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            SizedBox(
+              child: _buildTextField(activitiesController, 'Activities'),
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            SizedBox(
+              child: _buildAddButton('Add Activity', () {
+                setState(() {
+                  addedActivities.add(activitiesController.text);
+                  activitiesController.clear();
+                });
+              }),
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            SizedBox(
+              child: _buildList(addedActivities),
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            SizedBox(
+              child: _buildTextField(
+                  TextEditingController(), 'Remarks'), // Remarks field
+            ),
+          ],
+        ),
+        SizedBox(height: 20), // Added height spacing
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  currentStep--;
+                });
+              },
+              child: Text(
+                'Back',
+                style: TextStyle(color: myCustomButtonTextColor),
+              ),
+              style: ElevatedButton.styleFrom(
+                  minimumSize: Size(100, 40), // Set the button size
+                  backgroundColor: myCustomButtonColor),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _viewAllData(); // Method to view all entered data
+              },
+              child: Text(
+                'View Data',
+                style: TextStyle(color: myCustomButtonTextColor),
+              ),
+              style: ElevatedButton.styleFrom(
+                  minimumSize: Size(100, 40), // Set the button size
+                  backgroundColor: myCustomButtonColor),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // Validation check for activities
+                if (addedActivities.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Please add at least one activity')),
+                  );
+                  return;
+                }
+                setState(() {
+                  currentStep++;
+                });
+              },
+              child: Text(
+                'Proceed to Lessons',
+                style: TextStyle(color: myCustomButtonTextColor),
+              ),
+              style: ElevatedButton.styleFrom(
+                  minimumSize: Size(100, 40), // Set the button size
+                  backgroundColor: myCustomButtonColor),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLessonsPage() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            SizedBox(
+              child: _buildLessonDropdown(),
+            ),
+            SizedBox(height: 20), // Added height spacing
+            SizedBox(
+              child: _buildAddButton('Add Lesson', _addLesson),
+            ),
+            SizedBox(height: 20), // Added height spacing
+            SizedBox(
+              child: _buildList(selectedLessons
+                  .map((lesson) => lesson['cards_title'] as String)
+                  .toList()),
+            ),
+            SizedBox(height: 20), // Added height spacing
+            SizedBox(
+              child: _buildTextField(
+                  TextEditingController(), 'Remarks'), // Remarks field
+            ),
+          ],
+        ),
+        SizedBox(height: 20), // Added height spacing
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  currentStep--;
+                });
+              },
+              child: Text(
+                'Back',
+                style: TextStyle(color: myCustomButtonTextColor),
+              ),
+              style: ElevatedButton.styleFrom(
+                  minimumSize: Size(100, 40), // Set the button size
+                  backgroundColor: myCustomButtonColor),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _viewAllData(); // Method to view all entered data
+              },
+              child: Text(
+                'View Data',
+                style: TextStyle(color: myCustomButtonTextColor),
+              ),
+              style: ElevatedButton.styleFrom(
+                  minimumSize: Size(100, 40), // Set the button size
+                  backgroundColor: myCustomButtonColor),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  currentStep++;
+                });
+              },
+              child: Text(
+                'Proceed to Outputs',
+                style: TextStyle(color: myCustomButtonTextColor),
+              ),
+              style: ElevatedButton.styleFrom(
+                  minimumSize: Size(100, 40), // Set the button size
+                  backgroundColor: myCustomButtonColor),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOutputsPage() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            SizedBox(
+              child: _buildTextField(outputsController, 'Outputs'),
+            ),
+            SizedBox(height: 20), // Added height spacing
+            SizedBox(
+              child: _buildAddButton('Add Output', () {
+                setState(() {
+                  addedOutputs.add(outputsController.text);
+                  outputsController.clear();
+                });
+              }),
+            ),
+            SizedBox(height: 20), // Added height spacing
+            SizedBox(
+              child: _buildList(addedOutputs),
+            ),
+            SizedBox(height: 20), // Added height spacing
+            SizedBox(
+              child: _buildTextField(
+                  TextEditingController(), 'Remarks'), // Remarks field
+            ),
+          ],
+        ),
+        SizedBox(height: 20), // Added height spacing
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  currentStep--;
+                });
+              },
+              child: Text(
+                'Back',
+                style: TextStyle(color: myCustomButtonTextColor),
+              ),
+              style: ElevatedButton.styleFrom(
+                  minimumSize: Size(100, 40), // Set the button size
+                  backgroundColor: myCustomButtonColor),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _viewAllData(); // Method to view all entered data
+              },
+              child: Text(
+                'View Data',
+                style: TextStyle(color: myCustomButtonTextColor),
+              ),
+              style: ElevatedButton.styleFrom(
+                  minimumSize: Size(100, 40), // Set the button size
+                  backgroundColor: myCustomButtonColor),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  currentStep++;
+                });
+              },
+              child: Text(
+                'Proceed to Instructions',
+                style: TextStyle(color: myCustomButtonTextColor),
+              ),
+              style: ElevatedButton.styleFrom(
+                  minimumSize: Size(100, 40), // Set the button size
+                  backgroundColor: myCustomButtonColor),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInstructionsPage() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            SizedBox(
+              child: _buildTextField(instructionsController, 'Instructions'),
+            ),
+            SizedBox(height: 20), // Added height spacing
+            SizedBox(
+              child: _buildAddButton('Add Instruction', () {
+                setState(() {
+                  addedInstructions.add(instructionsController.text);
+                  instructionsController.clear();
+                });
+              }),
+            ),
+            SizedBox(height: 20), // Added height spacing
+            SizedBox(
+              child: _buildList(addedInstructions),
+            ),
+            SizedBox(height: 20), // Added height spacing
+            SizedBox(
+              child: _buildTextField(
+                  TextEditingController(), 'Remarks'), // Remarks field
+            ),
+          ],
+        ),
+        SizedBox(height: 20), // Added height spacing
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  currentStep--;
+                });
+              },
+              child: Text(
+                'Back',
+                style: TextStyle(color: myCustomButtonTextColor),
+              ),
+              style: ElevatedButton.styleFrom(
+                  minimumSize: Size(100, 40), // Set the button size
+                  backgroundColor: myCustomButtonColor),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _viewAllData(); // Method to view all entered data
+              },
+              child: Text(
+                'View Data',
+                style: TextStyle(color: myCustomButtonTextColor),
+              ),
+              style: ElevatedButton.styleFrom(
+                  minimumSize: Size(100, 40), // Set the button size
+                  backgroundColor: myCustomButtonColor),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  currentStep++;
+                });
+              },
+              child: Text(
+                'Proceed to Coach Details',
+                style: TextStyle(color: myCustomButtonTextColor),
+              ),
+              style: ElevatedButton.styleFrom(
+                  minimumSize: Size(100, 40), // Set the button size
+                  backgroundColor: myCustomButtonColor),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCoachDetailsPage() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            SizedBox(
+              child: _buildTextField(coachDetailsController, 'Coach Details'),
+            ),
+            SizedBox(height: 20), // Added height spacing
+            SizedBox(
+              child: _buildAddButton('Add Coach Detail', () {
+                setState(() {
+                  addedCoachDetails.add(coachDetailsController.text);
+                  coachDetailsController.clear();
+                });
+              }),
+            ),
+            SizedBox(height: 20), // Added height spacing
+            SizedBox(
+              child: _buildList(addedCoachDetails),
+            ),
+            SizedBox(height: 20), // Added height spacing
+            SizedBox(
+              child: _buildTextField(
+                  TextEditingController(), 'Remarks'), // Remarks field
+            ),
+          ],
+        ),
+        SizedBox(height: 20), // Added height spacing
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  currentStep--;
+                });
+              },
+              child: Text(
+                'Back',
+                style: TextStyle(color: myCustomButtonTextColor),
+              ),
+              style: ElevatedButton.styleFrom(
+                  minimumSize: Size(100, 40), // Set the button size
+                  backgroundColor: myCustomButtonColor),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _viewAllData(); // Method to view all entered data
+              },
+              child: Text(
+                'View',
+                style: TextStyle(color: myCustomButtonTextColor),
+              ),
+              style: ElevatedButton.styleFrom(
+                  minimumSize: Size(100, 40), // Set the button size
+                  backgroundColor: myCustomButtonColor),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _submitAll(); // Submit all data
+              },
+              child: Text(
+                'Submit All',
+                style: TextStyle(color: myCustomButtonTextColor),
+              ),
+              style: ElevatedButton.styleFrom(
+                  minimumSize: Size(100, 40), // Set the button size
+                  backgroundColor: myCustomButtonColor),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -810,9 +1330,13 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.green.shade600,
+        backgroundColor: myCustomButtonColor,
+        minimumSize: Size(100, 40), // Set the button size
       ),
-      child: Text(label),
+      child: Text(
+        label,
+        style: TextStyle(color: myCustomButtonTextColor),
+      ),
     );
   }
 
@@ -892,6 +1416,37 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           content: Text(isUpdating
               ? 'Data updated successfully'
               : 'All data submitted successfully')),
+    );
+  }
+
+  void _viewAllData() {
+    // Show a dialog to display all entered data
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Entered Data'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: [
+                Text('Activities: ${addedActivities.join(', ')}'),
+                Text('Outputs: ${addedOutputs.join(', ')}'),
+                Text('Instructions: ${addedInstructions.join(', ')}'),
+                Text('Coach Details: ${addedCoachDetails.join(', ')}'),
+                // Add more data as needed
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
