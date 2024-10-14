@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:html' as html; // Add this import for web file handling
+import 'dart:io';
 
 import 'package:excel_dart/excel_dart.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -12,7 +13,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
-import 'dart:io';
+
 import 'config.dart';
 
 void main() {
@@ -281,7 +282,7 @@ class _DashboardsState extends State<Dashboards> {
                       decoration: InputDecoration(
                         hintText: 'Search $title...',
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
+                          borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide.none,
                         ),
                         filled: true,
@@ -475,7 +476,7 @@ class _DashboardsState extends State<Dashboards> {
                   ),
                   ShadButton(
                     onPressed: () => _exportFolderDetailsExcel(context, folder),
-                    child: const Text('Generate Excel'),
+                    child: const Text('Export Excel'),
                   )
                 ],
               ),
@@ -674,7 +675,7 @@ class _DashboardsState extends State<Dashboards> {
                             decoration: InputDecoration(
                               hintText: 'Search Departments...',
                               border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30),
+                                borderRadius: BorderRadius.circular(10),
                                 borderSide: BorderSide.none,
                               ),
                               filled: true,
@@ -788,7 +789,7 @@ class _DashboardsState extends State<Dashboards> {
                                                               borderRadius:
                                                                   BorderRadius
                                                                       .circular(
-                                                                          30),
+                                                                          10),
                                                               borderSide:
                                                                   BorderSide
                                                                       .none,
@@ -934,24 +935,44 @@ class _DashboardsState extends State<Dashboards> {
                                                                                           onTap: () {
                                                                                             _showFolderDetails(context, project);
                                                                                           },
-                                                                                          child: ListTile(
-                                                                                            title: Text(
-                                                                                              project['Lesson'] ?? 'N/A',
-                                                                                              style: const TextStyle(
-                                                                                                fontSize: 16,
-                                                                                                color: Colors.black,
-                                                                                              ),
+                                                                                          child: Container(
+                                                                                            margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                                                                                            padding: const EdgeInsets.all(16),
+                                                                                            decoration: BoxDecoration(
+                                                                                              color: Colors.white,
+                                                                                              borderRadius: BorderRadius.circular(12),
+                                                                                              boxShadow: [
+                                                                                                BoxShadow(
+                                                                                                  color: Colors.grey.withOpacity(0.5),
+                                                                                                  spreadRadius: 2,
+                                                                                                  blurRadius: 5,
+                                                                                                  offset: const Offset(0, 3),
+                                                                                                ),
+                                                                                              ],
                                                                                             ),
-                                                                                            trailing: const Icon(
-                                                                                              Icons.arrow_forward_ios,
-                                                                                              size: 18,
-                                                                                              color: Colors.grey,
+                                                                                            child: Row(
+                                                                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                                              children: [
+                                                                                                Text(
+                                                                                                  project['Lesson'] ?? 'N/A',
+                                                                                                  style: const TextStyle(
+                                                                                                    fontSize: 16,
+                                                                                                    color: Colors.black,
+                                                                                                    fontWeight: FontWeight.bold,
+                                                                                                  ),
+                                                                                                ),
+                                                                                                const Icon(
+                                                                                                  Icons.arrow_forward_ios,
+                                                                                                  size: 18,
+                                                                                                  color: Colors.grey,
+                                                                                                ),
+                                                                                              ],
                                                                                             ),
                                                                                           ),
                                                                                         );
                                                                                       },
                                                                                     ),
-                                                                                  ),
+                                                                                  )
                                                                                 ],
                                                                               ),
                                                                             ),
@@ -1143,162 +1164,274 @@ class _DashboardsState extends State<Dashboards> {
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                const SizedBox(height: 32),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildInfoCard(
-                      'User Accounts',
-                      userCount.toString(),
-                      Icons.person,
-                      Colors.blue,
-                      () => _showList(context, 'User Accounts', users,
-                          'users_firstname', 'role_name'),
-                    ),
-                    _buildInfoCard(
-                      'Folders',
-                      projectCount.toString(),
-                      Icons.folder,
-                      Colors.orange,
-                      () => _showList(context, 'Folders', folders,
-                          'project_title', 'users_firstname'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildInfoCard(
-                      'Instructors',
-                      instructorCount.toString(),
-                      FontAwesomeIcons.userPlus,
-                      Colors.purple,
-                      () => _showList(context, 'Instructors', instructors,
-                          'users_firstname', 'role_name'),
-                    ),
-                    _buildInfoCard(
-                      'Schools',
-                      schoolCount.toString(),
-                      FontAwesomeIcons.school,
-                      Colors.green,
-                      () => _showList(context, 'Schools', schools,
-                          'school_name', 'school_address'),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 40),
-                const Text(
-                  'User Statistics',
-                  style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  height: 300,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        spreadRadius: 5,
-                        blurRadius: 7,
-                        offset: const Offset(0, 3),
+            padding: const EdgeInsets.all(24.0), // Overall padding
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // Define breakpoints for responsiveness
+                bool isWideScreen = constraints.maxWidth > 800;
+                int crossAxisCount = isWideScreen ? 4 : 2;
+                double childAspectRatio = isWideScreen ? 2 : 1.5;
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    const SizedBox(height: 32),
+
+                    // Info Cards Section
+                    isWideScreen
+                        ? GridView.count(
+                            crossAxisCount: crossAxisCount,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            mainAxisSpacing: 16, // Outer vertical spacing
+                            crossAxisSpacing: 16, // Outer horizontal spacing
+                            childAspectRatio: childAspectRatio,
+                            children: [
+                              _buildInfoCard(
+                                'User Accounts',
+                                userCount.toString(),
+                                Icons.person,
+                                Colors.blue,
+                                () => _showList(context, 'User Accounts', users,
+                                    'users_firstname', 'role_name'),
+                              ),
+                              _buildInfoCard(
+                                'Folders',
+                                projectCount.toString(),
+                                Icons.folder,
+                                Colors.orange,
+                                () => _showList(context, 'Folders', folders,
+                                    'project_title', 'users_firstname'),
+                              ),
+                              _buildInfoCard(
+                                'Instructors',
+                                instructorCount.toString(),
+                                FontAwesomeIcons.userPlus,
+                                Colors.purple,
+                                () => _showList(
+                                    context,
+                                    'Instructors',
+                                    instructors,
+                                    'users_firstname',
+                                    'role_name'),
+                              ),
+                              _buildInfoCard(
+                                'Schools',
+                                schoolCount.toString(),
+                                FontAwesomeIcons.school,
+                                Colors.green,
+                                () => _showList(context, 'Schools', schools,
+                                    'school_name', 'school_address'),
+                              ),
+                            ],
+                          )
+                        : Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          right: 8.0), // Half of SizedBox width
+                                      child: _buildInfoCard(
+                                        'User Accounts',
+                                        userCount.toString(),
+                                        Icons.person,
+                                        Colors.blue,
+                                        () => _showList(
+                                            context,
+                                            'User Accounts',
+                                            users,
+                                            'users_firstname',
+                                            'role_name'),
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 8.0), // Half of SizedBox width
+                                      child: _buildInfoCard(
+                                        'Folders',
+                                        projectCount.toString(),
+                                        Icons.folder,
+                                        Colors.orange,
+                                        () => _showList(
+                                            context,
+                                            'Folders',
+                                            folders,
+                                            'project_title',
+                                            'users_firstname'),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          right: 8.0), // Half of SizedBox width
+                                      child: _buildInfoCard(
+                                        'Instructors',
+                                        instructorCount.toString(),
+                                        FontAwesomeIcons.userPlus,
+                                        Colors.purple,
+                                        () => _showList(
+                                            context,
+                                            'Instructors',
+                                            instructors,
+                                            'users_firstname',
+                                            'role_name'),
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 8.0), // Half of SizedBox width
+                                      child: _buildInfoCard(
+                                        'Schools',
+                                        schoolCount.toString(),
+                                        FontAwesomeIcons.school,
+                                        Colors.green,
+                                        () => _showList(
+                                            context,
+                                            'Schools',
+                                            schools,
+                                            'school_name',
+                                            'school_address'),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+
+                    const SizedBox(height: 40),
+
+                    // User Statistics Section
+                    const Text(
+                      'User Statistics',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
-                    ],
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: BarChart(
-                      BarChartData(
-                        alignment: BarChartAlignment.spaceAround,
-                        maxY: 20,
-                        barTouchData: BarTouchData(
-                          enabled: true,
-                          touchTooltipData: BarTouchTooltipData(
-                            tooltipBgColor: Colors.blueAccent,
-                            getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                              String school = 'School ${group.x.toInt() + 1}';
-                              return BarTooltipItem(
-                                '$school\n${rod.toY.round()}',
-                                const TextStyle(color: Colors.white),
-                              );
-                            },
-                          ),
-                        ),
-                        titlesData: FlTitlesData(
-                          show: true,
-                          bottomTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              getTitlesWidget: (double value, TitleMeta meta) {
-                                return Text(
-                                  'S${value.toInt() + 1}',
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                          leftTitles: AxisTitles(
-                            sideTitles: SideTitles(
-                              showTitles: true,
-                              getTitlesWidget: (double value, TitleMeta meta) {
-                                return Text(
-                                  '${value.toInt()}',
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                  ),
-                                );
-                              },
-                              reservedSize: 28,
-                            ),
-                          ),
-                        ),
-                        borderData: FlBorderData(show: false),
-                        barGroups: [
-                          BarChartGroupData(
-                            x: 0,
-                            barRods: [
-                              BarChartRodData(toY: 8, color: Colors.blue)
-                            ],
-                          ),
-                          BarChartGroupData(
-                            x: 1,
-                            barRods: [
-                              BarChartRodData(toY: 10, color: Colors.blue)
-                            ],
-                          ),
-                          BarChartGroupData(
-                            x: 2,
-                            barRods: [
-                              BarChartRodData(toY: 14, color: Colors.blue)
-                            ],
-                          ),
-                          BarChartGroupData(
-                            x: 3,
-                            barRods: [
-                              BarChartRodData(toY: 15, color: Colors.blue)
-                            ],
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      height: 300,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            spreadRadius: 5,
+                            blurRadius: 7,
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: BarChart(
+                          BarChartData(
+                            alignment: BarChartAlignment.spaceAround,
+                            maxY: 20,
+                            barTouchData: BarTouchData(
+                              enabled: true,
+                              touchTooltipData: BarTouchTooltipData(
+                                tooltipBgColor: Colors.blueAccent,
+                                getTooltipItem:
+                                    (group, groupIndex, rod, rodIndex) {
+                                  String school =
+                                      'School ${group.x.toInt() + 1}';
+                                  return BarTooltipItem(
+                                    '$school\n${rod.toY.round()}',
+                                    const TextStyle(color: Colors.white),
+                                  );
+                                },
+                              ),
+                            ),
+                            titlesData: FlTitlesData(
+                              show: true,
+                              bottomTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  getTitlesWidget:
+                                      (double value, TitleMeta meta) {
+                                    return Text(
+                                      'S${value.toInt() + 1}',
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              leftTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  getTitlesWidget:
+                                      (double value, TitleMeta meta) {
+                                    return Text(
+                                      '${value.toInt()}',
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    );
+                                  },
+                                  reservedSize: 28,
+                                ),
+                              ),
+                            ),
+                            borderData: FlBorderData(show: false),
+                            barGroups: [
+                              BarChartGroupData(
+                                x: 0,
+                                barRods: [
+                                  BarChartRodData(toY: 8, color: Colors.blue)
+                                ],
+                              ),
+                              BarChartGroupData(
+                                x: 1,
+                                barRods: [
+                                  BarChartRodData(toY: 10, color: Colors.blue)
+                                ],
+                              ),
+                              BarChartGroupData(
+                                x: 2,
+                                barRods: [
+                                  BarChartRodData(toY: 14, color: Colors.blue)
+                                ],
+                              ),
+                              BarChartGroupData(
+                                x: 3,
+                                barRods: [
+                                  BarChartRodData(toY: 15, color: Colors.blue)
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ],
+                  ],
+                );
+              },
             ),
           ),
         ),
