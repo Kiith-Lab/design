@@ -1,8 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'color.dart';
 
 class EmpathyProjectPage extends StatefulWidget {
@@ -753,11 +755,24 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Container(
-          margin: EdgeInsets.only(
-              top: MediaQuery.of(context).size.height *
-                  0.2), // Responsive margin
-          child: _buildModeDropdown(),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Container(
+            margin: EdgeInsets.only(
+                top: MediaQuery.of(context).size.height *
+                    0.2), // Responsive margin
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'MODE',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                SizedBox(height: 10),
+                _buildModeDropdown(),
+              ],
+            ),
+          ),
         ),
         // No remarks text field here
         const SizedBox(height: 20), // Add some spacing
@@ -805,18 +820,46 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            SizedBox(
-              child: _buildTextField(durationController, 'Duration'),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildTextField(remarksDurationController,
-                  'Remarks'), // Updated to use new controller
-            ),
-          ],
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'How long will this activity take?',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  SizedBox(
+                    child: _buildTextField(durationController, 'Duration'),
+                  ),
+                ],
+              ),
+
+              SizedBox(height: 20), // Added height spacing
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Notes/Remarks',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  SizedBox(
+                    child: _buildTextField(remarksDurationController,
+                        'Remarks'), // Updated to use new controller
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         SizedBox(height: 20), // Added height spacing
         Column(
