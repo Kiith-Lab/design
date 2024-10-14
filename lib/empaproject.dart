@@ -922,37 +922,66 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            SizedBox(
-              child: _buildTextField(activitiesController, 'Activities'),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            SizedBox(
-              child: _buildAddButton('Add Activity', () {
-                setState(() {
-                  addedActivities.add(activitiesController.text);
-                  activitiesController.clear();
-                });
-              }),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            SizedBox(
-              child: _buildList(addedActivities),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            SizedBox(
-              child: _buildTextField(remarksActivityController,
-                  'Remarks'), // Updated to use new controller
-            ),
-          ],
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'What activity/ies will my students do?',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  SizedBox(
+                    child: _buildTextField(activitiesController, 'Activities'),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  SizedBox(
+                    child: _buildAddButton('Add Activity', () {
+                      setState(() {
+                        addedActivities.add(activitiesController.text);
+                        activitiesController.clear();
+                      });
+                    }),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  const Text(
+                    'Activity List',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  SizedBox(
+                    child: _buildList(addedActivities),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  const Text(
+                    'Notes/Remarks',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  SizedBox(
+                    child: _buildTextField(remarksActivityController,
+                        'Remarks'), // Updated to use new controller
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         SizedBox(height: 20), // Added height spacing
         Column(
@@ -1016,28 +1045,51 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            SizedBox(
-              child: _buildLessonDropdown(),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildAddButton('Add Lesson', _addLesson),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildList(selectedLessons
-                  .map((lesson) => lesson['cards_title'] as String)
-                  .toList()),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildTextField(remarksLessonController,
-                  'Remarks'), // Updated to use new controller
-            ),
-          ],
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'What two(2) method cards will students use?',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
+                  SizedBox(
+                    child: _buildLessonDropdown(),
+                  ),
+                  SizedBox(height: 10), // Added height spacing
+                  SizedBox(
+                    child: _buildAddButton('Add Lesson', _addLesson),
+                  ),
+                  SizedBox(height: 10), // Added height spacing
+                  const Text(
+                    'Method List',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
+                  SizedBox(
+                    child: _buildList(selectedLessons
+                        .map((lesson) => lesson['cards_title'] as String)
+                        .toList()),
+                  ),
+                  SizedBox(height: 10),
+                  const Text(
+                    'Notes/Remarks',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10), // Added height spacing
+                  SizedBox(
+                    child: _buildTextField(remarksLessonController,
+                        'Remarks'), // Updated to use new controller
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         SizedBox(height: 20), // Added height spacing
         Column(
@@ -1093,31 +1145,54 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            SizedBox(
-              child: _buildTextField(outputsController, 'Outputs'),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildAddButton('Add Output', () {
-                setState(() {
-                  addedOutputs.add(outputsController.text);
-                  outputsController.clear();
-                });
-              }),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildList(addedOutputs),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildTextField(remarksOutputController,
-                  'Remarks'), // Updated to use new controller
-            ),
-          ],
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'What are the expected outputs?',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
+                  SizedBox(
+                    child: _buildTextField(outputsController, 'Outputs'),
+                  ),
+                  SizedBox(height: 10), // Added height spacing
+                  SizedBox(
+                    child: _buildAddButton('Add Output', () {
+                      setState(() {
+                        addedOutputs.add(outputsController.text);
+                        outputsController.clear();
+                      });
+                    }),
+                  ),
+                  SizedBox(height: 10), // Added height spacing
+                  const Text(
+                    'Output List',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
+                  SizedBox(
+                    child: _buildList(addedOutputs),
+                  ),
+                  SizedBox(height: 10), // Added height spacing
+                  const Text(
+                    'Notes/Remarks',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
+                  SizedBox(
+                    child: _buildTextField(remarksOutputController,
+                        'Remarks'), // Updated to use new controller
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         SizedBox(height: 20), // Added height spacing
         Column(
@@ -1173,31 +1248,55 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            SizedBox(
-              child: _buildTextField(instructionsController, 'Instructions'),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildAddButton('Add Instruction', () {
-                setState(() {
-                  addedInstructions.add(instructionsController.text);
-                  instructionsController.clear();
-                });
-              }),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildList(addedInstructions),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildTextField(remarksInstructionController,
-                  'Remarks'), // Updated to use new controller
-            ),
-          ],
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'What instructions will I give my students?',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
+                  SizedBox(
+                    child:
+                        _buildTextField(instructionsController, 'Instructions'),
+                  ),
+                  SizedBox(height: 10), // Added height spacing
+                  SizedBox(
+                    child: _buildAddButton('Add Instruction', () {
+                      setState(() {
+                        addedInstructions.add(instructionsController.text);
+                        instructionsController.clear();
+                      });
+                    }),
+                  ),
+                  SizedBox(height: 10), // Added height spacing
+                  const Text(
+                    'Instruction List',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
+                  SizedBox(
+                    child: _buildList(addedInstructions),
+                  ),
+                  SizedBox(height: 10), // Added height spacing
+                  const Text(
+                    'Notes/Remarks',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
+                  SizedBox(
+                    child: _buildTextField(remarksInstructionController,
+                        'Remarks'), // Updated to use new controller
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         SizedBox(height: 20), // Added height spacing
         Column(
@@ -1253,31 +1352,55 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            SizedBox(
-              child: _buildTextField(coachDetailsController, 'Coach Details'),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildAddButton('Add Coach Detail', () {
-                setState(() {
-                  addedCoachDetails.add(coachDetailsController.text);
-                  coachDetailsController.clear();
-                });
-              }),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildList(addedCoachDetails),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildTextField(remarksCoachDetailsController,
-                  'Remarks'), // Updated to use new controller
-            ),
-          ],
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'How can I coach my students while doing this activity?',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
+                  SizedBox(
+                    child: _buildTextField(
+                        coachDetailsController, 'Coach Details'),
+                  ),
+                  SizedBox(height: 10), // Added height spacing
+                  SizedBox(
+                    child: _buildAddButton('Add Coach Detail', () {
+                      setState(() {
+                        addedCoachDetails.add(coachDetailsController.text);
+                        coachDetailsController.clear();
+                      });
+                    }),
+                  ),
+                  SizedBox(height: 10), // Added height spacing
+                  const Text(
+                    'Coaching List',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
+                  SizedBox(
+                    child: _buildList(addedCoachDetails),
+                  ),
+                  SizedBox(height: 10), // Added height spacing
+                  const Text(
+                    'Notes/Remarks',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
+                  SizedBox(
+                    child: _buildTextField(remarksCoachDetailsController,
+                        'Remarks'), // Updated to use new controller
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         SizedBox(height: 20), // Added height spacing
         Column(
