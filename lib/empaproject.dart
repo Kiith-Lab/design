@@ -752,67 +752,88 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   }
 
   Widget _buildModeDropdownPage() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Container(
-            margin: EdgeInsets.only(
-                top: MediaQuery.of(context).size.height *
-                    0.2), // Responsive margin
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'MODE',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Column(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color:
+                      const Color.fromARGB(255, 23, 128, 23).withOpacity(0.5),
+                  spreadRadius: -2.0,
+                  blurRadius: 4.0,
+                  offset: Offset(0, 3), // changes position of shadow
                 ),
-                SizedBox(height: 10),
-                _buildModeDropdown(),
+              ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Container(
+                    margin: EdgeInsets.only(
+                        top: MediaQuery.of(context).size.height *
+                            0.1), // Adjusted responsive margin to reduce space
+                    child: Column(
+                      crossAxisAlignment:
+                          CrossAxisAlignment.center, // Changed to center
+                      children: [
+                        const Text(
+                          'M O D E',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 35), // Increased font size
+                        ),
+                        SizedBox(height: 50),
+                        _buildModeDropdown(),
+                      ],
+                    ),
+                  ),
+                ),
+                // No remarks text field here
+                const SizedBox(height: 50), // Add some spacing
               ],
             ),
           ),
-        ),
-        // No remarks text field here
-        const SizedBox(height: 20), // Add some spacing
-        Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            ElevatedButton(
-              onPressed: () {
-                _viewAllData(); // Method to view all entered data
-              },
-              child: Text('View Data',
-                  style: TextStyle(color: myCustomButtonTextColor)),
-              style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 30), // Set the button size smaller
-                  backgroundColor: myCustomButtonColor),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                // Validation check for selected mode
-                if (selectedMode == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please select a mode')),
-                  );
-                  return;
-                }
-                setState(() {
-                  currentStep++;
-                });
-              },
-              child: Text(
-                'Proceed to Duration',
-                style: TextStyle(color: myCustomButtonTextColor),
+          SizedBox(
+              height:
+                  20), // Added space between the container card and the buttons
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              FloatingActionButton(
+                onPressed: () {
+                  _viewAllData(); // Method to view all entered data
+                },
+                child: Icon(Icons.remove_red_eye_outlined,
+                    color: myCustomButtonTextColor),
+                backgroundColor: myCustomButtonColor,
               ),
-              style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 30), // Set the button size smaller
-                  backgroundColor: myCustomButtonColor),
-            ),
-          ],
-        )
-      ],
+              FloatingActionButton(
+                onPressed: () {
+                  // Validation check for selected mode
+                  if (selectedMode == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Please select a mode')),
+                    );
+                    return;
+                  }
+                  setState(() {
+                    currentStep++;
+                  });
+                },
+                child: Icon(Icons.add, color: myCustomButtonTextColor),
+                backgroundColor: myCustomButtonColor,
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -825,73 +846,97 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'How long will this activity take?',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  SizedBox(
-                    child: _buildTextField(durationController, 'Duration'),
-                  ),
-                ],
+              Container(
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                  color: Colors.white
+                      .withOpacity(0.5), // Added opacity for glass effect
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color.fromARGB(255, 23, 128, 23)
+                          .withOpacity(0.5), // Added shadow for depth
+                      spreadRadius: -2.0,
+                      blurRadius: 4.0,
+                      offset: Offset(0, 3), // changes position of shadow
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    const Text(
+                      'How long will this activity take?',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    SizedBox(
+                      child: _buildTextField(durationController, 'Duration'),
+                    ),
+                  ],
+                ),
               ),
-
               SizedBox(height: 20), // Added height spacing
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Notes/Remarks',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  SizedBox(
-                    height: 10,
-                  ),
-                  SizedBox(
-                    child: _buildTextField(remarksDurationController,
-                        'Remarks'), // Updated to use new controller
-                  ),
-                ],
+              Container(
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(5),
+                  color: Colors.white
+                      .withOpacity(0.5), // Added opacity for glass effect
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color.fromARGB(255, 23, 128, 23)
+                          .withOpacity(0.5), // Added shadow for depth
+                      spreadRadius: -2.0,
+                      blurRadius: 4.0,
+                      offset: Offset(0, 3), // changes position of shadow
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    const Text(
+                      'Notes/Remarks',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    SizedBox(
+                      child: _buildTextField(remarksDurationController,
+                          'Remarks'), // Updated to use new controller
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
         ),
         SizedBox(height: 20), // Added height spacing
-        Column(
+        Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            ElevatedButton(
+            FloatingActionButton(
               onPressed: () {
                 setState(() {
                   currentStep--;
                 });
               },
-              child: Text(
-                'Back',
-                style: TextStyle(color: myCustomButtonTextColor),
-              ),
-              style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 30), // Set the button size smaller
-                  backgroundColor: myCustomButtonColor),
+              child: Icon(Icons.arrow_back, color: myCustomButtonTextColor),
+              backgroundColor: myCustomButtonColor,
             ),
-            ElevatedButton(
+            FloatingActionButton(
               onPressed: () {
                 _viewAllData(); // Method to view all entered data
               },
-              child: Text(
-                'View Data',
-                style: TextStyle(color: myCustomButtonTextColor),
-              ),
-              style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 30), // Set the button size smaller
-                  backgroundColor: myCustomButtonColor),
+              child: Icon(Icons.remove_red_eye_outlined,
+                  color: myCustomButtonTextColor),
+              backgroundColor: myCustomButtonColor,
             ),
-            ElevatedButton(
+            FloatingActionButton(
               onPressed: () {
                 // Validation check for duration
                 if (durationController.text.isEmpty) {
@@ -904,13 +949,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                   currentStep++;
                 });
               },
-              child: Text(
-                'Proceed to Activities',
-                style: TextStyle(color: myCustomButtonTextColor),
-              ),
-              style: ElevatedButton.styleFrom(
-                  minimumSize: Size(100, 30), // Set the button size smaller
-                  backgroundColor: myCustomButtonColor),
+              child: Icon(Icons.arrow_forward, color: myCustomButtonTextColor),
+              backgroundColor: myCustomButtonColor,
             ),
           ],
         ),
