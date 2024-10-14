@@ -19,6 +19,19 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   final TextEditingController outputsController = TextEditingController();
   final TextEditingController instructionsController = TextEditingController();
   final TextEditingController coachDetailsController = TextEditingController();
+
+  // New controllers for remarks
+  final TextEditingController remarksDurationController =
+      TextEditingController();
+  final TextEditingController remarksActivityController =
+      TextEditingController();
+  final TextEditingController remarksLessonController = TextEditingController();
+  final TextEditingController remarksOutputController = TextEditingController();
+  final TextEditingController remarksInstructionController =
+      TextEditingController();
+  final TextEditingController remarksCoachDetailsController =
+      TextEditingController();
+
   String? selectedLesson;
   String? selectedMode;
   List<Map<String, dynamic>> modes = [];
@@ -32,11 +45,9 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   int? lastInsertedCoachHeaderId;
 
   List<Map<String, dynamic>> allAddedData = [];
-
   List<int> insertedIds = [];
-
   int? lastInsertedActivityId;
-  List<int> lastInsertedCardIds = []; // Changed to List<int>
+  List<int> lastInsertedCardIds = [];
   int? lastInsertedOutputId;
   int? lastInsertedInstructionId;
   int? lastInsertedFolderId;
@@ -45,7 +56,6 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   List<String> addedOutputs = [];
   List<String> addedInstructions = [];
   List<String> addedCoachDetails = [];
-
   bool isUpdating = false;
 
   @override
@@ -271,7 +281,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       Map<String, String> requestBody = {
         'operation': 'addActivity',
         'json': jsonEncode({
-          'activities_details_remarks': 'Activity',
+          'activities_details_remarks':
+              remarksActivityController.text, // Use remarks controller
           'activities_details_content': jsonEncode(addedActivities),
           'activities_details_headerId': lastInsertedDurationId.toString(),
         }),
@@ -329,7 +340,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       'json': jsonEncode({
         'project_cards_cardId': cardId,
         'project_cards_modulesId': lastInsertedModeId.toString(),
-        'project_cards_remarks': ''
+        'project_cards_remarks': remarksLessonController.toString()
       }),
     };
 
@@ -387,7 +398,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
         'operation': 'addOutput',
         'json': jsonEncode({
           'outputs_moduleId': lastInsertedModeId.toString(),
-          'outputs_remarks': 'Output',
+          'outputs_remarks':
+              remarksOutputController.text, // Use remarks controller
           'outputs_content': jsonEncode(addedOutputs),
         }),
       };
@@ -439,7 +451,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       Map<String, String> requestBody = {
         'operation': 'addInstruction',
         'json': jsonEncode({
-          'instruction_remarks': 'Instruction',
+          'instruction_remarks':
+              remarksInstructionController.text, // Use remarks controller
           'instruction_modulesId': lastInsertedModeId.toString(),
           'instruction_content': jsonEncode(addedInstructions),
         }),
@@ -489,7 +502,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
         'json': jsonEncode({
           'coach_detail_coachheaderId': '1',
           'coach_detail_content': jsonEncode(addedCoachDetails),
-          'coach_detail_renarks': 'Coach Details',
+          'coach_detail_renarks':
+              remarksCoachDetailsController.text, // Use remarks controller
         }),
       };
 
@@ -736,7 +750,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       default:
         return Container(); // Fallback
     }
-  } // ... existing code ...
+  }
 
   Widget _buildModeDropdownPage() {
     return Column(
@@ -802,8 +816,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
             ),
             SizedBox(height: 20), // Added height spacing
             SizedBox(
-              child: _buildTextField(
-                  TextEditingController(), 'Remarks'), // Remarks field
+              child: _buildTextField(remarksDurationController,
+                  'Remarks'), // Updated to use new controller
             ),
           ],
         ),
@@ -895,8 +909,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
               height: 20,
             ),
             SizedBox(
-              child: _buildTextField(
-                  TextEditingController(), 'Remarks'), // Remarks field
+              child: _buildTextField(remarksActivityController,
+                  'Remarks'), // Updated to use new controller
             ),
           ],
         ),
@@ -980,8 +994,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
             ),
             SizedBox(height: 20), // Added height spacing
             SizedBox(
-              child: _buildTextField(
-                  TextEditingController(), 'Remarks'), // Remarks field
+              child: _buildTextField(remarksLessonController,
+                  'Remarks'), // Updated to use new controller
             ),
           ],
         ),
@@ -1060,8 +1074,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
             ),
             SizedBox(height: 20), // Added height spacing
             SizedBox(
-              child: _buildTextField(
-                  TextEditingController(), 'Remarks'), // Remarks field
+              child: _buildTextField(remarksOutputController,
+                  'Remarks'), // Updated to use new controller
             ),
           ],
         ),
@@ -1140,8 +1154,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
             ),
             SizedBox(height: 20), // Added height spacing
             SizedBox(
-              child: _buildTextField(
-                  TextEditingController(), 'Remarks'), // Remarks field
+              child: _buildTextField(remarksInstructionController,
+                  'Remarks'), // Updated to use new controller
             ),
           ],
         ),
@@ -1220,8 +1234,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
             ),
             SizedBox(height: 20), // Added height spacing
             SizedBox(
-              child: _buildTextField(
-                  TextEditingController(), 'Remarks'), // Remarks field
+              child: _buildTextField(remarksCoachDetailsController,
+                  'Remarks'), // Updated to use new controller
             ),
           ],
         ),

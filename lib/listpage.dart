@@ -77,6 +77,12 @@ class _ListPageState extends State<ListPage> {
                       'projectId': item['projectId'] ?? '',
                       'back_cards_header_frontId':
                           item['back_cards_header_frontId'] ?? '',
+                      'activities_details_remarks':
+                          item['activities_details_remarks'],
+                      'coach_detail_renarks': item['coach_detail_renarks'],
+                      'outputs_remarks': item['outputs_remarks'],
+                      'project_cards_remarks': item['project_cards_remarks'],
+                      'instruction_remarks': item['instruction_remarks'],
                     })
                 .toList());
           });
@@ -85,7 +91,7 @@ class _ListPageState extends State<ListPage> {
           print(
               'Number of project_cardsId fetched: ${folders.map((folder) => folder['project_cardsId'].length).reduce((a, b) => a + b)}');
 
-// Print the fetched details
+          // Print the fetched details
           print('Fetched Folder Details:');
           for (var folder in folders) {
             print('Folder ID: ${folder['folder_id']}');
@@ -437,7 +443,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
   }
 
   void _addLesson(BuildContext context) {
-// TODO: Implement lesson addition logic
+    // TODO: Implement lesson addition logic
     print(
         'Add lesson tapped for folder: ${widget.folder['project_title'] ?? 'Unnamed Folder'}');
     ScaffoldMessenger.of(context).showSnackBar(
@@ -455,6 +461,15 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
             .toList() ??
         [];
     final cardTitlesString = cardTitles.join(', '); // Join titles with a comma
+
+    // New: Gather remarks for the folder
+    final remarks = [
+      widget.folder['activities_details_remarks'] ?? 'No remarks',
+      widget.folder['coach_detail_renarks'] ?? 'No remarks',
+      widget.folder['outputs_remarks'] ?? 'No remarks',
+      widget.folder['project_cards_remarks'] ?? 'No remarks',
+      widget.folder['instruction_remarks'] ?? 'No remarks',
+    ].join('\n'); // Join remarks with a newline
 
     showDialog(
       context: context,
@@ -502,7 +517,6 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                     ],
                   ),
                   // Data Rows
-                  // Data Rows
                   _buildTableRow('Project Code',
                       widget.folder['project_subject_code'] ?? 'No code'),
                   _buildTableRow(
@@ -533,6 +547,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                       'Coach Detail',
                       widget.folder['coach_detail_content'] ??
                           'No coach detail'),
+                  _buildTableRow('Remarks', remarks), // New row for remarks
                 ],
               ),
             ),
@@ -657,6 +672,17 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                         'Coach Detail:',
                         widget.folder['coach_detail_content'] ??
                             'No coach detail'),
+                    _buildPDFTableRow(
+                        'Remarks:',
+                        [
+                          widget.folder['activities_details_remarks'] ??
+                              'No remarks',
+                          widget.folder['coach_detail_renarks'] ?? 'No remarks',
+                          widget.folder['outputs_remarks'] ?? 'No remarks',
+                          widget.folder['project_cards_remarks'] ??
+                              'No remarks',
+                          widget.folder['instruction_remarks'] ?? 'No remarks',
+                        ].join('\n')), // New row for remarks
                   ],
                 ),
               ],
@@ -713,7 +739,45 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
     Sheet sheet = excel['Sheet1'];
 
     // Add headers and folder details
-    // ... existing Excel generation code ...
+    sheet.appendRow(
+        ['Project Code', widget.folder['project_subject_code'] ?? 'No code']);
+    sheet.appendRow([
+      'Project Description',
+      widget.folder['project_subject_description'] ?? 'No description'
+    ]);
+    sheet.appendRow(
+        ['Start Date', widget.folder['project_start_date'] ?? 'No start date']);
+    sheet.appendRow(
+        ['End Date', widget.folder['project_end_date'] ?? 'No end date']);
+    sheet.appendRow(
+        ['Module', widget.folder['module_master_name'] ?? 'Unknown']);
+    sheet.appendRow([
+      'Activity',
+      widget.folder['activities_details_content'] ?? 'No activity'
+    ]);
+    sheet.appendRow(['Card', widget.folder['cards_title'] ?? 'No card']);
+    sheet
+        .appendRow(['Output', widget.folder['outputs_content'] ?? 'No output']);
+    sheet.appendRow([
+      'Instruction',
+      widget.folder['instruction_content'] ?? 'No instruction'
+    ]);
+    sheet.appendRow([
+      'Coach Detail',
+      widget.folder['coach_detail_content'] ?? 'No coach detail'
+    ]);
+
+    // New: Add remarks to the Excel sheet
+    sheet.appendRow([
+      'Remarks',
+      [
+        widget.folder['activities_details_remarks'] ?? 'No remarks',
+        widget.folder['coach_detail_renarks'] ?? 'No remarks',
+        widget.folder['outputs_remarks'] ?? 'No remarks',
+        widget.folder['project_cards_remarks'] ?? 'No remarks',
+        widget.folder['instruction_remarks'] ?? 'No remarks',
+      ].join('\n') // Join remarks with a newline
+    ]);
 
     try {
       if (kIsWeb) {
