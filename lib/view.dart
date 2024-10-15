@@ -1,119 +1,107 @@
+import 'package:design/config.dart';
 import 'package:flutter/material.dart';
-import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-const invoices = [
-  (
-    invoice: "INV001",
-    paymentStatus: "Paid",
-    totalAmount: r"$250.00",
-    paymentMethod: "Credit Card",
-  ),
-  (
-    invoice: "INV002",
-    paymentStatus: "Pending",
-    totalAmount: r"$150.00",
-    paymentMethod: "PayPal",
-  ),
-  (
-    invoice: "INV003",
-    paymentStatus: "Unpaid",
-    totalAmount: r"$350.00",
-    paymentMethod: "Bank Transfer",
-  ),
-  (
-    invoice: "INV004",
-    paymentStatus: "Paid",
-    totalAmount: r"$450.00",
-    paymentMethod: "Credit Card",
-  ),
-  (
-    invoice: "INV005",
-    paymentStatus: "Paid",
-    totalAmount: r"$550.00",
-    paymentMethod: "PayPal",
-  ),
-  (
-    invoice: "INV006",
-    paymentStatus: "Pending",
-    totalAmount: r"$200.00",
-    paymentMethod: "Bank Transfer",
-  ),
-  (
-    invoice: "INV007",
-    paymentStatus: "Unpaid",
-    totalAmount: r"$300.00",
-    paymentMethod: "Credit Card",
-  ),
-];
+class ViewUserPage extends StatefulWidget {
+  const ViewUserPage({super.key});
 
-class ViewUserPage extends StatelessWidget {
-  const ViewUserPage({
-    super.key,
-  });
+  @override
+  _ViewUserPageState createState() => _ViewUserPageState();
+}
+
+class _ViewUserPageState extends State<ViewUserPage> {
+  List<dynamic>? users;
+  bool _isLoading = true;
+  String _errorMessage = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUsers();
+  }
+
+  _fetchUsers() async {
+    try {
+      final response = await http.post(
+        Uri.parse('${baseUrl}view.php'),
+        body: {'operation': 'getUserNotActive'},
+      );
+      print(response.body);
+      if (response.statusCode == 200) {
+        final decodedResponse = json.decode(response.body);
+
+        setState(() {
+          // Check if response is a list or a single object
+          if (decodedResponse is List) {
+            users = decodedResponse;
+          } else if (decodedResponse is Map) {
+            users = [decodedResponse]; // Wrap the single user object in a list
+          } else {
+            users = []; // Handle case where neither list nor map is returned
+          }
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Failed to load users: ${response.statusCode}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Failed to load users: $e';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxWidth: 600,
-            // added just to center the table vertically
-            maxHeight: 450,
-          ),
-          child: ShadTable.list(
-            header: const [
-              ShadTableCell.header(child: Text('Invoice')),
-              ShadTableCell.header(child: Text('Status')),
-              ShadTableCell.header(child: Text('Method')),
-              ShadTableCell.header(
-                alignment: Alignment.centerRight,
-                child: Text('Action'),
-              ),
-            ],
-            footer: const [
-              ShadTableCell.footer(child: Text('Total')),
-              ShadTableCell.footer(child: Text('')),
-              ShadTableCell.footer(child: Text('')),
-              ShadTableCell.footer(
-                alignment: Alignment.centerRight,
-                child: Text(r'$2500.00'),
-              ),
-            ],
-            columnSpanExtent: (index) {
-              if (index == 2) return const FixedTableSpanExtent(130);
-              if (index == 3) {
-                return const MaxTableSpanExtent(
-                  FixedTableSpanExtent(120),
-                  RemainingTableSpanExtent(),
-                );
-              }
-              // uses the default value
-              return null;
-            },
-            children: invoices.map(
-              (invoice) => [
-                ShadTableCell(
-                  child: Text(
-                    invoice.invoice,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                ShadTableCell(child: Text(invoice.paymentStatus)),
-                ShadTableCell(child: Text(invoice.paymentMethod)),
-                ShadTableCell(
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    invoice.totalAmount,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage.isNotEmpty
+              ? Center(child: Text(_errorMessage))
+              : users != null && users!.isNotEmpty
+                  ? ListView.builder(
+                      itemCount: users!.length,
+                      itemBuilder: (context, index) {
+                        final user = users![index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(
+                              vertical: 8.0, horizontal: 16.0),
+                          elevation: 4,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${user['users_firstname']} ${user['users_middlename']} ${user['users_lastname']}',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  '${user['role_name']}',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    )
+                  : const Center(child: Text('No user data available')),
     );
   }
 }

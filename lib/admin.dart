@@ -88,7 +88,7 @@ class _AdminState extends State<Administrator>
                           _tabController.index == 0
                               ? 'Phinma Education'
                               : _tabController.index == 1
-                                  ? 'View User'
+                                  ? 'Archive User'
                                   : 'Project',
                           style: const TextStyle(
                               color: Colors.white, fontWeight: FontWeight.bold),
