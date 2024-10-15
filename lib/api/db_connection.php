@@ -6,9 +6,9 @@ header("Access-Control-Allow-Headers: Content-Type");
 
 // Database configuration
 $host = 'localhost';
-$dbname = 'dbchane'; // replace with your actual database name
-$username = 'root'; // replace with your MySQL username
-$password = '';     // replace with your MySQL password if any
+$dbname = 'dbchane';
+$username = 'root';
+$password = '';
 
 try {
     // Create a PDO instance
