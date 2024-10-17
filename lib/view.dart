@@ -37,13 +37,12 @@ class _ViewUserPageState extends State<ViewUserPage> {
         final decodedResponse = json.decode(response.body);
 
         setState(() {
-          // Check if response is a list or a single object
           if (decodedResponse is List) {
             users = decodedResponse;
           } else if (decodedResponse is Map) {
-            users = [decodedResponse]; // Wrap the single user object in a list
+            users = [decodedResponse];
           } else {
-            users = []; // Handle case where neither list nor map is returned
+            users = [];
           }
           _isLoading = false;
         });
@@ -88,133 +87,168 @@ class _ViewUserPageState extends State<ViewUserPage> {
     ];
 
     return Scaffold(
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                labelText: 'Search',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.search),
+      appBar: AppBar(
+        title: const Text('Deactived Users'),
+        centerTitle: true,
+        backgroundColor: Colors.grey.shade300,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // Search Bar
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16.0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  labelText: 'Search User',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                  ),
+                  prefixIcon: const Icon(Icons.search),
+                  filled: true,
+                  fillColor: Colors.grey[200],
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    searchQuery = value;
+                    currentPage = 0; // Reset to first page on search
+                  });
+                },
               ),
-              onChanged: (value) {
-                setState(() {
-                  searchQuery = value;
-                  currentPage = 0; // Reset to first page on search
-                });
-              },
             ),
-          ),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _errorMessage.isNotEmpty
-                    ? Center(child: Text(_errorMessage))
-                    : users != null && users!.isNotEmpty
-                        ? ShadTable(
-                            columnCount: headings.length,
-                            rowCount: paginatedUsers.length,
-                            header: (context, column) {
-                              final isLast = column == headings.length - 1;
-                              return ShadTableCell.header(
-                                alignment:
-                                    isLast ? Alignment.centerRight : null,
-                                child: Text(headings[column]),
-                              );
-                            },
-                            columnSpanExtent: (index) {
-                              if (index == 1)
-                                return const FixedTableSpanExtent(150);
-                              if (index == 2) {
-                                return const MaxTableSpanExtent(
-                                  FixedTableSpanExtent(120),
-                                  RemainingTableSpanExtent(),
-                                );
-                              }
-                              return null;
-                            },
-                            builder: (context, index) {
-                              final user = paginatedUsers[index.row];
-                              return ShadTableCell(
-                                alignment: index.column == headings.length - 1
-                                    ? Alignment.centerRight
-                                    : Alignment.centerLeft,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    showModalBottomSheet(
-                                      context: context,
-                                      builder: (context) {
-                                        return Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            ListTile(
-                                              leading: Icon(Icons.archive),
-                                              title: Text('Archive'),
-                                              onTap: () {
-                                                // Handle archive action
-                                                Navigator.pop(context);
-                                              },
-                                            ),
-                                            ListTile(
-                                              leading: Icon(Icons.edit),
-                                              title: Text('Edit'),
-                                              onTap: () {
-                                                // Handle edit action
-                                                Navigator.pop(context);
-                                              },
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    );
-                                  },
+
+            // Table Data
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _errorMessage.isNotEmpty
+                      ? Center(child: Text(_errorMessage))
+                      : users != null && users!.isNotEmpty
+                          ? ShadTable(
+                              columnCount: headings.length,
+                              rowCount: paginatedUsers.length,
+                              header: (context, column) {
+                                return ShadTableCell.header(
+                                  alignment: column == 1
+                                      ? Alignment.centerRight
+                                      : Alignment.centerLeft,
                                   child: Text(
-                                    index.column == 0
-                                        ? '${user['users_firstname'] ?? 'N/A'} ${user['users_lastname'] ?? 'N/A'}'
-                                        : user['role_name'] ?? 'N/A',
-                                    style: index.column == 0
-                                        ? const TextStyle(
-                                            fontWeight: FontWeight.w500)
-                                        : null,
+                                    headings[column],
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
-                          )
-                        : const Center(child: Text('No user data available')),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.arrow_back),
-                  onPressed: currentPage > 0
-                      ? () {
-                          setState(() {
-                            currentPage--;
-                          });
-                        }
-                      : null,
-                ),
-                Text('Page ${currentPage + 1} of $totalPages'),
-                IconButton(
-                  icon: Icon(Icons.arrow_forward),
-                  onPressed: currentPage < totalPages - 1
-                      ? () {
-                          setState(() {
-                            currentPage++;
-                          });
-                        }
-                      : null,
-                ),
-              ],
+                                );
+                              },
+                              columnSpanExtent: (index) {
+                                if (index == 0) {
+                                  return const FixedTableSpanExtent(150);
+                                }
+                                if (index == 1) {
+                                  return const MaxTableSpanExtent(
+                                    FixedTableSpanExtent(120),
+                                    RemainingTableSpanExtent(),
+                                  );
+                                }
+                                return null;
+                              },
+                              builder: (context, index) {
+                                final user = paginatedUsers[index.row];
+                                return ShadTableCell(
+                                  alignment: index.column == 1
+                                      ? Alignment.centerRight
+                                      : Alignment.centerLeft,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      showModalBottomSheet(
+                                        context: context,
+                                        builder: (context) {
+                                          return Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              ListTile(
+                                                leading:
+                                                    const Icon(Icons.archive),
+                                                title: const Text('Archive'),
+                                                onTap: () {
+                                                  // Handle archive action
+                                                  Navigator.pop(context);
+                                                },
+                                              ),
+                                              ListTile(
+                                                leading: const Icon(Icons.edit),
+                                                title: const Text('Edit'),
+                                                onTap: () {
+                                                  // Handle edit action
+                                                  Navigator.pop(context);
+                                                },
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
+                                    child: Text(
+                                      index.column == 0
+                                          ? '${user['users_firstname'] ?? 'N/A'} ${user['users_lastname'] ?? 'N/A'}'
+                                          : user['role_name'] ?? 'N/A',
+                                      style: TextStyle(
+                                        fontWeight: index.column == 0
+                                            ? FontWeight.w500
+                                            : FontWeight.normal,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            )
+                          : const Center(
+                              child: Text(
+                                'No user data available',
+                                style: TextStyle(fontSize: 18),
+                              ),
+                            ),
             ),
-          ),
-        ],
+
+            // Pagination Controls
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: currentPage > 0
+                        ? () {
+                            setState(() {
+                              currentPage--;
+                            });
+                          }
+                        : null,
+                  ),
+                  Text(
+                    'Page ${currentPage + 1} of $totalPages',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.arrow_forward),
+                    onPressed: currentPage < totalPages - 1
+                        ? () {
+                            setState(() {
+                              currentPage++;
+                            });
+                          }
+                        : null,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

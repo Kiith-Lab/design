@@ -216,24 +216,92 @@ class _DashboardsState extends State<Dashboards> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Confirm Deactivation'),
-          content: const Text('Are you sure you want to deactivate this user?'),
-          actions: [
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0), // Rounded corners
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(20.0),
+            width: MediaQuery.of(context).size.width * 0.8, // Make dialog wider
+            child: Column(
+              mainAxisSize: MainAxisSize.min, // Adjusts height to content
+              children: [
+                // Title with enhanced style
+                const Text(
+                  'Confirm Deactivation',
+                  style: TextStyle(
+                    fontSize: 22.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.redAccent,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20), // Spacing between title and content
+
+                // Content with adjusted style and padding
+                const Text(
+                  'Are you sure you want to deactivate this user? This action cannot be undone.',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 30), // Spacing before buttons
+
+                // Buttons aligned horizontally
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    // Cancel button with improved style
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[400], // Grey background
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 12.0,
+                          horizontal: 20.0,
+                        ),
+                      ),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(fontSize: 16.0, color: Colors.white),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Close the dialog
+                      },
+                    ),
+
+                    // Confirm button with improved style
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            Colors.redAccent, // Red accent background
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 12.0,
+                          horizontal: 20.0,
+                        ),
+                      ),
+                      child: const Text(
+                        'Confirm',
+                        style: TextStyle(fontSize: 16.0, color: Colors.white),
+                      ),
+                      onPressed: () {
+                        _updateUserStatus(
+                            usersId); // Call the deactivation function
+                        Navigator.of(context).pop(); // Close the dialog
+                      },
+                    ),
+                  ],
+                ),
+              ],
             ),
-            TextButton(
-              child: const Text('Confirm'),
-              onPressed: () {
-                _updateUserStatus(usersId); // Call the deactivation function
-                Navigator.of(context).pop(); // Close the dialog
-              },
-            ),
-          ],
+          ),
         );
       },
     );
@@ -413,7 +481,7 @@ class _DashboardsState extends State<Dashboards> {
                           if (title != 'Schools' &&
                               title != 'Folders' &&
                               item['users_status'] != 1) {
-                            return SizedBox
+                            return const SizedBox
                                 .shrink(); // Skip this item if status is not 1
                           }
 
@@ -507,7 +575,7 @@ class _DashboardsState extends State<Dashboards> {
                                     top: 8,
                                     right: 8,
                                     child: IconButton(
-                                      icon: const Icon(Icons.delete_outline,
+                                      icon: const Icon(Icons.archive_outlined,
                                           color: Colors.red),
                                       onPressed: () {
                                         _showConfirmationDialog(
@@ -558,7 +626,7 @@ class _DashboardsState extends State<Dashboards> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Folder Details',
                   style: const TextStyle(
                     fontSize: 24,
