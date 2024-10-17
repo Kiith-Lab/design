@@ -610,6 +610,9 @@ class _DashboardsState extends State<Dashboards> {
   }
 
   void _showFolderDetails(BuildContext context, dynamic folder) {
+    // Debugging: Print the folder data to check its structure
+    print('Folder data: $folder');
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -628,7 +631,7 @@ class _DashboardsState extends State<Dashboards> {
               children: [
                 const Text(
                   'Folder Details',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Colors.teal,
@@ -638,18 +641,19 @@ class _DashboardsState extends State<Dashboards> {
                 Expanded(
                   child: ListView(
                     children: [
-                      // Display folder details without array
+                      // Display folder details with spaces
                       _buildFolderDetail('Mode', folder['Mode'] ?? 'N/A'),
                       _buildFolderDetail(
                           'Duration', folder['Duration']?.toString() ?? 'N/A'),
                       _buildFolderDetail(
-                          'Activity', folder['Activity'] ?? 'N/A'),
+                          'Activity', _formatListToString(folder['Activity'])),
                       _buildFolderDetail('Lesson', folder['Lesson'] ?? 'N/A'),
-                      _buildFolderDetail('Output', folder['Output'] ?? 'N/A'),
                       _buildFolderDetail(
-                          'Instruction', folder['Instruction'] ?? 'N/A'),
-                      _buildFolderDetail(
-                          'Coach Detail', folder['CoachDetail'] ?? 'N/A'),
+                          'Output', _formatListToString(folder['Output'])),
+                      _buildFolderDetail('Instruction',
+                          _formatListToString(folder['Instruction'])),
+                      _buildFolderDetail('Coach Detail',
+                          _formatListToString(folder['CoachDetail'])),
                       const SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -683,6 +687,30 @@ class _DashboardsState extends State<Dashboards> {
         );
       },
     );
+  }
+
+  String _formatListToString(dynamic field) {
+    // Debugging: Print the field type and content
+    print('Field type: ${field.runtimeType}, Field content: $field');
+
+    if (field is String) {
+      // Attempt to parse the string as JSON if it looks like a list
+      try {
+        final dynamic parsedField = json.decode(field);
+        if (parsedField is List) {
+          return parsedField.join(' '); // Join with spaces
+        }
+      } catch (e) {
+        // If parsing fails, attempt to split the string manually
+        print('Error parsing field as JSON: $e');
+        // Remove the brackets and split by spaces
+        final cleanedField = field.replaceAll(RegExp(r'[\[\]]'), '');
+        return cleanedField.split(' ').join(' '); // Join with spaces
+      }
+    } else if (field is List) {
+      return field.join(' '); // Join with spaces
+    }
+    return field?.toString() ?? 'N/A';
   }
 
   Future<void> _printFolderDetailsPDF(dynamic folder) async {
