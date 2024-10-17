@@ -50,10 +50,10 @@ class _DashboardsState extends State<Dashboards> {
   List<dynamic> departments = [];
   int instructorCount = 0;
   List<dynamic> instructors = [];
-  // final String _searchQuery = '';
-  // final String _sortOrder = 'all';
-  // final String _schoolFilter = 'all';
-  // final String _departmentFilter = 'all';
+  final String _searchQuery = '';
+  final String _sortOrder = 'all';
+  final String _schoolFilter = 'all';
+  final String _departmentFilter = 'all';
 
   bool _isDialogOpen = false;
 
@@ -570,6 +570,7 @@ class _DashboardsState extends State<Dashboards> {
                 Expanded(
                   child: ListView(
                     children: [
+                      // Display folder details without array
                       _buildFolderDetail('Mode', folder['Mode'] ?? 'N/A'),
                       _buildFolderDetail(
                           'Duration', folder['Duration']?.toString() ?? 'N/A'),
@@ -645,6 +646,7 @@ class _DashboardsState extends State<Dashboards> {
                     ),
                   ],
                 ),
+                // Removed array and replaced with individual calls
                 _buildPDFTableRow('Mode', folder['Mode'] ?? 'N/A'),
                 _buildPDFTableRow(
                     'Duration', folder['Duration']?.toString() ?? 'N/A'),
@@ -701,7 +703,7 @@ class _DashboardsState extends State<Dashboards> {
     Sheet sheet = excel['Sheet1']; // Create a new sheet
 
     // Add headers
-    sheet.appendRow(['Field', 'Value', 'Notes/Remarks']);
+    sheet.appendRow(['Field', '', 'Notes/Remarks']);
 
     // Add folder details
     List<String> fields = [
@@ -1045,9 +1047,9 @@ class _DashboardsState extends State<Dashboards> {
                                                                                     backgroundColor: Colors.teal,
                                                                                     actions: [
                                                                                       IconButton(
-                                                                                        icon: const Icon(Icons.close),
+                                                                                        icon: const Icon(Icons.picture_as_pdf_rounded),
                                                                                         onPressed: () {
-                                                                                          Navigator.of(context).pop();
+                                                                                          _printAllLessonsPDF(projectData); // New function to print all lessons
                                                                                         },
                                                                                       )
                                                                                     ],
@@ -1192,12 +1194,6 @@ class _DashboardsState extends State<Dashboards> {
         print('No departments available');
       }
     });
-  }
-
-  Widget _buildDepartmentDetail(String value) {
-    return ListTile(
-      title: Text(value),
-    );
   }
 
   void _showFilterDialog(
@@ -1510,5 +1506,145 @@ class _DashboardsState extends State<Dashboards> {
         ),
       ),
     );
+  }
+
+  Future<void> _printAllLessonsPDF(List<dynamic> lessons) async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text('All Lessons',
+                style:
+                    pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 10),
+            pw.Table(
+              border: pw.TableBorder.all(),
+              children: [
+                pw.TableRow(
+                  children: [
+                    pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Field')),
+                    pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Value')),
+                  ],
+                ),
+                ...lessons.map((lesson) {
+                  return pw.TableRow(
+                    children: [
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Mode')),
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text(lesson['Mode']?.toString() ?? 'N/A')),
+                    ],
+                  );
+                }).toList(),
+                ...lessons.map((lesson) {
+                  return pw.TableRow(
+                    children: [
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Duration')),
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child:
+                              pw.Text(lesson['Duration']?.toString() ?? 'N/A')),
+                    ],
+                  );
+                }).toList(),
+                ...lessons.map((lesson) {
+                  return pw.TableRow(
+                    children: [
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Activity')),
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child:
+                              pw.Text(lesson['Activity']?.toString() ?? 'N/A')),
+                    ],
+                  );
+                }).toList(),
+                ...lessons.map((lesson) {
+                  return pw.TableRow(
+                    children: [
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Lesson')),
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child:
+                              pw.Text(lesson['Lesson']?.toString() ?? 'N/A')),
+                    ],
+                  );
+                }).toList(),
+                ...lessons.map((lesson) {
+                  return pw.TableRow(
+                    children: [
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Output')),
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child:
+                              pw.Text(lesson['Output']?.toString() ?? 'N/A')),
+                    ],
+                  );
+                }).toList(),
+                ...lessons.map((lesson) {
+                  return pw.TableRow(
+                    children: [
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Instruction')),
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text(
+                              lesson['Instruction']?.toString() ?? 'N/A')),
+                    ],
+                  );
+                }).toList(),
+                ...lessons.map((lesson) {
+                  return pw.TableRow(
+                    children: [
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Coach Detail')),
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text(
+                              lesson['CoachDetail']?.toString() ?? 'N/A')),
+                    ],
+                  );
+                }).toList(),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+
+    // ... existing PDF saving logic ...
+    if (kIsWeb) {
+      // For web, create a Blob and download the PDF
+      final bytes = await pdf.save();
+      final blob = html.Blob([bytes], 'application/pdf');
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      final anchor = html.AnchorElement(href: url)
+        ..setAttribute('download', 'all_lessons.pdf') // Updated filename
+        ..click();
+      html.Url.revokeObjectUrl(url);
+    } else {
+      // For mobile/desktop, use the existing printing method
+      await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async => pdf.save(),
+      );
+    }
   }
 }
