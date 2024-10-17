@@ -900,7 +900,11 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
               height: 20,
             ),
             SizedBox(
-              child: _buildList(addedActivities),
+              child: _buildList(addedActivities, (index) {
+                setState(() {
+                  addedActivities.removeAt(index);
+                });
+              }),
             ),
             SizedBox(
               height: 20,
@@ -985,9 +989,14 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
             ),
             SizedBox(height: 20), // Added height spacing
             SizedBox(
-              child: _buildList(selectedLessons
-                  .map((lesson) => lesson['cards_title'] as String)
-                  .toList()),
+              child: _buildList(
+                  selectedLessons
+                      .map((lesson) => lesson['cards_title'] as String)
+                      .toList(), (index) {
+                setState(() {
+                  selectedLessons.removeAt(index);
+                });
+              }),
             ),
             SizedBox(height: 20), // Added height spacing
             SizedBox(
@@ -1067,7 +1076,11 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
             ),
             SizedBox(height: 20), // Added height spacing
             SizedBox(
-              child: _buildList(addedOutputs),
+              child: _buildList(addedOutputs, (index) {
+                setState(() {
+                  addedOutputs.removeAt(index);
+                });
+              }),
             ),
             SizedBox(height: 20), // Added height spacing
             SizedBox(
@@ -1147,7 +1160,11 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
             ),
             SizedBox(height: 20), // Added height spacing
             SizedBox(
-              child: _buildList(addedInstructions),
+              child: _buildList(addedInstructions, (index) {
+                setState(() {
+                  addedInstructions.removeAt(index);
+                });
+              }),
             ),
             SizedBox(height: 20), // Added height spacing
             SizedBox(
@@ -1227,7 +1244,11 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
             ),
             SizedBox(height: 20), // Added height spacing
             SizedBox(
-              child: _buildList(addedCoachDetails),
+              child: _buildList(addedCoachDetails, (index) {
+                setState(() {
+                  addedCoachDetails.removeAt(index);
+                });
+              }),
             ),
             SizedBox(height: 20), // Added height spacing
             SizedBox(
@@ -1351,13 +1372,61 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     );
   }
 
-  Widget _buildList(List<String> items) {
+  Widget _buildList(List<String> items, Function(int) onRemove) {
     return ListView.builder(
       shrinkWrap: true,
       itemCount: items.length,
       itemBuilder: (context, index) {
+        TextEditingController itemController =
+            TextEditingController(text: items[index]);
+
         return ListTile(
           title: Text(items[index]),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: Icon(Icons.edit, color: Colors.blue),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Edit Item'),
+                        content: TextField(
+                          controller: itemController,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                        actions: <Widget>[
+                          TextButton(
+                            child: Text('Cancel'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                          TextButton(
+                            child: Text('Save'),
+                            onPressed: () {
+                              setState(() {
+                                items[index] = itemController.text;
+                              });
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              ),
+              IconButton(
+                icon: Icon(Icons.delete, color: Colors.red),
+                onPressed: () => onRemove(index),
+              ),
+            ],
+          ),
         );
       },
     );
