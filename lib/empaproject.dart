@@ -961,37 +961,103 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            SizedBox(
-              child: _buildTextField(activitiesController, 'Activities'),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            SizedBox(
-              child: _buildAddButton('Add Activity', () {
-                setState(() {
-                  addedActivities.add(activitiesController.text);
-                  activitiesController.clear();
-                });
-              }),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            SizedBox(
-              child: _buildList(addedActivities),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            SizedBox(
-              child: _buildTextField(remarksActivityController,
-                  'Remarks'), // Updated to use new controller
-            ),
-          ],
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'What activity/ies will my students do?',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Container(
+                    padding: EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                      color:
+                          Colors.white.withOpacity(0.5), // Added glass effect
+                      boxShadow: [
+                        BoxShadow(
+                          color:
+                              Color.fromARGB(255, 23, 128, 23).withOpacity(0.5),
+                          spreadRadius: 1,
+                          blurRadius: 5,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: _buildTextField(activitiesController, 'Activities'),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Center(
+                    child: _buildAddButton('Add Activity', () {
+                      setState(() {
+                        addedActivities.add(activitiesController.text);
+                        activitiesController.clear();
+                      });
+                    }),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Center(
+                    child: const Text(
+                      'Activity List',
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  SizedBox(
+                    child: _buildList(addedActivities, (index) {
+                      setState(() {
+                        addedActivities.removeAt(index);
+                      });
+                    }),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  const Text(
+                    'Notes/Remarks',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Container(
+                    padding: EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                      color:
+                          Colors.white.withOpacity(0.5), // Added glass effect
+                      boxShadow: [
+                        BoxShadow(
+                          color:
+                              Color.fromARGB(255, 23, 128, 23).withOpacity(0.5),
+                          spreadRadius: 1,
+                          blurRadius: 5,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: _buildTextField(remarksActivityController,
+                        'Remarks'), // Updated to use new controller
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         SizedBox(height: 20), // Added height spacing
         Row(
@@ -1041,28 +1107,98 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            SizedBox(
-              child: _buildLessonDropdown(),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildAddButton('Add Lesson', _addLesson),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildList(selectedLessons
-                  .map((lesson) => lesson['cards_title'] as String)
-                  .toList()),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildTextField(remarksLessonController,
-                  'Remarks'), // Updated to use new controller
-            ),
-          ],
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'What two(2) method cards will students use?',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      color: Colors.white
+                          .withOpacity(0.5), // Added opacity for glass effect
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color.fromARGB(255, 23, 128, 23)
+                              .withOpacity(0.5), // Added shadow for depth
+                          spreadRadius: -2.0,
+                          blurRadius: 4.0,
+                          offset: Offset(0, 3), // changes position of shadow
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          child: _buildLessonDropdown(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 10), // Added height spacing
+                  Center(
+                    child: _buildAddButton('Add Lesson', _addLesson),
+                  ),
+                  SizedBox(height: 10), // Added height spacing
+                  const Text(
+                    'Method List',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
+                  SizedBox(
+                    child: _buildList(
+                        selectedLessons
+                            .map((lesson) => lesson['cards_title'] as String)
+                            .toList(), (index) {
+                      setState(() {
+                        selectedLessons.removeAt(index);
+                      });
+                    }),
+                  ),
+                  SizedBox(height: 10),
+                  const Text(
+                    'Notes/Remarks',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      color: Colors.white
+                          .withOpacity(0.5), // Added opacity for glass effect
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color.fromARGB(255, 23, 128, 23)
+                              .withOpacity(0.5), // Added shadow for depth
+                          spreadRadius: -2.0,
+                          blurRadius: 4.0,
+                          offset: Offset(0, 3), // changes position of shadow
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          child: _buildTextField(remarksLessonController,
+                              'Remarks'), // Updated to use new controller
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         SizedBox(height: 20), // Added height spacing
         Row(
@@ -1076,7 +1212,6 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
               },
               child: Icon(Icons.arrow_back, color: myCustomButtonTextColor),
               backgroundColor: myCustomButtonColor,
-              shape: CircleBorder(), // Changed to circular button
             ),
             FloatingActionButton(
               onPressed: () {
@@ -1085,17 +1220,23 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
               child: Icon(Icons.remove_red_eye_outlined,
                   color: myCustomButtonTextColor),
               backgroundColor: myCustomButtonColor,
-              shape: CircleBorder(), // Changed to circular button
             ),
             FloatingActionButton(
               onPressed: () {
+                // Validation check for lessons
+                if (selectedLessons.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Please add at least one lesson')),
+                  );
+                  return;
+                }
                 setState(() {
                   currentStep++;
                 });
               },
               child: Icon(Icons.arrow_forward, color: myCustomButtonTextColor),
               backgroundColor: myCustomButtonColor,
-              shape: CircleBorder(), // Changed to circular button
             ),
           ],
         ),
@@ -1107,31 +1248,101 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            SizedBox(
-              child: _buildTextField(outputsController, 'Outputs'),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildAddButton('Add Output', () {
-                setState(() {
-                  addedOutputs.add(outputsController.text);
-                  outputsController.clear();
-                });
-              }),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildList(addedOutputs),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildTextField(remarksOutputController,
-                  'Remarks'), // Updated to use new controller
-            ),
-          ],
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'What outputs will my students produce?',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      color: Colors.white
+                          .withOpacity(0.5), // Added opacity for glass effect
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color.fromARGB(255, 23, 128, 23)
+                              .withOpacity(0.5), // Added shadow for depth
+                          spreadRadius: -2.0,
+                          blurRadius: 4.0,
+                          offset: Offset(0, 3), // changes position of shadow
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          child: _buildTextField(outputsController, 'Outputs'),
+                        ),
+                        SizedBox(height: 10), // Added height spacing
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 10), // Added height spacing
+                  Center(
+                    child: _buildAddButton('Add Output', () {
+                      setState(() {
+                        addedOutputs.add(outputsController.text);
+                        outputsController.clear();
+                      });
+                    }),
+                  ),
+                  SizedBox(height: 10), // Added height spacing
+                  const Text(
+                    'Output List',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
+                  SizedBox(
+                    child: _buildList(addedOutputs, (index) {
+                      setState(() {
+                        addedOutputs.removeAt(index);
+                      });
+                    }),
+                  ),
+                  SizedBox(height: 10), // Added height spacing
+                  const Text(
+                    'Notes/Remarks',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      color: Colors.white
+                          .withOpacity(0.5), // Added opacity for glass effect
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color.fromARGB(255, 23, 128, 23)
+                              .withOpacity(0.5), // Added shadow for depth
+                          spreadRadius: -2.0,
+                          blurRadius: 4.0,
+                          offset: Offset(0, 3), // changes position of shadow
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          child: _buildTextField(remarksOutputController,
+                              'Remarks'), // Updated to use new controller
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         SizedBox(height: 20), // Added height spacing
         Row(
@@ -1145,7 +1356,6 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
               },
               child: Icon(Icons.arrow_back, color: myCustomButtonTextColor),
               backgroundColor: myCustomButtonColor,
-              shape: CircleBorder(), // Changed to circular button
             ),
             FloatingActionButton(
               onPressed: () {
@@ -1154,17 +1364,23 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
               child: Icon(Icons.remove_red_eye_outlined,
                   color: myCustomButtonTextColor),
               backgroundColor: myCustomButtonColor,
-              shape: CircleBorder(), // Changed to circular button
             ),
             FloatingActionButton(
               onPressed: () {
+                // Validation check for outputs
+                if (addedOutputs.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Please add at least one output')),
+                  );
+                  return;
+                }
                 setState(() {
                   currentStep++;
                 });
               },
               child: Icon(Icons.arrow_forward, color: myCustomButtonTextColor),
               backgroundColor: myCustomButtonColor,
-              shape: CircleBorder(), // Changed to circular button
             ),
           ],
         ),
@@ -1176,31 +1392,105 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            SizedBox(
-              child: _buildTextField(instructionsController, 'Instructions'),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildAddButton('Add Instruction', () {
-                setState(() {
-                  addedInstructions.add(instructionsController.text);
-                  instructionsController.clear();
-                });
-              }),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildList(addedInstructions),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildTextField(remarksInstructionController,
-                  'Remarks'), // Updated to use new controller
-            ),
-          ],
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'What instructions will I give my students?',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      color: Colors.white
+                          .withOpacity(0.5), // Added opacity for glass effect
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color.fromARGB(255, 23, 128, 23)
+                              .withOpacity(0.5), // Added shadow for depth
+                          spreadRadius: -2.0,
+                          blurRadius: 4.0,
+                          offset: Offset(0, 3), // changes position of shadow
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          child: _buildTextField(
+                              instructionsController, 'Instructions'),
+                        ),
+                        SizedBox(height: 10), // Added height spacing
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 10), // Added height spacing for button
+                  Center(
+                    child: _buildAddButton('Add Instruction', () {
+                      setState(() {
+                        addedInstructions.add(instructionsController.text);
+                        instructionsController.clear();
+                      });
+                    }),
+                  ),
+                  SizedBox(height: 10), // Added height spacing for list
+                  const Text(
+                    'Instruction List',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
+                  SizedBox(
+                    child: _buildList(addedInstructions, (index) {
+                      setState(() {
+                        addedInstructions.removeAt(index);
+                      });
+                    }),
+                  ),
+                  SizedBox(height: 20), // Added height spacing
+                  // Container for 'Notes/Remarks'
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      color:
+                          Colors.white.withOpacity(0.5), // Added glass effect
+                      boxShadow: [
+                        BoxShadow(
+                          color:
+                              Color.fromARGB(255, 23, 128, 23).withOpacity(0.5),
+                          spreadRadius: 1,
+                          blurRadius: 5,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Notes/Remarks',
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        SizedBox(height: 10),
+                        SizedBox(
+                          child: _buildTextField(remarksInstructionController,
+                              'Remarks'), // Updated to use new controller
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         SizedBox(height: 20), // Added height spacing
         Row(
@@ -1245,31 +1535,102 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            SizedBox(
-              child: _buildTextField(coachDetailsController, 'Coach Details'),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildAddButton('Add Coach Detail', () {
-                setState(() {
-                  addedCoachDetails.add(coachDetailsController.text);
-                  coachDetailsController.clear();
-                });
-              }),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildList(addedCoachDetails),
-            ),
-            SizedBox(height: 20), // Added height spacing
-            SizedBox(
-              child: _buildTextField(remarksCoachDetailsController,
-                  'Remarks'), // Updated to use new controller
-            ),
-          ],
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'How can I coach my students while doing this activity?',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      color: Colors.white
+                          .withOpacity(0.5), // Added opacity for glass effect
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color.fromARGB(255, 23, 128, 23)
+                              .withOpacity(0.5), // Added shadow for depth
+                          spreadRadius: -2.0,
+                          blurRadius: 4.0,
+                          offset: Offset(0, 3), // changes position of shadow
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          child: _buildTextField(
+                              coachDetailsController, 'Coach Details'),
+                        ),
+                        SizedBox(height: 10), // Added height spacing
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 10), // Added height spacing
+                  Center(
+                    child: _buildAddButton('Add Coach Detail', () {
+                      setState(() {
+                        addedCoachDetails.add(coachDetailsController.text);
+                        coachDetailsController.clear();
+                      });
+                    }),
+                  ),
+                  SizedBox(height: 10), // Added height spacing
+                  const Text(
+                    'Coaching List',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
+                  SizedBox(
+                    child: _buildList(addedCoachDetails, (index) {
+                      setState(() {
+                        addedCoachDetails.removeAt(index);
+                      });
+                    }),
+                  ),
+                  SizedBox(height: 10), // Added height spacing
+                  const Text(
+                    'Notes/Remarks',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  SizedBox(height: 10),
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      color: Colors.white
+                          .withOpacity(0.5), // Added opacity for glass effect
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color.fromARGB(255, 23, 128, 23)
+                              .withOpacity(0.5), // Added shadow for depth
+                          spreadRadius: -2.0,
+                          blurRadius: 4.0,
+                          offset: Offset(0, 3), // changes position of shadow
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          child: _buildTextField(remarksCoachDetailsController,
+                              'Remarks'), // Updated to use new controller
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         SizedBox(height: 20), // Added height spacing
         Row(
