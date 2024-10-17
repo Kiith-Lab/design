@@ -112,16 +112,9 @@ class _ProjectPageState extends State<ProjectPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Projects',
-            style: TextStyle(fontWeight: FontWeight.bold)),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              // Implement add project functionality
-            },
-          ),
-        ],
+        title: const Text('Projects'),
+        centerTitle: true,
+        backgroundColor: Colors.grey.shade300,
       ),
       body: Column(
         children: [
