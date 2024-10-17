@@ -109,8 +109,6 @@ class _DashboardsState extends State<Dashboards> {
         body: {'operation': 'getUser'},
       );
 
-      // print(response.body);
-
       if (response.statusCode == 200) {
         final List<dynamic> fetchedUsers = json.decode(response.body);
         setState(() {
@@ -155,7 +153,7 @@ class _DashboardsState extends State<Dashboards> {
 
       if (response.statusCode == 200) {
         final List<dynamic> fetchedDepartments = json.decode(response.body);
-// print(fetchedDepartments);
+
         setState(() {
           departments = fetchedDepartments;
           departmentCount = departments.length;
@@ -193,7 +191,6 @@ class _DashboardsState extends State<Dashboards> {
 
   Future<void> _updateUserStatus(int userId) async {
     try {
-      print(userId);
       final response = await http.post(
         Uri.parse('${baseUrl}update.php'), // Update with your actual endpoint
         body: {
@@ -846,8 +843,6 @@ class _DashboardsState extends State<Dashboards> {
                                     },
                                   );
 
-                                  print(response.body);
-
                                   if (response.statusCode == 200) {
                                     final dynamic decodedResponse =
                                         json.decode(response.body);
@@ -1455,120 +1450,9 @@ class _DashboardsState extends State<Dashboards> {
                             ],
                           ),
 
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 840),
 
                     // User Statistics Section
-                    const Text(
-                      'User Statistics',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      height: 300,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            spreadRadius: 5,
-                            blurRadius: 7,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: BarChart(
-                          BarChartData(
-                            alignment: BarChartAlignment.spaceAround,
-                            maxY: 20,
-                            barTouchData: BarTouchData(
-                              enabled: true,
-                              touchTooltipData: BarTouchTooltipData(
-                                tooltipBgColor: Colors.blueAccent,
-                                getTooltipItem:
-                                    (group, groupIndex, rod, rodIndex) {
-                                  String school =
-                                      'School ${group.x.toInt() + 1}';
-                                  return BarTooltipItem(
-                                    '$school\n${rod.toY.round()}',
-                                    const TextStyle(color: Colors.white),
-                                  );
-                                },
-                              ),
-                            ),
-                            titlesData: FlTitlesData(
-                              show: true,
-                              bottomTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  getTitlesWidget:
-                                      (double value, TitleMeta meta) {
-                                    return Text(
-                                      'S${value.toInt() + 1}',
-                                      style: const TextStyle(
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              leftTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  getTitlesWidget:
-                                      (double value, TitleMeta meta) {
-                                    return Text(
-                                      '${value.toInt()}',
-                                      style: const TextStyle(
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                      ),
-                                    );
-                                  },
-                                  reservedSize: 28,
-                                ),
-                              ),
-                            ),
-                            borderData: FlBorderData(show: false),
-                            barGroups: [
-                              BarChartGroupData(
-                                x: 0,
-                                barRods: [
-                                  BarChartRodData(toY: 8, color: Colors.blue)
-                                ],
-                              ),
-                              BarChartGroupData(
-                                x: 1,
-                                barRods: [
-                                  BarChartRodData(toY: 10, color: Colors.blue)
-                                ],
-                              ),
-                              BarChartGroupData(
-                                x: 2,
-                                barRods: [
-                                  BarChartRodData(toY: 14, color: Colors.blue)
-                                ],
-                              ),
-                              BarChartGroupData(
-                                x: 3,
-                                barRods: [
-                                  BarChartRodData(toY: 15, color: Colors.blue)
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
                   ],
                 );
               },

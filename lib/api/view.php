@@ -755,7 +755,8 @@ ORDER BY
     function getAllProjects()
     {
         try {
-            $sql = "SELECT project_subject_code, project_title FROM tbl_project";
+            // $sql = "SELECT project_subject_code, project_title FROM tbl_project";
+            $sql = "SELECT * FROM tbl_project";
 
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute();
