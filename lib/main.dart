@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
+import 'package:shadcn_ui/shadcn_ui.dart';
 import 'admin.dart'; // Import the admin page
 import 'config.dart';
 import 'secondpage.dart'; // Import the second page
@@ -17,10 +17,10 @@ class LoginAppes extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        primarySwatch: Colors.teal,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+    return ShadApp.material(
+      darkTheme: ShadThemeData(
+        brightness: Brightness.light,
+        colorScheme: const ShadSlateColorScheme.light(),
       ),
       home: const LoginPage(),
       debugShowCheckedModeBanner: false,
@@ -128,7 +128,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFE8E8E8),
+      backgroundColor: const Color(0xFFE8E8E8),
       body: Center(
         child: Container(
           constraints: const BoxConstraints(

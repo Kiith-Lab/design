@@ -13,6 +13,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart'; // Ensure this import is included for printing
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
@@ -459,6 +460,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
             .map((card) => card['cards_title'])
             .toList() ??
         [];
+
     final cardTitlesString = cardTitles.join(', '); // Join titles with a comma
 
     // New: Gather remarks for the folder
@@ -474,114 +476,290 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Color(0xFFF5E6D3)
+          backgroundColor: const Color(0xFFF5E6D3)
               .withOpacity(0.9), // Pale sand color with opacity
           title: Text(
             widget.folder['project_title'] ?? 'Unnamed Folder',
-            style: TextStyle(
+            style: const TextStyle(
                 color: Colors.black87,
-                fontSize: 20,
+                fontSize: 24, // Increased font size
                 fontWeight: FontWeight.bold), // Increased font size and bold
           ),
-          content: SingleChildScrollView(
-            child: Padding(
-              // Added padding for better spacing
-              padding: const EdgeInsets.all(16.0),
-              child: Table(
-                border: TableBorder.all(color: Colors.black87), // Table border
-                columnWidths: const {
-                  0: FlexColumnWidth(1),
-                  1: FlexColumnWidth(2),
-                },
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width *
+                0.8, // Set the width to 80% of the screen
+            child: SingleChildScrollView(
+              child: Column(
                 children: [
-                  // Header Row
-                  TableRow(
-                    decoration: BoxDecoration(
-                        color: Colors.teal[100]), // Header background color
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text('Field',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87)),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text('Value',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87)),
-                      ),
-                    ],
+                  // Replace Table with Column of Cards
+                  Card(
+                    child: ListTile(
+                      title: const Text('Project Code'),
+                      subtitle: Text(
+                          widget.folder['project_subject_code'] ?? 'No code'),
+                    ),
                   ),
-                  // Data Rows
-                  _buildTableRow('Project Code',
-                      widget.folder['project_subject_code'] ?? 'No code'),
-                  _buildTableRow(
-                      'Project Description',
-                      widget.folder['project_subject_description'] ??
-                          'No description'),
-                  _buildTableRow('Start Date',
-                      widget.folder['project_start_date'] ?? 'No start date'),
-                  _buildTableRow('End Date',
-                      widget.folder['project_end_date'] ?? 'No end date'),
-                  _buildTableRow('Module',
-                      widget.folder['module_master_name'] ?? 'Unknown'),
-                  _buildTableRow(
-                      'Activity',
-                      widget.folder['activities_details_content'] ??
-                          'No activity'),
-                  // Updated to display card titles in bullet form
-                  _buildTableRow(
-                      'Card Titles',
-                      cardTitles.isNotEmpty
-                          ? cardTitles.map((title) => '• $title').join('\n')
-                          : 'No cards available'), // Display concatenated titles
-                  _buildTableRow('Output',
-                      widget.folder['outputs_content'] ?? 'No output'),
-                  _buildTableRow('Instruction',
-                      widget.folder['instruction_content'] ?? 'No instruction'),
-                  _buildTableRow(
-                      'Coach Detail',
-                      widget.folder['coach_detail_content'] ??
-                          'No coach detail'),
-                  _buildTableRow('Remarks', remarks), // New row for remarks
+                  Card(
+                    child: ListTile(
+                      title: const Text('Project Description'),
+                      subtitle: Text(
+                          widget.folder['project_subject_description'] ??
+                              'No description'),
+                    ),
+                  ),
+
+                  Card(
+                    child: ListTile(
+                      title: const Text('Start Date'),
+                      subtitle: Text(widget.folder['project_start_date'] ??
+                          'No start date'),
+                    ),
+                  ),
+                  Card(
+                    child: ListTile(
+                      title: const Text('End Date'),
+                      subtitle: Text(
+                          widget.folder['project_end_date'] ?? 'No end date'),
+                    ),
+                  ),
+
+                  Card(
+                    child: ListTile(
+                      title: const Text('Module'),
+                      subtitle: Text(
+                          widget.folder['module_master_name'] ?? 'Unknown'),
+                    ),
+                  ),
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        // Changed from Row to Column
+                        crossAxisAlignment: CrossAxisAlignment
+                            .start, // Align items to the start
+                        children: [
+                          // Activity Title
+                          const Text(
+                            'Activity',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 12),
+                          ),
+                          // Activity Content
+                          Text(
+                            widget.folder['activities_details_content'] != null
+                                ? widget.folder['activities_details_content']
+                                    .split('\n')
+                                    .map((activity) => '• $activity')
+                                    .join('\n')
+                                : 'No activity',
+                            style: TextStyle(
+                                color: Colors.grey[700], fontSize: 12),
+                          ),
+                          const SizedBox(
+                              height: 10), // Add some space between sections
+                          const Divider(), // Divider between Activity and Remarks
+                          // Remarks Title
+                          const Text(
+                            'Remarks',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 12),
+                          ),
+                          // Remarks Content
+                          Text(
+                            widget.folder['activities_details_remarks'] ??
+                                'No remarks',
+                            style: TextStyle(
+                                color: Colors.grey[700], fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        // Changed from Row to Column
+                        crossAxisAlignment: CrossAxisAlignment
+                            .start, // Align items to the start
+                        children: [
+                          // Output Title
+                          const Text(
+                            'Output',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 12),
+                          ),
+                          // Output Content
+                          Text(
+                            widget.folder['outputs_content'] != null
+                                ? widget.folder['outputs_content']
+                                    .split('\n')
+                                    .map((output) => '• $output')
+                                    .join('\n')
+                                : 'No output',
+                            style: TextStyle(
+                                color: Colors.grey[700], fontSize: 12),
+                          ),
+                          const SizedBox(
+                              height: 10), // Add some space between sections
+                          const Divider(), // Divider between Output and Remarks
+                          // Remarks Title
+                          const Text(
+                            'Remarks',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 12),
+                          ),
+                          // Remarks Content
+                          Text(
+                            widget.folder['outputs_remarks'] ?? 'No remarks',
+                            style: TextStyle(
+                                color: Colors.grey[700], fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        // Changed from Row to Column
+                        crossAxisAlignment: CrossAxisAlignment
+                            .start, // Align items to the start
+                        children: [
+                          // Instruction Title
+                          const Text(
+                            'Instruction',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 12),
+                          ),
+                          // Instruction Content
+                          Text(
+                            widget.folder['coach_detail_content'] != null
+                                ? widget.folder['coach_detail_content']
+                                    .split('\n')
+                                    .map((coach) => '• $coach')
+                                    .join('\n')
+                                : 'No output',
+                            style: TextStyle(
+                                color: Colors.grey[700], fontSize: 12),
+                          ),
+                          const SizedBox(
+                              height: 10), // Add some space between sections
+                          const Divider(), // Divider between Instruction and Remarks
+                          // Remarks Title
+                          const Text(
+                            'Remarks',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 12),
+                          ),
+                          // Remarks Content
+                          Text(
+                            widget.folder['instruction_remarks'] ??
+                                'No remarks',
+                            style: TextStyle(
+                                color: Colors.grey[700], fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        // Changed from Row to Column
+                        crossAxisAlignment: CrossAxisAlignment
+                            .start, // Align items to the start
+                        children: [
+                          // Coach Detail Title
+                          const Text(
+                            'Coach Detail',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 12),
+                          ),
+                          // Coach Detail Content
+                          Text(
+                            widget.folder['coach_detail_content'] ??
+                                'No coach detail',
+                            style: TextStyle(
+                                color: Colors.grey[700], fontSize: 12),
+                          ),
+                          const SizedBox(
+                              height: 10), // Add some space between sections
+                          const Divider(), // Divider for separation
+                          // Remarks Title
+                          const Text(
+                            'Remarks',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 12),
+                          ),
+                          // Remarks Content
+                          Text(
+                            widget.folder['coach_detail_remarks'] ??
+                                'No remarks', // Fixed typo in the key
+                            style: TextStyle(
+                                color: Colors.grey[700], fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  Card(
+                    child: ListTile(
+                      title: const Text(
+                        'Card Titles',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 12),
+                      ),
+                      subtitle: Text(
+                        cardTitles.isNotEmpty
+                            ? cardTitles.map((title) => '• $title').join('\n')
+                            : 'No cards available',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 12),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
           ),
           actions: [
             Padding(
-              // Added padding around the button row
+              // Increased padding around the button row
               padding:
-                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                  const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
               child: Row(
                 mainAxisAlignment:
                     MainAxisAlignment.spaceBetween, // Space buttons evenly
                 children: [
                   ElevatedButton(
                     onPressed: () => _generateExcel(context),
-                    child: const Text('Generate Excel'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFFE6D0B3),
+                      backgroundColor: const Color(0xFFE6D0B3),
                       foregroundColor: Colors.black87,
-                      minimumSize: Size(90, 40),
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      minimumSize: const Size(100, 50), // Increased size
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10), // Increased padding
                     ),
+                    child: const Text('Excel'),
                   ),
-                  SizedBox(width: 10), // Space between buttons
+                  const SizedBox(width: 20), // Increased space between buttons
                   ElevatedButton(
                     onPressed: () => _generatePDF(context),
-                    child: const Text('Generate PDF'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFFE6D0B3),
+                      backgroundColor: const Color(0xFFE6D0B3),
                       foregroundColor: Colors.black87,
-                      minimumSize: Size(90, 40),
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      minimumSize: const Size(100, 50), // Increased size
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10), // Increased padding
                     ),
+                    child: const Text(' PDF'),
                   ),
                 ],
               ),
@@ -592,7 +770,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
     );
   }
 
-  TableRow _buildTableRow(String label, String value) {
+  TableRow _buildTableRow(String label, String value, String remarks) {
     return TableRow(
       children: [
         Padding(
@@ -612,6 +790,11 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                       .toList(),
                 )
               : Text(value, style: const TextStyle(color: Colors.black87)),
+        ),
+        // New: Add a column for remarks
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(remarks, style: const TextStyle(color: Colors.black87)),
         ),
       ],
     );
@@ -856,7 +1039,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
         ],
       ),
       body: cardData == null
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : Container(
               color: Colors.grey[200], // Set a subtle background color
               child: PageView.builder(
@@ -879,7 +1062,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                         speed: 1000,
                         front: Container(
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
+                            gradient: const LinearGradient(
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                               colors: [Colors.blueAccent, Colors.purpleAccent],
@@ -891,7 +1074,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                                 color: Colors.black.withOpacity(0.2),
                                 spreadRadius: 3,
                                 blurRadius: 10,
-                                offset: Offset(0, 5),
+                                offset: const Offset(0, 5),
                               ),
                             ],
                           ),
@@ -903,21 +1086,21 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                                     16.0), // Add padding inside the card
                                 child: Text(
                                   card['cards_title'] ?? 'No title',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 28,
                                       fontWeight: FontWeight.bold),
                                   textAlign: TextAlign.center,
                                 ),
                               ),
-                              SizedBox(height: 10),
+                              const SizedBox(height: 10),
                               Padding(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal:
                                         16.0), // Add padding for content
                                 child: Text(
                                   card['cards_content'] ?? 'No content',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                       color: Colors.white, fontSize: 18),
                                   textAlign: TextAlign.center,
                                 ),
@@ -927,7 +1110,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                         ),
                         back: Container(
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
+                            gradient: const LinearGradient(
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                               colors: [Colors.purpleAccent, Colors.blueAccent],
@@ -939,7 +1122,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                                 color: Colors.black.withOpacity(0.2),
                                 spreadRadius: 3,
                                 blurRadius: 10,
-                                offset: Offset(0, 5),
+                                offset: const Offset(0, 5),
                               ),
                             ],
                           ),
@@ -955,14 +1138,14 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                                     Text(
                                       card['back_content_title'] ??
                                           'No back title',
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                           color: Colors.white, fontSize: 24),
                                       textAlign: TextAlign.center,
                                     ),
-                                    SizedBox(height: 10),
+                                    const SizedBox(height: 10),
                                     Text(
                                       card['back_content'] ?? 'No back content',
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                           color: Colors.white, fontSize: 18),
                                       textAlign: TextAlign.center,
                                     ),
