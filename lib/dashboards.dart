@@ -822,8 +822,9 @@ class _DashboardsState extends State<Dashboards> {
   }
 
   void _showDepartmentDetails(BuildContext context, dynamic school) {
-    if (_isDialogOpen)
+    if (_isDialogOpen) {
       return; // Prevent opening a new dialog if one is already open
+    }
     _isDialogOpen = true; // Set the flag to true when opening the dialog
 
     fetchDepartment().then((_) {

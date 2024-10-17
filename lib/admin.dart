@@ -2,7 +2,6 @@ import 'package:design/dashboards.dart';
 import 'package:design/login.dart';
 import 'package:design/project.dart';
 import 'package:design/view.dart';
-import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -58,186 +57,145 @@ class _AdminState extends State<Administrator>
 
   @override
   Widget build(BuildContext context) {
-    return ShadApp.cupertino(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Builder(
-        builder: (BuildContext context) {
-          return Scaffold(
-            body: NestedScrollView(
-              controller: _scrollController,
-              headerSliverBuilder:
-                  (BuildContext context, bool innerBoxIsScrolled) {
-                return <Widget>[
-                  SliverAppBar(
-                    floating: true,
-                    pinned: false,
-                    snap: true,
-                    backgroundColor: Colors.green,
-                    title: Row(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.asset(
-                            'assets/images/phinmaed.png',
-                            fit: BoxFit.contain,
-                            height: 40,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          _tabController.index == 0
+      home: Scaffold(
+        body: NestedScrollView(
+          controller: _scrollController,
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            return <Widget>[
+              SliverAppBar(
+                floating: true,
+                pinned: false,
+                snap: true,
+                backgroundColor: Colors.green,
+                title: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.asset(
+                        'assets/images/phinmaed.png',
+                        fit: BoxFit.contain,
+                        height: 40,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(
+                      _tabController.index >= 0
+                          ? (_tabController.index == 0
                               ? 'Phinma Education'
                               : _tabController.index == 1
                                   ? 'Archive User'
-                                  : 'Project',
-                          style: const TextStyle(
-                              color: Colors.white, fontWeight: FontWeight.bold),
-                        ),
-                      ],
+                                  : 'Project')
+                          : 'Default Title',
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
                     ),
-                    actions: [
-                      Padding(
-                        padding: const EdgeInsets.only(right: 10),
-                        child: GestureDetector(
-                          onTap: () {
-                            showShadDialog(
-                              context: context,
-                              builder: (BuildContext context) => Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: ShadDialog(
-                                  title: const Text('Settings'),
-                                  actions: [
-                                    ShadButton.destructive(
-                                      child: const Text('Logout'),
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                const LoginAppes(),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                  child: Container(
-                                    width: 100,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 10),
-                                    child: const Column(
-                                      children: [
-                                        SizedBox(
-                                          height: 400,
-                                          child: SingleChildScrollView(
-                                            child: Column(
-                                              children: [
-                                                ShadCard(
-                                                  width: double.infinity,
-                                                  child: Padding(
-                                                    padding:
-                                                        EdgeInsets.all(8.0),
-                                                    child: Row(
-                                                      children: [
-                                                        ShadAvatar(
-                                                          'https://avatars.githubusercontent.com/u/124599?v=4',
-                                                        ),
-                                                        SizedBox(width: 5),
-                                                        Expanded(
-                                                          child: Column(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
-                                                            children: [
-                                                              Text(
-                                                                "Username",
-                                                                overflow:
-                                                                    TextOverflow
-                                                                        .ellipsis,
-                                                              ),
-                                                              Text(
-                                                                "gmail",
-                                                                overflow:
-                                                                    TextOverflow
-                                                                        .ellipsis,
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                                SizedBox(
-                                                  height: 10,
-                                                ),
-                                                ShadCard(
-                                                  width: double.infinity,
-                                                  child: Padding(
-                                                    padding:
-                                                        EdgeInsets.all(8.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Text("Forgot Password?")
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                          child: const CircleAvatar(
-                            backgroundImage: NetworkImage(
-                              'https://avatars.githubusercontent.com/u/124599?v=4',
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                    bottom: PreferredSize(
-                      preferredSize: const Size.fromHeight(50.0),
-                      child: Container(
-                        color: Colors.green,
-                        child: TabBar(
-                          controller: _tabController,
-                          indicator: BoxDecoration(
-                            color: Colors.green.shade300,
-                            // Changed from circular to rectangular
-                            borderRadius: BorderRadius.all(Radius.circular(10)),
-                          ),
-                          indicatorSize: TabBarIndicatorSize.tab,
-                          labelColor: Colors.white,
-                          unselectedLabelColor: Colors.grey.shade400,
-                          tabs: const <Tab>[
-                            Tab(icon: FaIcon(FontAwesomeIcons.house)),
-                            Tab(icon: FaIcon(FontAwesomeIcons.user)),
-                            Tab(icon: FaIcon(FontAwesomeIcons.folder)),
-                          ],
+                  ],
+                ),
+                actions: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 10),
+                    child: GestureDetector(
+                      onTap: () {
+                        _showSettingsDialog(context);
+                      },
+                      child: const CircleAvatar(
+                        backgroundImage: NetworkImage(
+                          'https://avatars.githubusercontent.com/u/124599?v=4',
                         ),
                       ),
                     ),
                   ),
-                ];
-              },
-              body: TabBarView(
-                controller: _tabController,
-                children: const <Widget>[
-                  Dashboards(),
-                  ViewUserPage(),
-                  ProjectPage(),
                 ],
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(50.0),
+                  child: Container(
+                    color: Colors.green,
+                    child: TabBar(
+                      controller: _tabController,
+                      indicator: BoxDecoration(
+                        color: Colors.green.shade300,
+                        borderRadius: const BorderRadius.all(Radius.circular(10)),
+                      ),
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      labelColor: Colors.white,
+                      unselectedLabelColor: Colors.grey.shade400,
+                      tabs: const <Tab>[
+                        Tab(icon: FaIcon(FontAwesomeIcons.house)),
+                        Tab(icon: FaIcon(FontAwesomeIcons.user)),
+                        Tab(icon: FaIcon(FontAwesomeIcons.folder)),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-            ),
-          );
-        },
+            ];
+          },
+          body: TabBarView(
+            controller: _tabController,
+            children: const <Widget>[
+              Dashboards(),
+              ViewUserPage(),
+              ProjectPage(),
+            ],
+          ),
+        ),
       ),
+    );
+  }
+
+  void _showSettingsDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Settings'),
+          content: SizedBox(
+            width: 300,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const ListTile(
+                  leading: CircleAvatar(
+                    backgroundImage: NetworkImage(
+                      'https://avatars.githubusercontent.com/u/124599?v=4',
+                    ),
+                  ),
+                  title: Text("Username"),
+                  subtitle: Text("gmail"),
+                ),
+                const Divider(),
+                TextButton(
+                  onPressed: () {
+                    // Add forgot password functionality if needed
+                  },
+                  child: const Text("Forgot Password?"),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Close'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const LoginAppes(),
+                  ),
+                );
+              },
+              child: const Text('Logout'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

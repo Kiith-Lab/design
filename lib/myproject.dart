@@ -146,7 +146,7 @@ class _MyProjectPageState extends State<MyProjectPage> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -210,7 +210,7 @@ class _MyProjectPageState extends State<MyProjectPage> {
                           const SizedBox(height: 10),
                           TextField(
                             controller: _projectNameController,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'Enter Project Name',
                               labelStyle: TextStyle(
                                   color:
@@ -229,7 +229,7 @@ class _MyProjectPageState extends State<MyProjectPage> {
                           const SizedBox(height: 10),
                           TextField(
                             controller: _descriptionController,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'Enter Project Description',
                               labelStyle: TextStyle(
                                   color:
@@ -248,7 +248,7 @@ class _MyProjectPageState extends State<MyProjectPage> {
                           const SizedBox(height: 10),
                           TextField(
                             controller: _subjectController,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'Enter Subject',
                               labelStyle: TextStyle(
                                   color:
@@ -267,7 +267,7 @@ class _MyProjectPageState extends State<MyProjectPage> {
                           const SizedBox(height: 10),
                           TextField(
                             controller: _startDateController,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'Enter Start Date',
                               labelStyle: TextStyle(
                                   color:
@@ -289,7 +289,7 @@ class _MyProjectPageState extends State<MyProjectPage> {
                           const SizedBox(height: 10),
                           TextField(
                             controller: _endDateController,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'Enter End Date',
                               labelStyle: TextStyle(
                                   color:
@@ -307,10 +307,10 @@ class _MyProjectPageState extends State<MyProjectPage> {
                     Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(15),
-                        color: Color(0xFF76BC6C).withOpacity(0.1),
+                        color: const Color(0xFF76BC6C).withOpacity(0.1),
                         boxShadow: [
                           BoxShadow(
-                            color: Color(0xFF76BC6C).withOpacity(0.1),
+                            color: const Color(0xFF76BC6C).withOpacity(0.1),
                             spreadRadius: 5,
                             blurRadius: 7,
                             offset: const Offset(0, 3),
@@ -322,8 +322,8 @@ class _MyProjectPageState extends State<MyProjectPage> {
                           await _addProject();
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF76BC6C).withOpacity(0.3),
-                          shadowColor: Color(0xFF76BC6C).withOpacity(0.1),
+                          backgroundColor: const Color(0xFF76BC6C).withOpacity(0.3),
+                          shadowColor: const Color(0xFF76BC6C).withOpacity(0.1),
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15),
