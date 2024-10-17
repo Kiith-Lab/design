@@ -590,7 +590,8 @@ ORDER BY
     {
         try {
             $sql = "SELECT 
-            tbl_users.users_firstname AS Name,
+            -- tbl_users.users_firstname,
+            tbl_users.users_status,
             tbl_module_master.module_master_name AS Mode, 
             tbl_activities_header.activities_header_duration AS Duration,  
             tbl_activities_details.activities_details_content AS Activity, 
@@ -722,6 +723,59 @@ ORDER BY
             return json_encode(['error' => 'An error occurred']);
         }
     }
+    function getUserNotActive()
+    {
+        try {
+            $sql = "SELECT tbl_users.users_firstname, tbl_users.users_middlename, tbl_users.users_lastname, tbl_role.role_name 
+                    FROM tbl_users 
+                    JOIN tbl_role ON tbl_users.users_roleId = tbl_role.role_id
+                    WHERE tbl_users.users_status = 0";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+
+            $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // If no users are found, return an empty array
+            if (!$returnValue) {
+                $returnValue = [];
+            }
+
+            error_log("SQL Query: $sql");
+            error_log("Result: " . print_r($returnValue, true));
+
+            return json_encode($returnValue);  // Always return a list (array)
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            return json_encode(['e  rror' => 'Database error occurred']);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage());
+            return json_encode(['error' => 'An error occurred']);
+        }
+    }
+    function getAllProjects()
+    {
+        try {
+            // $sql = "SELECT project_subject_code, project_title FROM tbl_project";
+            $sql = "SELECT * FROM tbl_project";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+
+            $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            error_log("SQL Query: $sql");
+            error_log("Result: " . print_r($returnValue, true));
+
+            return json_encode($returnValue);
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            return json_encode(['error' => 'Database error occurred']);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage());
+            return json_encode(['error' => 'An error occurred']);
+        }
+    }
+
 }
 
 // Handle preflight requests for CORS (for OPTIONS request)
@@ -811,6 +865,12 @@ switch ($operation) {
         break;
     case "getFolderId":
         echo $get->getFolderId($json);
+        break;
+    case "getUserNotActive":
+        echo $get->getUserNotActive();
+        break;
+    case "getAllProjects":
+        echo $get->getAllProjects();
         break;
     default:
         echo json_encode(['error' => 'Invalid operation']);

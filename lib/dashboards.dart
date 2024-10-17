@@ -153,7 +153,7 @@ class _DashboardsState extends State<Dashboards> {
 
       if (response.statusCode == 200) {
         final List<dynamic> fetchedDepartments = json.decode(response.body);
-// print(fetchedDepartments);
+
         setState(() {
           departments = fetchedDepartments;
           departmentCount = departments.length;
@@ -187,6 +187,124 @@ class _DashboardsState extends State<Dashboards> {
     } catch (e) {
       print('Error fetching instructors: $e');
     }
+  }
+
+  Future<void> _updateUserStatus(int userId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${baseUrl}update.php'), // Update with your actual endpoint
+        body: {
+          'users_id': userId.toString(),
+          'operation': 'updateUser'
+          // 'users_status': '0'
+        }, // Adjust the body as needed
+      );
+
+      if (response.statusCode == 200) {
+        // Handle successful response
+        print('User status updated successfully');
+        fetchUsers();
+      } else {
+        print('Failed to update user status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error updating user status: $e');
+    }
+  }
+
+  void _showConfirmationDialog(BuildContext context, int usersId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0), // Rounded corners
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(20.0),
+            width: MediaQuery.of(context).size.width * 0.8, // Make dialog wider
+            child: Column(
+              mainAxisSize: MainAxisSize.min, // Adjusts height to content
+              children: [
+                // Title with enhanced style
+                const Text(
+                  'Confirm Deactivation',
+                  style: TextStyle(
+                    fontSize: 22.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.redAccent,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20), // Spacing between title and content
+
+                // Content with adjusted style and padding
+                const Text(
+                  'Are you sure you want to deactivate this user? This action cannot be undone.',
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 30), // Spacing before buttons
+
+                // Buttons aligned horizontally
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    // Cancel button with improved style
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[400], // Grey background
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 12.0,
+                          horizontal: 20.0,
+                        ),
+                      ),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(fontSize: 16.0, color: Colors.white),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Close the dialog
+                      },
+                    ),
+
+                    // Confirm button with improved style
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            Colors.redAccent, // Red accent background
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 12.0,
+                          horizontal: 20.0,
+                        ),
+                      ),
+                      child: const Text(
+                        'Confirm',
+                        style: TextStyle(fontSize: 16.0, color: Colors.white),
+                      ),
+                      onPressed: () {
+                        _updateUserStatus(
+                            usersId); // Call the deactivation function
+                        Navigator.of(context).pop(); // Close the dialog
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _showList(BuildContext context, String title, List<dynamic> items,
@@ -259,12 +377,14 @@ class _DashboardsState extends State<Dashboards> {
             ];
 
             return Dialog(
+              insetPadding:
+                  EdgeInsets.zero, // Removes any padding around the dialog
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Container(
-                width: MediaQuery.of(context).size.width * 0.8,
-                height: MediaQuery.of(context).size.height * 0.8,
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -352,78 +472,118 @@ class _DashboardsState extends State<Dashboards> {
                           final usersName = item['users_firstname'];
                           final role = item['role_name'];
                           final projectTitle = item['Lesson'];
+                          final mode = item['Mode'];
                           final schoolName = item['school_name'];
+                          final schoolPlace = item['school_country'];
                           final departmentName = item['department_name'];
+
+                          // Check if the user status is 1 only if the title is not 'Schools'
+                          if (title != 'Schools' &&
+                              title != 'Folders' &&
+                              item['users_status'] != 1) {
+                            return const SizedBox
+                                .shrink(); // Skip this item if status is not 1
+                          }
+
                           return Card(
                             elevation: 2,
                             margin: const EdgeInsets.symmetric(vertical: 8),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: ListTile(
-                              contentPadding: const EdgeInsets.all(16),
-                              leading: CircleAvatar(
-                                backgroundColor: Colors.teal,
-                                child: Text(
-                                  usersName?.isNotEmpty ?? false
-                                      ? usersName![0].toUpperCase()
-                                      : 'N',
-                                  style: const TextStyle(color: Colors.white),
+                            child: Stack(
+                              children: [
+                                ListTile(
+                                  contentPadding: const EdgeInsets.all(16),
+                                  leading: CircleAvatar(
+                                    backgroundColor: Colors.teal,
+                                    child: Text(
+                                      usersName?.isNotEmpty ?? false
+                                          ? usersName![0].toUpperCase()
+                                          : 'N', // Use 'N' for empty or null names
+                                      style:
+                                          const TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                  title: Text(
+                                    usersName ??
+                                        projectTitle ??
+                                        schoolName ??
+                                        'No Name',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      if (role != null)
+                                        Text(
+                                          role,
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      if (projectTitle != null)
+                                        Text(
+                                          mode,
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      // Always show school name if title is not 'Instructors'
+                                      if (title != 'Instructors' &&
+                                          schoolName != null)
+                                        Text(
+                                          schoolName.isNotEmpty
+                                              ? schoolPlace
+                                              : 'No School',
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      // Show department name only for Schools
+                                      if (title == 'Schools' &&
+                                          departmentName != null)
+                                        Text(
+                                          departmentName.isNotEmpty
+                                              ? departmentName
+                                              : 'No Department',
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                  onTap: () {
+                                    if (title == 'Folders') {
+                                      _showFolderDetails(context, item);
+                                    } else if (title == 'Schools') {
+                                      _showDepartmentDetails(context, item);
+                                    }
+                                  },
                                 ),
-                              ),
-                              title: Text(
-                                usersName ?? '',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  if (role != null)
-                                    Text(
-                                      role,
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 14,
-                                      ),
+                                // Only show the delete button in 'User Accounts'
+                                if (title == 'User Accounts')
+                                  Positioned(
+                                    top: 8,
+                                    right: 8,
+                                    child: IconButton(
+                                      icon: const Icon(Icons.archive_outlined,
+                                          color: Colors.red),
+                                      onPressed: () {
+                                        _showConfirmationDialog(
+                                            context, item['users_id']);
+                                      },
                                     ),
-                                  if (projectTitle != null)
-                                    Text(
-                                      projectTitle,
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  if (title != 'Instructors' &&
-                                      schoolName != null)
-                                    Text(
-                                      schoolName,
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  if (title == 'Schools' &&
-                                      departmentName != null)
-                                    Text(
-                                      departmentName,
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                              onTap: () {
-                                if (title == 'Folders') {
-                                  _showFolderDetails(context, item);
-                                } else if (title == 'Schools') {
-                                  _showDepartmentDetails(context, item);
-                                }
-                              },
+                                  ),
+                              ],
                             ),
                           );
                         },
@@ -453,34 +613,72 @@ class _DashboardsState extends State<Dashboards> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Folder Details'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildFolderDetail('Mode', folder['Mode'] ?? 'N/A'),
-              _buildFolderDetail(
-                  'Duration', folder['Duration']?.toString() ?? 'N/A'),
-              _buildFolderDetail('Activity', folder['Activity'] ?? 'N/A'),
-              _buildFolderDetail('Lesson', folder['Lesson'] ?? 'N/A'),
-              _buildFolderDetail('Output', folder['Output'] ?? 'N/A'),
-              _buildFolderDetail('Instruction', folder['Instruction'] ?? 'N/A'),
-              _buildFolderDetail(
-                  'Coach Detail', folder['CoachDetail'] ?? 'N/A'),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ShadButton(
-                    child: const Text('Print PDF'),
-                    onPressed: () => _printFolderDetailsPDF(folder),
+        return Dialog(
+          insetPadding: EdgeInsets.zero, // Makes it fullscreen
+          shape: RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(16), // Optional, for rounded corners
+          ),
+          child: Container(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Folder Details',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.teal,
                   ),
-                  ShadButton(
-                    onPressed: () => _exportFolderDetailsExcel(context, folder),
-                    child: const Text('Export Excel'),
-                  )
-                ],
-              ),
-            ],
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: ListView(
+                    children: [
+                      // Display folder details without array
+                      _buildFolderDetail('Mode', folder['Mode'] ?? 'N/A'),
+                      _buildFolderDetail(
+                          'Duration', folder['Duration']?.toString() ?? 'N/A'),
+                      _buildFolderDetail(
+                          'Activity', folder['Activity'] ?? 'N/A'),
+                      _buildFolderDetail('Lesson', folder['Lesson'] ?? 'N/A'),
+                      _buildFolderDetail('Output', folder['Output'] ?? 'N/A'),
+                      _buildFolderDetail(
+                          'Instruction', folder['Instruction'] ?? 'N/A'),
+                      _buildFolderDetail(
+                          'Coach Detail', folder['CoachDetail'] ?? 'N/A'),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          ShadButton(
+                            child: const Text('Print PDF'),
+                            onPressed: () => _printFolderDetailsPDF(folder),
+                          ),
+                          ShadButton(
+                            onPressed: () =>
+                                _exportFolderDetailsExcel(context, folder),
+                            child: const Text('Export Excel'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    child: const Text('Close'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -516,6 +714,7 @@ class _DashboardsState extends State<Dashboards> {
                     ),
                   ],
                 ),
+                // Removed array and replaced with individual calls
                 _buildPDFTableRow('Mode', folder['Mode'] ?? 'N/A'),
                 _buildPDFTableRow(
                     'Duration', folder['Duration']?.toString() ?? 'N/A'),
@@ -572,7 +771,7 @@ class _DashboardsState extends State<Dashboards> {
     Sheet sheet = excel['Sheet1']; // Create a new sheet
 
     // Add headers
-    sheet.appendRow(['Field', 'Value', 'Notes/Remarks']);
+    sheet.appendRow(['Field', '', 'Notes/Remarks']);
 
     // Add folder details
     List<String> fields = [
@@ -713,8 +912,6 @@ class _DashboardsState extends State<Dashboards> {
                                       "operation": "getUsers"
                                     },
                                   );
-
-                                  print(response.body);
 
                                   if (response.statusCode == 200) {
                                     final dynamic decodedResponse =
@@ -918,9 +1115,9 @@ class _DashboardsState extends State<Dashboards> {
                                                                                     backgroundColor: Colors.teal,
                                                                                     actions: [
                                                                                       IconButton(
-                                                                                        icon: const Icon(Icons.close),
+                                                                                        icon: const Icon(Icons.picture_as_pdf_rounded),
                                                                                         onPressed: () {
-                                                                                          Navigator.of(context).pop();
+                                                                                          _printAllLessonsPDF(projectData); // New function to print all lessons
                                                                                         },
                                                                                       )
                                                                                     ],
@@ -1065,12 +1262,6 @@ class _DashboardsState extends State<Dashboards> {
         print('No departments available');
       }
     });
-  }
-
-  Widget _buildDepartmentDetail(String value) {
-    return ListTile(
-      title: Text(value),
-    );
   }
 
   void _showFilterDialog(
@@ -1237,7 +1428,11 @@ class _DashboardsState extends State<Dashboards> {
                                           right: 8.0), // Half of SizedBox width
                                       child: _buildInfoCard(
                                         'User Accounts',
-                                        userCount.toString(),
+                                        users
+                                            .where((user) =>
+                                                user['users_status'] == 1)
+                                            .length
+                                            .toString(),
                                         Icons.person,
                                         Colors.blue,
                                         () => _showList(
@@ -1280,7 +1475,11 @@ class _DashboardsState extends State<Dashboards> {
                                           right: 8.0), // Half of SizedBox width
                                       child: _buildInfoCard(
                                         'Instructors',
-                                        instructorCount.toString(),
+                                        instructors
+                                            .where((instructor) =>
+                                                instructor['users_status'] == 1)
+                                            .length
+                                            .toString(),
                                         FontAwesomeIcons.userPlus,
                                         Colors.purple,
                                         () => _showList(
@@ -1315,120 +1514,9 @@ class _DashboardsState extends State<Dashboards> {
                             ],
                           ),
 
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 840),
 
                     // User Statistics Section
-                    const Text(
-                      'User Statistics',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      height: 300,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            spreadRadius: 5,
-                            blurRadius: 7,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: BarChart(
-                          BarChartData(
-                            alignment: BarChartAlignment.spaceAround,
-                            maxY: 20,
-                            barTouchData: BarTouchData(
-                              enabled: true,
-                              touchTooltipData: BarTouchTooltipData(
-                                tooltipBgColor: Colors.blueAccent,
-                                getTooltipItem:
-                                    (group, groupIndex, rod, rodIndex) {
-                                  String school =
-                                      'School ${group.x.toInt() + 1}';
-                                  return BarTooltipItem(
-                                    '$school\n${rod.toY.round()}',
-                                    const TextStyle(color: Colors.white),
-                                  );
-                                },
-                              ),
-                            ),
-                            titlesData: FlTitlesData(
-                              show: true,
-                              bottomTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  getTitlesWidget:
-                                      (double value, TitleMeta meta) {
-                                    return Text(
-                                      'S${value.toInt() + 1}',
-                                      style: const TextStyle(
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                              leftTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  getTitlesWidget:
-                                      (double value, TitleMeta meta) {
-                                    return Text(
-                                      '${value.toInt()}',
-                                      style: const TextStyle(
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 12,
-                                      ),
-                                    );
-                                  },
-                                  reservedSize: 28,
-                                ),
-                              ),
-                            ),
-                            borderData: FlBorderData(show: false),
-                            barGroups: [
-                              BarChartGroupData(
-                                x: 0,
-                                barRods: [
-                                  BarChartRodData(toY: 8, color: Colors.blue)
-                                ],
-                              ),
-                              BarChartGroupData(
-                                x: 1,
-                                barRods: [
-                                  BarChartRodData(toY: 10, color: Colors.blue)
-                                ],
-                              ),
-                              BarChartGroupData(
-                                x: 2,
-                                barRods: [
-                                  BarChartRodData(toY: 14, color: Colors.blue)
-                                ],
-                              ),
-                              BarChartGroupData(
-                                x: 3,
-                                barRods: [
-                                  BarChartRodData(toY: 15, color: Colors.blue)
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
                   ],
                 );
               },
@@ -1486,5 +1574,145 @@ class _DashboardsState extends State<Dashboards> {
         ),
       ),
     );
+  }
+
+  Future<void> _printAllLessonsPDF(List<dynamic> lessons) async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text('All Lessons',
+                style:
+                    pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 10),
+            pw.Table(
+              border: pw.TableBorder.all(),
+              children: [
+                pw.TableRow(
+                  children: [
+                    pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Field')),
+                    pw.Padding(
+                        padding: const pw.EdgeInsets.all(8),
+                        child: pw.Text('Value')),
+                  ],
+                ),
+                ...lessons.map((lesson) {
+                  return pw.TableRow(
+                    children: [
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Mode')),
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text(lesson['Mode']?.toString() ?? 'N/A')),
+                    ],
+                  );
+                }).toList(),
+                ...lessons.map((lesson) {
+                  return pw.TableRow(
+                    children: [
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Duration')),
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child:
+                              pw.Text(lesson['Duration']?.toString() ?? 'N/A')),
+                    ],
+                  );
+                }).toList(),
+                ...lessons.map((lesson) {
+                  return pw.TableRow(
+                    children: [
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Activity')),
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child:
+                              pw.Text(lesson['Activity']?.toString() ?? 'N/A')),
+                    ],
+                  );
+                }).toList(),
+                ...lessons.map((lesson) {
+                  return pw.TableRow(
+                    children: [
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Lesson')),
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child:
+                              pw.Text(lesson['Lesson']?.toString() ?? 'N/A')),
+                    ],
+                  );
+                }).toList(),
+                ...lessons.map((lesson) {
+                  return pw.TableRow(
+                    children: [
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Output')),
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child:
+                              pw.Text(lesson['Output']?.toString() ?? 'N/A')),
+                    ],
+                  );
+                }).toList(),
+                ...lessons.map((lesson) {
+                  return pw.TableRow(
+                    children: [
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Instruction')),
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text(
+                              lesson['Instruction']?.toString() ?? 'N/A')),
+                    ],
+                  );
+                }).toList(),
+                ...lessons.map((lesson) {
+                  return pw.TableRow(
+                    children: [
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Coach Detail')),
+                      pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text(
+                              lesson['CoachDetail']?.toString() ?? 'N/A')),
+                    ],
+                  );
+                }).toList(),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+
+    // ... existing PDF saving logic ...
+    if (kIsWeb) {
+      // For web, create a Blob and download the PDF
+      final bytes = await pdf.save();
+      final blob = html.Blob([bytes], 'application/pdf');
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      final anchor = html.AnchorElement(href: url)
+        ..setAttribute('download', 'all_lessons.pdf') // Updated filename
+        ..click();
+      html.Url.revokeObjectUrl(url);
+    } else {
+      // For mobile/desktop, use the existing printing method
+      await Printing.layoutPdf(
+        onLayout: (PdfPageFormat format) async => pdf.save(),
+      );
+    }
   }
 }
