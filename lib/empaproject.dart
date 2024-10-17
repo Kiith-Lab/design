@@ -808,10 +808,9 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
             children: [
               FloatingActionButton(
                 onPressed: () {
-                  _viewAllData(); // Method to view all entered data
+                  Navigator.pop(context); // Navigate back to MyProjectPage
                 },
-                child: Icon(Icons.remove_red_eye_outlined,
-                    color: myCustomButtonTextColor),
+                child: Icon(Icons.arrow_back, color: myCustomButtonTextColor),
                 backgroundColor: myCustomButtonColor,
               ),
               FloatingActionButton(
