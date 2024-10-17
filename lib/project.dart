@@ -75,7 +75,10 @@ class _ProjectPageState extends State<ProjectPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(project['project_title']),
+          title: Text(
+            project['project_title'],
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
@@ -110,17 +113,39 @@ class _ProjectPageState extends State<ProjectPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Projects'),
+        centerTitle: true,
+        backgroundColor: Colors.grey.shade300,
       ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: TextField(
-              controller: searchController,
-              decoration: const InputDecoration(
-                labelText: 'Search by Project Title or Subject Code',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.search),
+            padding: const EdgeInsets.all(16.0),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 1,
+                    blurRadius: 5,
+                    offset: const Offset(0, 3), // changes position of shadow
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: searchController,
+                decoration: InputDecoration(
+                  labelText: 'Search by Project Title or Subject Code',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10.0),
+                    borderSide: const BorderSide(color: Colors.teal),
+                  ),
+                  prefixIcon: const Icon(Icons.search),
+                  filled: true,
+                  contentPadding: const EdgeInsets.all(10),
+                  // Remove boxShadow here since it's not valid in InputDecoration
+                ),
               ),
             ),
           ),
@@ -132,11 +157,22 @@ class _ProjectPageState extends State<ProjectPage> {
                     itemCount: filteredProjects.length,
                     itemBuilder: (context, index) {
                       return Card(
+                        elevation: 5,
                         margin: const EdgeInsets.all(10.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
                         child: ListTile(
-                          title: Text(filteredProjects[index]['project_title']),
+                          contentPadding: const EdgeInsets.all(16.0),
+                          leading: const Icon(Icons.description,
+                              color: Colors.teal, size: 40),
+                          title: Text(
+                            filteredProjects[index]['project_title'],
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
                           subtitle: Text(
-                              'Subject Code: ${filteredProjects[index]['project_subject_code']}'),
+                              'Subject Code: ${filteredProjects[index]['project_subject_code']}',
+                              style: const TextStyle(color: Colors.grey)),
                           onTap: () {
                             showProjectDetails(
                                 context, filteredProjects[index]);
