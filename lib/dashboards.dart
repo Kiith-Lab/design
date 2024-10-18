@@ -69,18 +69,6 @@ class _DashboardsState extends State<Dashboards> {
     fetchInstructors();
   }
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   remarks = [
-  //     widget.folder['activities_details_remarks'] ?? 'No remarks',
-  //     widget.folder['coach_detail_renarks'] ?? 'No remarks',
-  //     widget.folder['outputs_remarks'] ?? 'No remarks',
-  //     widget.folder['project_cards_remarks'] ?? 'No remarks',
-  //     widget.folder['instruction_remarks'] ?? 'No remarks',
-  //   ].join('\n');
-  // } // Join remarks with a newline
-
   Future<void> fetchFolders() async {
     try {
       final response = await http.post(
@@ -736,7 +724,7 @@ class _DashboardsState extends State<Dashboards> {
         build: (pw.Context context) => pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
-            pw.Text('Folder Details',
+            pw.Text('MY DESIGN THINKING PLAN',
                 style:
                     pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 20),
@@ -747,7 +735,7 @@ class _DashboardsState extends State<Dashboards> {
                   children: [
                     pw.Padding(
                       padding: const pw.EdgeInsets.all(5),
-                      child: pw.Text('Field',
+                      child: pw.Text('',
                           style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
                     ),
                     pw.Padding(
@@ -763,16 +751,67 @@ class _DashboardsState extends State<Dashboards> {
                   ],
                 ),
                 // Removed array and replaced with individual calls
-                _buildPDFTableRow('Mode', folder['Mode'] ?? 'N/A'),
+                _buildPDFTableRow('Project', folder['Project'] ?? 'N/A', ''),
+                _buildPDFTableRow('Project Description',
+                    folder['ProjectDescription'] ?? 'N/A', ''),
                 _buildPDFTableRow(
-                    'Duration', folder['Duration']?.toString() ?? 'N/A'),
-                _buildPDFTableRow('Activity', folder['Activity'] ?? 'N/A'),
-                _buildPDFTableRow('Lesson', folder['Lesson'] ?? 'N/A'),
-                _buildPDFTableRow('Output', folder['Output'] ?? 'N/A'),
+                    'Start Date', folder['StartDate'] ?? 'N/A', ''),
+                _buildPDFTableRow('End Date', folder['EndDate'] ?? 'N/A', ''),
+              ],
+            ),
+            pw.SizedBox(
+              height: 20,
+            ),
+            pw.Table(
+              border: pw.TableBorder.all(),
+              children: [
+                pw.TableRow(
+                  children: [
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(5),
+                      child: pw.Text('',
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(5),
+                      child: pw.Text('',
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(5),
+                      child: pw.Text('Remarks',
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    ),
+                  ],
+                ),
                 _buildPDFTableRow(
-                    'Instruction', folder['Instruction'] ?? 'N/A'),
+                    'Module', _formatAsBulletList(folder['Mode']), ''),
+                _buildPDFTableRow('How long will this activity take?',
+                    _formatAsBulletList(folder['Duration']?.toString()), ''),
                 _buildPDFTableRow(
-                    'Coach Detail', folder['CoachDetail'] ?? 'N/A'),
+                    'What activity/ies will my students do?',
+                    _formatAsBulletList(folder['Activity']),
+                    folder['ActivityRemarks'] ??
+                        ''), // No bullet formatting for remarks
+                _buildPDFTableRow(
+                    'What two (2) method cards will my students use?',
+                    _formatAsBulletList(folder['Lesson']),
+                    ''),
+                _buildPDFTableRow(
+                    'What are the expected outputs?',
+                    _formatAsBulletList(folder['Output']),
+                    folder['OutputRemarks'] ??
+                        ''), // No bullet formatting for remarks
+                _buildPDFTableRow(
+                    'What instructions will I give my students?',
+                    _formatAsBulletList(folder['Instruction']),
+                    folder['InstructionRemarks'] ??
+                        ''), // No bullet formatting for remarks
+                _buildPDFTableRow(
+                    'How can I coach my students while doing this activity?',
+                    _formatAsBulletList(folder['CoachDetail']),
+                    folder['CoachDetailRemarks'] ??
+                        ''), // No bullet formatting for remarks
               ],
             ),
           ],
@@ -797,7 +836,20 @@ class _DashboardsState extends State<Dashboards> {
     }
   }
 
-  pw.TableRow _buildPDFTableRow(String label, String value) {
+  String _formatAsBulletList(dynamic value) {
+    if (value is String && value.contains('folder')) {
+      // Check if the value is related to 'folder'
+      return value.split(',').map((item) => '- $item').join('\n');
+    } else if (value is List && value.any((item) => item.contains('folder'))) {
+      // Check if any item in the list is related to 'folder'
+      return value.map((item) => '• $item').join('\n');
+    }
+    return value?.toString() ??
+        'N/A'; // Return the value as is if not related to 'folder'
+  }
+
+  pw.TableRow _buildPDFTableRow(
+      String label, String value, String remarksValue) {
     return pw.TableRow(
       children: [
         pw.Padding(
@@ -807,6 +859,10 @@ class _DashboardsState extends State<Dashboards> {
         pw.Padding(
           padding: const pw.EdgeInsets.all(5),
           child: pw.Text(value),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.all(5),
+          child: pw.Text(remarksValue),
         ),
       ],
     );
@@ -862,6 +918,20 @@ class _DashboardsState extends State<Dashboards> {
     sheet.appendRow([
       'How can I coach my students while doing this activity?',
       folder['CoachDetail'] ?? 'No coach detail',
+      ''
+    ]);
+    sheet.appendRow(
+        ['Activity Remarks', folder['ActivityRemarks'] ?? 'No remarks', '']);
+    sheet.appendRow(
+        ['Output Remarks', folder['OutputRemarks'] ?? 'No remarks', '']);
+    sheet.appendRow([
+      'Instruction Remarks',
+      folder['InstructionRemarks'] ?? 'No remarks',
+      ''
+    ]);
+    sheet.appendRow([
+      'Coach Detail Remarks',
+      folder['CoachDetailRemarks'] ?? 'No remarks',
       ''
     ]);
     sheet.appendRow(['', '', 'NOTES/REMARKS']);
@@ -1689,7 +1759,11 @@ class _DashboardsState extends State<Dashboards> {
                     'Lesson',
                     'Output',
                     'Instruction',
-                    'CoachDetail'
+                    'CoachDetail',
+                    'ActivityRemarks',
+                    'OutputRemarks',
+                    'InstructionRemarks',
+                    'CoachDetailRemarks'
                   ].map((field) {
                     return pw.TableRow(
                       children: [
@@ -1710,7 +1784,6 @@ class _DashboardsState extends State<Dashboards> {
       ),
     );
 
-    // ... existing PDF saving logic ...
     if (kIsWeb) {
       // For web, create a Blob and download the PDF
       final bytes = await pdf.save();
