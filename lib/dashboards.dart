@@ -33,7 +33,9 @@ class Dashboard extends StatelessWidget {
 }
 
 class Dashboards extends StatefulWidget {
-  const Dashboards({super.key});
+  final dynamic folder; // Add this line
+
+  const Dashboards({super.key, this.folder}); // Update constructor
 
   @override
   _DashboardsState createState() => _DashboardsState();
@@ -41,6 +43,7 @@ class Dashboards extends StatefulWidget {
 
 class _DashboardsState extends State<Dashboards> {
   int projectCount = 0;
+  String remarks = '';
   List<dynamic> folders = [];
   int userCount = 0;
   List<dynamic> users = [];
@@ -65,6 +68,18 @@ class _DashboardsState extends State<Dashboards> {
     fetchSchools();
     fetchInstructors();
   }
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   remarks = [
+  //     widget.folder['activities_details_remarks'] ?? 'No remarks',
+  //     widget.folder['coach_detail_renarks'] ?? 'No remarks',
+  //     widget.folder['outputs_remarks'] ?? 'No remarks',
+  //     widget.folder['project_cards_remarks'] ?? 'No remarks',
+  //     widget.folder['instruction_remarks'] ?? 'No remarks',
+  //   ].join('\n');
+  // } // Join remarks with a newline
 
   Future<void> fetchFolders() async {
     try {
@@ -664,7 +679,7 @@ class _DashboardsState extends State<Dashboards> {
                           ),
                           ShadButton(
                             onPressed: () =>
-                                _exportFolderDetailsExcel(context, folder),
+                                _generateExcel(folder), // Update here
                             child: const Text('Export Excel'),
                           ),
                         ],
@@ -694,19 +709,19 @@ class _DashboardsState extends State<Dashboards> {
     print('Field type: ${field.runtimeType}, Field content: $field');
 
     if (field is String) {
-      // Attempt to parse the string as JSON if it looks like a list
-      try {
-        final dynamic parsedField = json.decode(field);
-        if (parsedField is List) {
-          return parsedField.join(' '); // Join with spaces
+      // Check if the string is in valid JSON format
+      if (field.startsWith('[') && field.endsWith(']')) {
+        try {
+          final dynamic parsedField = json.decode(field);
+          if (parsedField is List) {
+            return parsedField.join(' '); // Join with spaces
+          }
+        } catch (e) {
+          print('Error parsing field as JSON: $e');
         }
-      } catch (e) {
-        // If parsing fails, attempt to split the string manually
-        print('Error parsing field as JSON: $e');
-        // Remove the brackets and split by spaces
-        final cleanedField = field.replaceAll(RegExp(r'[\[\]]'), '');
-        return cleanedField.split(' ').join(' '); // Join with spaces
       }
+      // If not valid JSON, return the string directly
+      return field; // Return the original string if it's not JSON
     } else if (field is List) {
       return field.join(' '); // Join with spaces
     }
@@ -737,7 +752,12 @@ class _DashboardsState extends State<Dashboards> {
                     ),
                     pw.Padding(
                       padding: const pw.EdgeInsets.all(5),
-                      child: pw.Text('Value',
+                      child: pw.Text('',
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(5),
+                      child: pw.Text('Remarks',
                           style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
                     ),
                   ],
@@ -792,52 +812,83 @@ class _DashboardsState extends State<Dashboards> {
     );
   }
 
-  Future<void> _exportFolderDetailsExcel(
-      BuildContext context, dynamic folder) async {
+  Future<void> _generateExcel(dynamic folder) async {
     // Create a new Excel document
-    final Excel excel = Excel.createExcel(); // Create a new Excel document
-    Sheet sheet = excel['Sheet1']; // Create a new sheet
+    final Excel excel = Excel.createExcel();
+    Sheet sheet = excel['Sheet1'];
 
-    // Add headers
-    sheet.appendRow(['Field', '', 'Notes/Remarks']);
+    // Set the width of each column to appropriate values
+    sheet.setColWidth(0, 50); // Column A
+    sheet.setColWidth(1, 110); // Column B
+    sheet.setColWidth(2, 40); // Column C
 
-    // Add folder details
-    List<String> fields = [
-      'Mode',
-      'Duration',
-      'Activity',
-      'Lesson',
-      'Output',
-      'Instruction',
-      'CoachDetail'
-    ];
+    // Add main headers
+    sheet.appendRow([
+      'Project',
+      'MY DESIGN THINKING PLAN',
+      ''
+    ]); // Updated headers for clarity
+    sheet.appendRow(['Project', 'Unnamed Project', '']);
+    sheet.appendRow(
+        ['Project Description', folder['lesson'] ?? 'No description', '']);
+    sheet
+        .appendRow(['Start Date', folder['start_date'] ?? 'No start date', '']);
+    sheet.appendRow(['Unknown', '', '']);
+    sheet.appendRow([
+      'What activity/ies will my students do?',
+      folder['Activity'] ?? 'No activity',
+      ''
+    ]);
+    sheet.appendRow([
+      'What two (2) method cards will my students use?',
+      folder['MethodCards'] ?? 'No card',
+      ''
+    ]);
+    sheet.appendRow([
+      'How long will this activity take?',
+      folder['Duration'] ?? 'Details here',
+      ''
+    ]);
+    sheet.appendRow([
+      'What are the expected outputs?',
+      folder['Output'] ?? 'No output',
+      ''
+    ]);
+    sheet.appendRow([
+      'What instructions will I give my students?',
+      folder['Instruction'] ?? 'No instruction',
+      ''
+    ]);
+    sheet.appendRow([
+      'How can I coach my students while doing this activity?',
+      folder['CoachDetail'] ?? 'No coach detail',
+      ''
+    ]);
+    sheet.appendRow(['', '', 'NOTES/REMARKS']);
+    sheet.appendRow(['', '', folder['remarks'] ?? 'No remarks']);
 
-    for (String field in fields) {
-      sheet
-          .appendRow([field, folder[field] ?? 'N/A', '']); // Add folder details
-    }
-
-    // Check if running on the web
-    if (kIsWeb) {
-      // Convert the Excel file to bytes
-      final bytes = excel.encode();
-      final blob = html.Blob([bytes]);
-      final url = html.Url.createObjectUrlFromBlob(blob);
-      final anchor = html.AnchorElement(href: url)
-        ..setAttribute('download', 'folder_details.xlsx')
-        ..click();
-      html.Url.revokeObjectUrl(url);
-    } else {
-      // Get the directory for saving the Excel file
-      final directory = await getApplicationDocumentsDirectory();
-      final filePath = '${directory.path}/folder_details.xlsx';
-      final file = File(filePath);
-      // Save the Excel file
-      await file.writeAsBytes(excel.encode()!, flush: true);
-
-      // Provide feedback to the user
+    try {
+      if (kIsWeb) {
+        final bytes = excel.encode();
+        final blob = html.Blob([bytes]);
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement(href: url)
+          ..setAttribute('download', 'folder_details.xlsx')
+          ..click();
+        html.Url.revokeObjectUrl(url);
+      } else {
+        final directory = await getApplicationDocumentsDirectory();
+        final filePath = '${directory.path}/folder_details.xlsx';
+        final file = File(filePath);
+        await file.writeAsBytes(excel.encode()!, flush: true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Excel file saved to $filePath')),
+        );
+      }
+    } catch (e) {
+      print('Error generating Excel: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Excel file saved to $filePath')),
+        SnackBar(content: Text('Failed to generate Excel: $e')),
       );
     }
   }
