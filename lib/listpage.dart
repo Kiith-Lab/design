@@ -13,10 +13,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-<<<<<<< HEAD
-=======
-import 'package:shadcn_ui/shadcn_ui.dart';
->>>>>>> 335bf21c6684d3aa63906158f8b5004a6b69c272
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
