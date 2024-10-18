@@ -587,46 +587,60 @@ ORDER BY
     }
 
     function getFolders()
-    {
-        try {
-            $sql = "SELECT 
-            -- tbl_users.users_firstname,
-            tbl_users.users_status,
-            tbl_module_master.module_master_name AS Mode, 
-            tbl_activities_header.activities_header_duration AS Duration,  
-            tbl_activities_details.activities_details_content AS Activity, 
-            tbl_project.project_title AS Lesson, 
-            tbl_outputs.outputs_content AS Output, 
-            tbl_instruction.instruction_content AS Instruction, 
-            tbl_coach_detail.coach_detail_content AS CoachDetail
-            FROM 
-            tbl_folder
-            LEFT JOIN tbl_project ON tbl_folder.projectId = tbl_project.project_id
-            LEFT JOIN tbl_project_modules ON tbl_folder.project_moduleId = tbl_project_modules.project_modules_id
-            LEFT JOIN tbl_module_master ON tbl_project_modules.project_modules_masterId = tbl_module_master.module_master_id
-            LEFT JOIN tbl_activities_details ON tbl_folder.activities_detailId = tbl_activities_details.activities_details_id
-            LEFT JOIN tbl_activities_header ON tbl_activities_header.activities_header_modulesId = tbl_activities_details.activities_details_id
-            LEFT JOIN tbl_outputs ON tbl_folder.outputId = tbl_outputs.outputs_id
-            LEFT JOIN tbl_instruction ON tbl_folder.instructionId = tbl_instruction.instruction_id
-            LEFT JOIN tbl_coach_detail ON tbl_folder.coach_detailsId = tbl_coach_detail.coach_detail_id
-            LEFT JOIN tbl_users ON tbl_project.project_userId = tbl_users.users_id";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute();
+{
+    try {
+        $sql = "SELECT 
+        tbl_users.users_status,
+        tbl_module_master.module_master_name AS Mode, 
+        tbl_activities_header.activities_header_duration AS Duration,  
+        tbl_project.project_title AS Lesson, 
+        tbl_activities_details.activities_details_content AS Activity, 
+        tbl_outputs.outputs_content AS Output, 
+        tbl_instruction.instruction_content AS Instruction, 
+        tbl_coach_detail.coach_detail_content AS CoachDetail
+        FROM 
+        tbl_folder
+        LEFT JOIN tbl_project ON tbl_folder.projectId = tbl_project.project_id
+        LEFT JOIN tbl_project_modules ON tbl_folder.project_moduleId = tbl_project_modules.project_modules_id
+        LEFT JOIN tbl_module_master ON tbl_project_modules.project_modules_masterId = tbl_module_master.module_master_id
+        LEFT JOIN tbl_activities_details ON tbl_folder.activities_detailId = tbl_activities_details.activities_details_id
+        LEFT JOIN tbl_activities_header ON tbl_activities_header.activities_header_modulesId = tbl_activities_details.activities_details_id
+        LEFT JOIN tbl_outputs ON tbl_folder.outputId = tbl_outputs.outputs_id
+        LEFT JOIN tbl_instruction ON tbl_folder.instructionId = tbl_instruction.instruction_id
+        LEFT JOIN tbl_coach_detail ON tbl_folder.coach_detailsId = tbl_coach_detail.coach_detail_id
+        LEFT JOIN tbl_users ON tbl_project.project_userId = tbl_users.users_id";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute();
 
-            $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            error_log("SQL Query: $sql");
-            error_log("Result: " . print_r($returnValue, true));
-
-            return json_encode($returnValue);
-        } catch (PDOException $e) {
-            error_log("Database error: " . $e->getMessage());
-            return json_encode(['error' => 'Database error occurred']);
-        } catch (Exception $e) {
-            error_log("General error: " . $e->getMessage());
-            return json_encode(['error' => 'An error occurred']);
+        // Remove unwanted characters and add newlines
+        foreach ($returnValue as &$row) {
+            $row['Activity'] = str_replace(['[', ']', '"'], '', $row['Activity']);
+            $row['Activity'] = str_replace(',', "\n", $row['Activity']);
+            
+            $row['Output'] = str_replace(['[', ']', '"'], '', $row['Output']);
+            $row['Output'] = str_replace(',', "\n", $row['Output']);
+            
+            $row['Instruction'] = str_replace(['[', ']', '"'], '', $row['Instruction']);
+            $row['Instruction'] = str_replace(',', "\n", $row['Instruction']);
+            
+            $row['CoachDetail'] = str_replace(['[', ']', '"'], '', $row['CoachDetail']);
+            $row['CoachDetail'] = str_replace(',', "\n", $row['CoachDetail']);
         }
+
+        error_log("SQL Query: $sql");
+        error_log("Result: " . print_r($returnValue, true));
+
+        return json_encode($returnValue);
+    } catch (PDOException $e) {
+        error_log("Database error: " . $e->getMessage());
+        return json_encode(['error' => 'Database error occurred']);
+    } catch (Exception $e) {
+        error_log("General error: " . $e->getMessage());
+        return json_encode(['error' => 'An error occurred']);
     }
+}
     function getFolderId($json)
     {
         $json = json_decode($json, true);
