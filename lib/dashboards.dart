@@ -792,7 +792,7 @@ class _DashboardsState extends State<Dashboards> {
                     'What activity/ies will my students do?',
                     _formatAsBulletList(folder['Activity']),
                     folder['ActivityRemarks'] ??
-                        ''), // No bullet formatting for remarks
+                        ''), // No bullet formatting for the remarks
                 _buildPDFTableRow(
                     'What two (2) method cards will my students use?',
                     _formatAsBulletList(folder['Lesson']),
@@ -801,7 +801,7 @@ class _DashboardsState extends State<Dashboards> {
                     'What are the expected outputs?',
                     _formatAsBulletList(folder['Output']),
                     folder['OutputRemarks'] ??
-                        ''), // No bullet formatting for remarks
+                        ''), // No bullet formatting for the remarks
                 _buildPDFTableRow(
                     'What instructions will I give my students?',
                     _formatAsBulletList(folder['Instruction']),
