@@ -1818,8 +1818,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       items: lessons.map((lesson) {
         return DropdownMenuItem<String>(
           value: lesson['back_cards_header_id'].toString(),
-          child: Text(
-              '${lesson['cards_title']} ${lesson['back_cards_header_id']}'),
+          child: Text('${lesson['cards_title']}'),
         );
       }).toList(),
       onChanged: (String? newValue) {

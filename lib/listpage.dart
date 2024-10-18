@@ -12,7 +12,7 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart'; // Ensure this import is included for printing
+import 'package:printing/printing.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
@@ -86,6 +86,24 @@ class _ListPageState extends State<ListPage> {
                       'outputs_remarks': item['outputs_remarks'],
                       'project_cards_remarks': item['project_cards_remarks'],
                       'instruction_remarks': item['instruction_remarks'],
+                      // id
+                      'project_id': (item['project_id'] ?? '').toString(),
+                      'activities_details_id':
+                          (item['activities_details_id'] ?? '').toString(),
+                      'project_cards_id':
+                          (item['project_cards_id'] ?? '').toString(),
+                      'outputs_id': (item['outputs_id'] ?? '').toString(),
+                      'instruction_id':
+                          (item['instruction_id'] ?? '').toString(),
+                      'coach_detail_id':
+                          (item['coach_detail_id'] ?? '').toString(),
+                      'module_master_id':
+                          (item['module_master_id'] ?? '').toString(),
+                      'cards_id': (item['cards_id'] ?? '').toString(),
+                      'back_cards_header_id':
+                          (item['back_cards_header_id'] ?? '').toString(),
+                      'activities_header_id':
+                          (item['activities_header_id'] ?? '').toString(),
                     })
                 .toList());
           });
@@ -510,15 +528,18 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                         color: Colors.black,
                         onPressed: () {
                           _showEditDialog(
-                              context,
-                              'Project Code',
-                              widget.folder['project_subject_code'] ?? '',
-                              'activity', (newValue) {
-                            setState(() {
-                              widget.folder['project_subject_code'] =
-                                  newValue; // Update the folder data
-                            });
-                          });
+                            context,
+                            'Project Code',
+                            widget.folder['project_subject_code'] ?? '',
+                            'activity',
+                            (newValue) {
+                              setState(() {
+                                widget.folder['project_subject_code'] =
+                                    newValue; // Update the folder data
+                              });
+                            },
+                            widget.folder['project_id'],
+                          );
                         },
                       ),
                     ),
@@ -534,16 +555,18 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                         color: Colors.black,
                         onPressed: () {
                           _showEditDialog(
-                              context,
-                              'Project Description',
-                              widget.folder['project_subject_description'] ??
-                                  '',
-                              'activity', (newValue) {
-                            setState(() {
-                              widget.folder['project_subject_description'] =
-                                  newValue; // Update the folder data
-                            });
-                          });
+                            context,
+                            'Project Description',
+                            widget.folder['project_subject_description'] ?? '',
+                            'Subject', // Use 'Subject' as the type
+                            (newValue) {
+                              setState(() {
+                                widget.folder['project_subject_description'] =
+                                    newValue;
+                              });
+                            },
+                            widget.folder['project_id'],
+                          );
                         },
                       ),
                     ),
@@ -558,15 +581,17 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                         color: Colors.black,
                         onPressed: () {
                           _showEditDialog(
-                              context,
-                              'Start Date',
-                              widget.folder['project_start_date'] ?? '',
-                              'activity', (newValue) {
-                            setState(() {
-                              widget.folder['project_start_date'] =
-                                  newValue; // Update the folder data
-                            });
-                          });
+                            context,
+                            'Start Date',
+                            widget.folder['project_start_date'] ?? '',
+                            'Start', // Use 'Start' as the type
+                            (newValue) {
+                              setState(() {
+                                widget.folder['project_start_date'] = newValue;
+                              });
+                            },
+                            widget.folder['project_id'],
+                          );
                         },
                       ),
                     ),
@@ -581,15 +606,17 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                         color: Colors.black,
                         onPressed: () {
                           _showEditDialog(
-                              context,
-                              'End Date',
-                              widget.folder['project_end_date'] ?? '',
-                              'activity', (newValue) {
-                            setState(() {
-                              widget.folder['project_end_date'] =
-                                  newValue; // Update the folder data
-                            });
-                          });
+                            context,
+                            'End Date',
+                            widget.folder['project_end_date'] ?? '',
+                            'End', // Use 'End' as the type
+                            (newValue) {
+                              setState(() {
+                                widget.folder['project_end_date'] = newValue;
+                              });
+                            },
+                            widget.folder['project_id'],
+                          );
                         },
                       ),
                     ),
@@ -604,15 +631,18 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                         color: Colors.black,
                         onPressed: () {
                           _showEditDialog(
-                              context,
-                              'Module',
-                              widget.folder['module_master_name'] ?? '',
-                              'activity', (newValue) {
-                            setState(() {
-                              widget.folder['module_master_name'] =
-                                  newValue; // Update the folder data
-                            });
-                          });
+                            context,
+                            'Module',
+                            widget.folder['module_master_name'] ?? '',
+                            'activity',
+                            (newValue) {
+                              setState(() {
+                                widget.folder['module_master_name'] =
+                                    newValue; // Update the folder data
+                              });
+                            },
+                            widget.folder['module_master_id'],
+                          );
                         },
                       ),
                     ),
@@ -665,18 +695,21 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                                 color: Colors.black,
                                 onPressed: () {
                                   _showEditDialog(
-                                      context,
-                                      'Activity',
-                                      widget.folder[
-                                              'activities_details_content'] ??
-                                          '',
-                                      'activity', (newValue) {
-                                    setState(() {
-                                      widget.folder[
-                                              'activities_details_content'] =
-                                          newValue; // Update the folder data
-                                    });
-                                  });
+                                    context,
+                                    'Activity',
+                                    widget.folder[
+                                            'activities_details_content'] ??
+                                        '',
+                                    'activity',
+                                    (newValue) {
+                                      setState(() {
+                                        widget.folder[
+                                                'activities_details_content'] =
+                                            newValue; // Update the folder data
+                                      });
+                                    },
+                                    widget.folder['activities_details_id'],
+                                  );
                                 },
                               ),
                               IconButton(
@@ -684,18 +717,21 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                                 color: Colors.black,
                                 onPressed: () {
                                   _showEditDialog(
-                                      context,
-                                      'Activity Remarks',
-                                      widget.folder[
-                                              'activities_details_remarks'] ??
-                                          '',
-                                      'activity', (newValue) {
-                                    setState(() {
-                                      widget.folder[
-                                              'activities_details_remarks'] =
-                                          newValue; // Update the folder data
-                                    });
-                                  });
+                                    context,
+                                    'Activity Remarks',
+                                    widget.folder[
+                                            'activities_details_remarks'] ??
+                                        '',
+                                    'activity',
+                                    (newValue) {
+                                      setState(() {
+                                        widget.folder[
+                                                'activities_details_remarks'] =
+                                            newValue; // Update the folder data
+                                      });
+                                    },
+                                    widget.folder['activities_details_id'],
+                                  );
                                 },
                               ),
                             ],
@@ -751,15 +787,18 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                                 color: Colors.black,
                                 onPressed: () {
                                   _showEditDialog(
-                                      context,
-                                      'Output',
-                                      widget.folder['outputs_content'] ?? '',
-                                      'activity', (newValue) {
-                                    setState(() {
-                                      widget.folder['outputs_content'] =
-                                          newValue; // Update the folder data
-                                    });
-                                  });
+                                    context,
+                                    'Output',
+                                    widget.folder['outputs_content'] ?? '',
+                                    'activity',
+                                    (newValue) {
+                                      setState(() {
+                                        widget.folder['outputs_content'] =
+                                            newValue; // Update the folder data
+                                      });
+                                    },
+                                    widget.folder['outputs_id'],
+                                  );
                                 },
                               ),
                               IconButton(
@@ -767,15 +806,18 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                                 color: Colors.black,
                                 onPressed: () {
                                   _showEditDialog(
-                                      context,
-                                      'Output Remarks',
-                                      widget.folder['outputs_remarks'] ?? '',
-                                      'activity', (newValue) {
-                                    setState(() {
-                                      widget.folder['outputs_remarks'] =
-                                          newValue; // Update the folder data
-                                    });
-                                  });
+                                    context,
+                                    'Output Remarks',
+                                    widget.folder['outputs_remarks'] ?? '',
+                                    'activity',
+                                    (newValue) {
+                                      setState(() {
+                                        widget.folder['outputs_remarks'] =
+                                            newValue; // Update the folder data
+                                      });
+                                    },
+                                    widget.folder['outputs_id'],
+                                  );
                                 },
                               ),
                             ],
@@ -836,16 +878,18 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                                 color: Colors.black,
                                 onPressed: () {
                                   _showEditDialog(
-                                      context,
-                                      'Instruction',
-                                      widget.folder['instruction_content'] ??
-                                          '',
-                                      'activity', (newValue) {
-                                    setState(() {
-                                      widget.folder['instruction_content'] =
-                                          newValue; // Update the folder data
-                                    });
-                                  });
+                                    context,
+                                    'Instruction',
+                                    widget.folder['instruction_content'] ?? '',
+                                    'activity',
+                                    (newValue) {
+                                      setState(() {
+                                        widget.folder['instruction_content'] =
+                                            newValue; // Update the folder data
+                                      });
+                                    },
+                                    widget.folder['instruction_id'],
+                                  );
                                 },
                               ),
                               IconButton(
@@ -853,16 +897,18 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                                 color: Colors.black,
                                 onPressed: () {
                                   _showEditDialog(
-                                      context,
-                                      'Instruction Remarks',
-                                      widget.folder['instruction_remarks'] ??
-                                          '',
-                                      'activity', (newValue) {
-                                    setState(() {
-                                      widget.folder['instruction_remarks'] =
-                                          newValue; // Update the folder data
-                                    });
-                                  });
+                                    context,
+                                    'Instruction Remarks',
+                                    widget.folder['instruction_remarks'] ?? '',
+                                    'activity',
+                                    (newValue) {
+                                      setState(() {
+                                        widget.folder['instruction_remarks'] =
+                                            newValue; // Update the folder data
+                                      });
+                                    },
+                                    widget.folder['instruction_id'],
+                                  );
                                 },
                               ),
                             ],
@@ -922,18 +968,18 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                                 color: Colors.black,
                                 onPressed: () {
                                   _showEditDialog(
-                                      context,
-                                      'Coach Detail',
-                                      widget.folder['coach_detail_content'] ??
-                                          '',
-                                      'activity', (newValue) {
-                                    setState(() {
-                                      widget.folder['coach_detail_content'] =
-                                          newValue; // Update the folder data
-                                    });
-                                  });
-                                  print('THE ID: ' +
-                                      widget.folder['coach_detail_id']);
+                                    context,
+                                    'Coach Detail',
+                                    widget.folder['coach_detail_content'] ?? '',
+                                    'activity',
+                                    (newValue) {
+                                      setState(() {
+                                        widget.folder['coach_detail_content'] =
+                                            newValue; // Update the folder data
+                                      });
+                                    },
+                                    widget.folder['coach_detail_id'],
+                                  );
                                 },
                               ),
                               IconButton(
@@ -941,16 +987,18 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                                 color: Colors.black,
                                 onPressed: () {
                                   _showEditDialog(
-                                      context,
-                                      'Coach Detail Remarks',
-                                      widget.folder['coach_detail_renarks'] ??
-                                          '',
-                                      'activity', (newValue) {
-                                    setState(() {
-                                      widget.folder['coach_detail_renarks'] =
-                                          newValue; // Update the folder data
-                                    });
-                                  });
+                                    context,
+                                    'Coach Detail Remarks',
+                                    widget.folder['coach_detail_renarks'] ?? '',
+                                    'activity',
+                                    (newValue) {
+                                      setState(() {
+                                        widget.folder['coach_detail_renarks'] =
+                                            newValue; // Update the folder data
+                                      });
+                                    },
+                                    widget.folder['coach_detail_id'],
+                                  );
                                 },
                               ),
                             ],
@@ -1027,22 +1075,21 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
       final response = await http.post(
         Uri.parse('http://localhost/design/lib/api/updates.php'),
         headers: {
-          'Content-Type': 'application/json', // Set content type to JSON
+          'Content-Type': 'application/json',
         },
         body: json.encode({
-          'operation': type, // Use the type to determine the operation
-          'json': json.encode(updatedData), // Encode the updated data as JSON
+          'operation': type,
+          'json': json.encode(updatedData),
         }),
       );
 
-      // Log the response body for debugging
-      print('Response body: ${response.body}'); // Log the raw response
+      print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         if (response.body.isNotEmpty) {
           try {
-            final result = json.decode(response.body); // Attempt to decode JSON
-            if (result['error'] != null) {
+            final result = json.decode(response.body);
+            if (result is Map<String, dynamic> && result.containsKey('error')) {
               print('Error: ${result['error']}');
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Error: ${result['error']}')),
@@ -1052,6 +1099,51 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Update successful')),
               );
+
+              setState(() {
+                switch (type) {
+                  case 'activity':
+                    widget.folder['activities_details_content'] =
+                        updatedData['actContent'];
+                    widget.folder['activities_details_remarks'] =
+                        updatedData['actRemark'];
+                    break;
+                  case 'output':
+                    widget.folder['outputs_content'] =
+                        updatedData['outContent'];
+                    widget.folder['outputs_remarks'] =
+                        updatedData['outRemarks'];
+                    break;
+                  case 'instruction':
+                    widget.folder['instruction_content'] =
+                        updatedData['instructContent'];
+                    widget.folder['instruction_remarks'] =
+                        updatedData['instructRemarks'];
+                    break;
+                  case 'coachDetail':
+                    widget.folder['coach_detail_content'] =
+                        updatedData['coachContent'];
+                    widget.folder['coach_detail_remarks'] =
+                        updatedData['coachRemarks'];
+                    break;
+                  case 'project':
+                    widget.folder['project_subject_code'] =
+                        updatedData['project_subject_code'];
+                    break;
+                  case 'Start':
+                    widget.folder['project_start_date'] =
+                        updatedData['project_start_date'];
+                    break;
+                  case 'End':
+                    widget.folder['project_end_date'] =
+                        updatedData['project_end_date'];
+                    break;
+                  case 'Subject':
+                    widget.folder['project_subject_description'] =
+                        updatedData['project_subject_description'];
+                    break;
+                }
+              });
             } else {
               print('Update failed');
               ScaffoldMessenger.of(context).showSnackBar(
@@ -1059,8 +1151,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
               );
             }
           } catch (jsonError) {
-            print(
-                'JSON decoding error: $jsonError'); // Log JSON decoding errors
+            print('JSON decoding error: $jsonError');
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Invalid response format')),
             );
@@ -1087,13 +1178,13 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
     }
   }
 
-  // Function to show the edit dialog for multiple lines
   void _showEditDialog(BuildContext context, String title, String initialValue,
-      String type, Function(String) onSave) {
+      String type, Function(String) onSave, String editedId) {
     List<String> initialValues = initialValue.split('\n');
     List<TextEditingController> controllers = initialValues
         .map((value) => TextEditingController(text: value))
         .toList();
+    print('THE ID: ' + editedId);
 
     showDialog(
       context: context,
@@ -1106,7 +1197,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                 return TextField(
                   controller: controller,
                   decoration: InputDecoration(hintText: 'Enter new value'),
-                  maxLines: null, // Allow multiple lines
+                  maxLines: null,
                 );
               }).toList(),
             ),
@@ -1116,62 +1207,71 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
               onPressed: () {
                 String newValue =
                     controllers.map((controller) => controller.text).join('\n');
-                onSave(newValue); // Call the save function with the new value
-                Navigator.of(context).pop(); // Close the dialog
+                onSave(newValue);
+                Navigator.of(context).pop();
 
-                // Prepare the updated data based on the type
                 Map<String, dynamic> updatedData = {};
                 switch (type) {
                   case 'activity':
                     updatedData = {
-                      'actId': widget.folder[
-                          'activities_details_id'], // Assuming you have this ID
+                      'actId': editedId,
                       'actContent': newValue,
                       'actRemark': widget.folder['activities_details_remarks'],
                     };
                     break;
                   case 'output':
                     updatedData = {
-                      'outId': widget
-                          .folder['outputs_id'], // Assuming you have this ID
+                      'outId': editedId,
                       'outContent': newValue,
                       'outRemarks': widget.folder['outputs_remarks'],
                     };
                     break;
                   case 'instruction':
                     updatedData = {
-                      'instructionId': widget.folder[
-                          'instruction_id'], // Assuming you have this ID
+                      'instructionId': editedId,
                       'instructContent': newValue,
                       'instructRemarks': widget.folder['instruction_remarks'],
                     };
                     break;
                   case 'coachDetail':
                     updatedData = {
-                      'coachId': widget.folder[
-                          'coach_detail_id'], // Assuming you have this ID
+                      'coachId': editedId,
                       'coachContent': newValue,
-                      'coachRemarks': widget.folder['coach_detail_renarks'],
+                      'coachRemarks': widget.folder['coach_detail_remarks'],
                     };
                     break;
-                  case 'project': // Add this case if you have a project update
+                  case 'project':
                     updatedData = {
-                      'project_id': widget
-                          .folder['projectId'], // Assuming you have this ID
-                      'project_title':
-                          newValue, // Update the project title or other fields
-                      // Add other fields as necessary
+                      'project_id': editedId,
+                      'project_subject_code': newValue,
+                    };
+                    break;
+                  case 'Start':
+                    updatedData = {
+                      'project_id': editedId,
+                      'project_start_date': newValue,
+                    };
+                    break;
+                  case 'End':
+                    updatedData = {
+                      'project_id': editedId,
+                      'project_end_date': newValue,
+                    };
+                    break;
+                  case 'Subject':
+                    updatedData = {
+                      'project_id': editedId,
+                      'project_subject_description': newValue,
                     };
                     break;
                 }
 
-                // Call the update function with the updated data
                 _updateFolderDetails(type, updatedData);
               },
               child: const Text('Save'),
             ),
             TextButton(
-              onPressed: () => Navigator.of(context).pop(), // Close the dialog
+              onPressed: () => Navigator.of(context).pop(),
               child: const Text('Cancel'),
             ),
           ],

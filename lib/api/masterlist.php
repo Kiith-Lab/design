@@ -521,10 +521,17 @@ class Get1
 
             // Convert specified fields to newline-separated strings
             foreach ($groupedFolders as &$folder) {
-                $folder['activities_details_content'] = isset($folder['activities_details_content']) ? implode("\n", json_decode($folder['activities_details_content'], true)) : '';
-                $folder['outputs_content'] = isset($folder['outputs_content']) ? implode("\n", json_decode($folder['outputs_content'], true)) : '';
-                $folder['instruction_content'] = isset($folder['instruction_content']) ? implode("\n", json_decode($folder['instruction_content'], true)) : '';
-                $folder['coach_detail_content'] = isset($folder['coach_detail_content']) ? implode("\n", json_decode($folder['coach_detail_content'], true)) : '';
+                $activitiesContent = json_decode($folder['activities_details_content'], true);
+                $folder['activities_details_content'] = is_array($activitiesContent) ? implode("\n", $activitiesContent) : '';
+
+                $outputsContent = json_decode($folder['outputs_content'], true);
+                $folder['outputs_content'] = is_array($outputsContent) ? implode("\n", $outputsContent) : '';
+
+                $instructionContent = json_decode($folder['instruction_content'], true);
+                $folder['instruction_content'] = is_array($instructionContent) ? implode("\n", $instructionContent) : '';
+
+                $coachDetailContent = json_decode($folder['coach_detail_content'], true);
+                $folder['coach_detail_content'] = is_array($coachDetailContent) ? implode("\n", $coachDetailContent) : '';
             }
 
             return json_encode(['folders' => array_values($groupedFolders)]);
