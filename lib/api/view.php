@@ -586,121 +586,202 @@ ORDER BY
         }
     }
 
+    // function getFolders()
+    // {
+    //     try {
+    //         $sql = "SELECT 
+    //         tbl_project.project_id AS ProjectId,
+    //         tbl_users.users_status,
+    //         tbl_module_master.module_master_name AS Mode, 
+    //         tbl_activities_header.activities_header_duration AS Duration,  
+    //         tbl_project.project_title AS Lesson, 
+    //         tbl_activities_details.activities_details_content AS Activity, 
+    //         tbl_activities_details.activities_details_remarks AS ActivityRemarks, 
+    //         tbl_outputs.outputs_content AS Output, 
+    //         tbl_outputs.outputs_remarks AS OutputRemarks, 
+    //         tbl_instruction.instruction_content AS Instruction, 
+    //         tbl_instruction.instruction_remarks AS InstructionRemarks, 
+    //         tbl_coach_detail.coach_detail_content AS CoachDetail,
+    //         tbl_coach_detail.coach_detail_renarks AS CoachDetailRemarks,
+    //         tbl_project.project_description AS ProjectDescription,
+    //         tbl_project.project_start_date AS StartDate,
+    //         tbl_project.project_end_date AS EndDate
+    //         FROM 
+    //         tbl_folder
+    //         LEFT JOIN tbl_project ON tbl_folder.projectId = tbl_project.project_id
+    //         LEFT JOIN tbl_project_modules ON tbl_folder.project_moduleId = tbl_project_modules.project_modules_id
+    //         LEFT JOIN tbl_module_master ON tbl_project_modules.project_modules_masterId = tbl_module_master.module_master_id
+    //         LEFT JOIN tbl_activities_details ON tbl_folder.activities_detailId = tbl_activities_details.activities_details_id
+    //         LEFT JOIN tbl_activities_header ON tbl_activities_header.activities_header_modulesId = tbl_activities_details.activities_details_id
+    //         LEFT JOIN tbl_outputs ON tbl_folder.outputId = tbl_outputs.outputs_id
+    //         LEFT JOIN tbl_instruction ON tbl_folder.instructionId = tbl_instruction.instruction_id
+    //         LEFT JOIN tbl_coach_detail ON tbl_folder.coach_detailsId = tbl_coach_detail.coach_detail_id
+    //         LEFT JOIN tbl_users ON tbl_project.project_userId = tbl_users.users_id";
+
+    //         $stmt = $this->pdo->prepare($sql);
+    //         $stmt->execute();
+
+    //         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    //         // Group by ProjectId and combine related fields
+    //         $groupedResults = [];
+
+    //         foreach ($results as $row) {
+    //             $projectId = $row['ProjectId'];
+
+    //             if (!isset($groupedResults[$projectId])) {
+    //                 // Initialize the group if it doesn't exists in the data or table
+    //                 $groupedResults[$projectId] = [
+    //                     'ProjectId' => $projectId,
+    //                     'users_status' => $row['users_status'],
+    //                     'Mode' => $row['Mode'],
+    //                     'Duration' => $row['Duration'],
+    //                     'Lesson' => $row['Lesson'],
+    //                     'ProjectDescription' => $row['ProjectDescription'],
+    //                     'StartDate' => $row['StartDate'],
+    //                     'EndDate' => $row['EndDate'],
+    //                     'Activity' => [],
+    //                     'ActivityRemarks' => [],
+    //                     'Output' => [],
+    //                     'OutputRemarks' => [],
+    //                     'Instruction' => [],
+    //                     'InstructionRemarks' => [],
+    //                     'CoachDetail' => [],
+    //                     'CoachDetailRemarks' => []
+    //                 ];
+    //             }
+
+    //             // Append the details to the corresponding arrays
+    //             $groupedResults[$projectId]['Activity'][] = $row['Activity'];
+    //             $groupedResults[$projectId]['ActivityRemarks'][] = $row['ActivityRemarks'];
+    //             $groupedResults[$projectId]['Output'][] = $row['Output'];
+    //             $groupedResults[$projectId]['OutputRemarks'][] = $row['OutputRemarks'];
+    //             $groupedResults[$projectId]['Instruction'][] = $row['Instruction'];
+    //             $groupedResults[$projectId]['InstructionRemarks'][] = $row['InstructionRemarks'];
+    //             $groupedResults[$projectId]['CoachDetail'][] = $row['CoachDetail'];
+    //             $groupedResults[$projectId]['CoachDetailRemarks'][] = $row['CoachDetailRemarks'];
+    //         }
+
+    //         // Combine arrays into strings with newlines
+    //         foreach ($groupedResults as &$group) {
+    //             $group['Activity'] = implode("\n", array_filter(array_map(function ($a) {
+    //                 return str_replace(['[', ']', '"'], '', $a);
+    //             }, $group['Activity'])));
+
+    //             $group['ActivityRemarks'] = implode("\n", array_filter(array_map(function ($a) {
+    //                 return str_replace(['[', ']', '"'], '', $a);
+    //             }, $group['ActivityRemarks'])));
+
+    //             $group['Output'] = implode("\n", array_filter(array_map(function ($a) {
+    //                 return str_replace(['[', ']', '"'], '', $a);
+    //             }, $group['Output'])));
+
+    //             $group['OutputRemarks'] = implode("\n", array_filter(array_map(function ($a) {
+    //                 return str_replace(['[', ']', '"'], '', $a);
+    //             }, $group['OutputRemarks'])));
+
+    //             $group['Instruction'] = implode("\n", array_filter(array_map(function ($a) {
+    //                 return str_replace(['[', ']', '"'], '', $a);
+    //             }, $group['Instruction'])));
+
+    //             $group['InstructionRemarks'] = implode("\n", array_filter(array_map(function ($a) {
+    //                 return str_replace(['[', ']', '"'], '', $a);
+    //             }, $group['InstructionRemarks'])));
+
+    //             $group['CoachDetail'] = implode("\n", array_filter(array_map(function ($a) {
+    //                 return str_replace(['[', ']', '"'], '', $a);
+    //             }, $group['CoachDetail'])));
+
+    //             $group['CoachDetailRemarks'] = implode("\n", array_filter(array_map(function ($a) {
+    //                 return str_replace(['[', ']', '"'], '', $a);
+    //             }, $group['CoachDetailRemarks'])));
+    //         }
+
+    //         error_log("SQL Query: $sql");
+    //         error_log("Grouped Result: " . print_r($groupedResults, true));
+
+    //         return json_encode(array_values($groupedResults));
+    //     } catch (PDOException $e) {
+    //         error_log("Database error: " . $e->getMessage());
+    //         return json_encode(['error' => 'Database error occurred']);
+    //     } catch (Exception $e) {
+    //         error_log("General error: " . $e->getMessage());
+    //         return json_encode(['error' => 'An error occurred']);
+    //     }
+    // }
+
     function getFolders()
     {
         try {
+            // Your modified SQL query goes here
             $sql = "SELECT 
-            tbl_project.project_id AS ProjectId,
-            tbl_users.users_status,
-            tbl_module_master.module_master_name AS Mode, 
-            tbl_activities_header.activities_header_duration AS Duration,  
-            tbl_project.project_title AS Lesson, 
-            tbl_activities_details.activities_details_content AS Activity, 
-            tbl_activities_details.activities_details_remarks AS ActivityRemarks, 
-            tbl_outputs.outputs_content AS Output, 
-            tbl_outputs.outputs_remarks AS OutputRemarks, 
-            tbl_instruction.instruction_content AS Instruction, 
-            tbl_instruction.instruction_remarks AS InstructionRemarks, 
-            tbl_coach_detail.coach_detail_content AS CoachDetail,
-            tbl_coach_detail.coach_detail_renarks AS CoachDetailRemarks,
-            tbl_project.project_description AS ProjectDescription,
-            tbl_project.project_start_date AS StartDate,
-            tbl_project.project_end_date AS EndDate
-            FROM 
-            tbl_folder
-            LEFT JOIN tbl_project ON tbl_folder.projectId = tbl_project.project_id
-            LEFT JOIN tbl_project_modules ON tbl_folder.project_moduleId = tbl_project_modules.project_modules_id
-            LEFT JOIN tbl_module_master ON tbl_project_modules.project_modules_masterId = tbl_module_master.module_master_id
-            LEFT JOIN tbl_activities_details ON tbl_folder.activities_detailId = tbl_activities_details.activities_details_id
-            LEFT JOIN tbl_activities_header ON tbl_activities_header.activities_header_modulesId = tbl_activities_details.activities_details_id
-            LEFT JOIN tbl_outputs ON tbl_folder.outputId = tbl_outputs.outputs_id
-            LEFT JOIN tbl_instruction ON tbl_folder.instructionId = tbl_instruction.instruction_id
-            LEFT JOIN tbl_coach_detail ON tbl_folder.coach_detailsId = tbl_coach_detail.coach_detail_id
-            LEFT JOIN tbl_users ON tbl_project.project_userId = tbl_users.users_id";
+    tbl_project.project_id,
+    GROUP_CONCAT(DISTINCT tbl_module_master.module_master_name ORDER BY tbl_module_master.module_master_name SEPARATOR ', ') AS Mode, 
+    GROUP_CONCAT(DISTINCT tbl_activities_header.activities_header_duration ORDER BY tbl_activities_header.activities_header_duration SEPARATOR ', ') AS Duration,  
+    GROUP_CONCAT(DISTINCT tbl_activities_details.activities_details_content ORDER BY tbl_activities_details.activities_details_content SEPARATOR ', ') AS Activity, 
+    tbl_project.project_title AS Lesson, 
+    GROUP_CONCAT(DISTINCT tbl_outputs.outputs_content ORDER BY tbl_outputs.outputs_content SEPARATOR ', ') AS Output, 
+    GROUP_CONCAT(DISTINCT tbl_instruction.instruction_content ORDER BY tbl_instruction.instruction_content SEPARATOR ', ') AS Instruction, 
+    GROUP_CONCAT(DISTINCT tbl_coach_detail.coach_detail_content ORDER BY tbl_coach_detail.coach_detail_content SEPARATOR ', ') AS CoachDetail,
+    tbl_project.project_description AS ProjectDescription,
+    tbl_project.project_start_date AS StartDate,
+    tbl_project.project_end_date AS EndDate,
+    tbl_activities_details.activities_details_remarks AS ActivityRemarks, 
+    tbl_outputs.outputs_remarks AS OutputRemarks, 
+    tbl_instruction.instruction_remarks AS InstructionRemarks, 
+    tbl_coach_detail.coach_detail_renarks AS CoachDetailRemarks
+FROM 
+    tbl_folder
+LEFT JOIN 
+    tbl_project ON tbl_folder.projectId = tbl_project.project_id
+LEFT JOIN 
+    tbl_project_modules ON tbl_folder.project_moduleId = tbl_project_modules.project_modules_id
+LEFT JOIN 
+    tbl_module_master ON tbl_project_modules.project_modules_masterId = tbl_module_master.module_master_id
+LEFT JOIN 
+    tbl_activities_details ON tbl_folder.activities_detailId = tbl_activities_details.activities_details_id
+LEFT JOIN 
+    tbl_activities_header ON tbl_activities_header.activities_header_modulesId = tbl_activities_details.activities_details_id
+LEFT JOIN 
+    tbl_outputs ON tbl_folder.outputId = tbl_outputs.outputs_id
+LEFT JOIN 
+    tbl_instruction ON tbl_folder.instructionId = tbl_instruction.instruction_id
+LEFT JOIN 
+    tbl_coach_detail ON tbl_folder.coach_detailsId = tbl_coach_detail.coach_detail_id
+GROUP BY 
+    tbl_project.project_id, tbl_project.project_description, tbl_project.project_start_date, tbl_project.project_end_date, tbl_project.project_title;
+";
 
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute();
 
-            $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            // Group by ProjectId and combine related fields
-            $groupedResults = [];
-
-            foreach ($results as $row) {
-                $projectId = $row['ProjectId'];
-
-                if (!isset($groupedResults[$projectId])) {
-                    // Initialize the group if it doesn't exists in the data or table
-                    $groupedResults[$projectId] = [
-                        'ProjectId' => $projectId,
-                        'users_status' => $row['users_status'],
-                        'Mode' => $row['Mode'],
-                        'Duration' => $row['Duration'],
-                        'Lesson' => $row['Lesson'],
-                        'ProjectDescription' => $row['ProjectDescription'],
-                        'StartDate' => $row['StartDate'],
-                        'EndDate' => $row['EndDate'],
-                        'Activity' => [],
-                        'ActivityRemarks' => [],
-                        'Output' => [],
-                        'OutputRemarks' => [],
-                        'Instruction' => [],
-                        'InstructionRemarks' => [],
-                        'CoachDetail' => [],
-                        'CoachDetailRemarks' => []
-                    ];
-                }
-
-                // Append the details to the corresponding arrays
-                $groupedResults[$projectId]['Activity'][] = $row['Activity'];
-                $groupedResults[$projectId]['ActivityRemarks'][] = $row['ActivityRemarks'];
-                $groupedResults[$projectId]['Output'][] = $row['Output'];
-                $groupedResults[$projectId]['OutputRemarks'][] = $row['OutputRemarks'];
-                $groupedResults[$projectId]['Instruction'][] = $row['Instruction'];
-                $groupedResults[$projectId]['InstructionRemarks'][] = $row['InstructionRemarks'];
-                $groupedResults[$projectId]['CoachDetail'][] = $row['CoachDetail'];
-                $groupedResults[$projectId]['CoachDetailRemarks'][] = $row['CoachDetailRemarks'];
-            }
-
-            // Combine arrays into strings with newlines
-            foreach ($groupedResults as &$group) {
-                $group['Activity'] = implode("\n", array_filter(array_map(function ($a) {
-                    return str_replace(['[', ']', '"'], '', $a);
-                }, $group['Activity'])));
-
-                $group['ActivityRemarks'] = implode("\n", array_filter(array_map(function ($a) {
-                    return str_replace(['[', ']', '"'], '', $a);
-                }, $group['ActivityRemarks'])));
-
-                $group['Output'] = implode("\n", array_filter(array_map(function ($a) {
-                    return str_replace(['[', ']', '"'], '', $a);
-                }, $group['Output'])));
-
-                $group['OutputRemarks'] = implode("\n", array_filter(array_map(function ($a) {
-                    return str_replace(['[', ']', '"'], '', $a);
-                }, $group['OutputRemarks'])));
-
-                $group['Instruction'] = implode("\n", array_filter(array_map(function ($a) {
-                    return str_replace(['[', ']', '"'], '', $a);
-                }, $group['Instruction'])));
-
-                $group['InstructionRemarks'] = implode("\n", array_filter(array_map(function ($a) {
-                    return str_replace(['[', ']', '"'], '', $a);
-                }, $group['InstructionRemarks'])));
-
-                $group['CoachDetail'] = implode("\n", array_filter(array_map(function ($a) {
-                    return str_replace(['[', ']', '"'], '', $a);
-                }, $group['CoachDetail'])));
-
-                $group['CoachDetailRemarks'] = implode("\n", array_filter(array_map(function ($a) {
-                    return str_replace(['[', ']', '"'], '', $a);
-                }, $group['CoachDetailRemarks'])));
-            }
+            $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             error_log("SQL Query: $sql");
-            error_log("Grouped Result: " . print_r($groupedResults, true));
+            error_log("Result: " . print_r($returnValue, true));
 
-            return json_encode(array_values($groupedResults));
+            // Format the results into a single container
+            $formattedResult = [];
+            foreach ($returnValue as $row) {
+                $formattedResult[] = [
+                    'Mode' => $row['Mode'],
+                    'Duration' => $row['Duration'],
+                    'Activity' => $row['Activity'],
+                    'Lesson' => $row['Lesson'],
+                    'Output' => $row['Output'],
+                    'Instruction' => $row['Instruction'],
+                    'CoachDetail' => $row['CoachDetail'],
+                    'ProjectDescription' => $row['ProjectDescription'],
+                    'StartDate' => $row['StartDate'],
+                    'EndDate' => $row['EndDate'],
+                    'ActivityRemarks' => $row['ActivityRemarks'],
+                    'OutputRemarks' => $row['OutputRemarks'],
+                    'InstructionRemarks' => $row['InstructionRemarks'],
+                    'CoachDetailRemarks' => $row['CoachDetailRemarks'],
+                ];
+            }
+
+            return json_encode($formattedResult);
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage());
             return json_encode(['error' => 'Database error occurred']);
@@ -709,6 +790,8 @@ ORDER BY
             return json_encode(['error' => 'An error occurred']);
         }
     }
+
+
 
     function getFolderId($json)
     {

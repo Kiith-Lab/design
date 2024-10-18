@@ -567,6 +567,7 @@ class _DashboardsState extends State<Dashboards> {
                                   onTap: () {
                                     if (title == 'Folders') {
                                       _showFolderDetails(context, item);
+                                      print("Title: YAWA, Item: $item");
                                     } else if (title == 'Schools') {
                                       _showDepartmentDetails(context, item);
                                     }
@@ -645,18 +646,24 @@ class _DashboardsState extends State<Dashboards> {
                   child: ListView(
                     children: [
                       // Display folder details with spaces
-                      _buildFolderDetail('Mode', folder['Mode'] ?? 'N/A'),
                       _buildFolderDetail(
-                          'Duration', folder['Duration']?.toString() ?? 'N/A'),
+                        'Module',
+                        _formatAsBulletList(folder['Mode'], useBullets: false),
+                      ),
                       _buildFolderDetail(
-                          'Activity', _formatListToString(folder['Activity'])),
+                        'How long will this activity take?',
+                        _formatAsBulletList(folder['Duration'],
+                            useBullets: false),
+                      ),
+                      _buildFolderDetail(
+                          'Activity', _formatAsBulletList(folder['Activity'])),
                       _buildFolderDetail('Lesson', folder['Lesson'] ?? 'N/A'),
                       _buildFolderDetail(
-                          'Output', _formatListToString(folder['Output'])),
+                          'Output', _formatAsBulletList(folder['Output'])),
                       _buildFolderDetail('Instruction',
-                          _formatListToString(folder['Instruction'])),
+                          _formatAsBulletList(folder['Instruction'])),
                       _buildFolderDetail('Coach Detail',
-                          _formatListToString(folder['CoachDetail'])),
+                          _formatAsBulletList(folder['CoachDetail'])),
                       const SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -728,92 +735,9 @@ class _DashboardsState extends State<Dashboards> {
                 style:
                     pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 20),
-            pw.Table(
-              border: pw.TableBorder.all(),
-              children: [
-                pw.TableRow(
-                  children: [
-                    pw.Padding(
-                      padding: const pw.EdgeInsets.all(5),
-                      child: pw.Text('',
-                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                    ),
-                    pw.Padding(
-                      padding: const pw.EdgeInsets.all(5),
-                      child: pw.Text('',
-                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                    ),
-                    pw.Padding(
-                      padding: const pw.EdgeInsets.all(5),
-                      child: pw.Text('Remarks',
-                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                    ),
-                  ],
-                ),
-                // Removed array and replaced with individual calls
-                _buildPDFTableRow('Project', folder['Project'] ?? 'N/A', ''),
-                _buildPDFTableRow('Project Description',
-                    folder['ProjectDescription'] ?? 'N/A', ''),
-                _buildPDFTableRow(
-                    'Start Date', folder['StartDate'] ?? 'N/A', ''),
-                _buildPDFTableRow('End Date', folder['EndDate'] ?? 'N/A', ''),
-              ],
-            ),
-            pw.SizedBox(
-              height: 20,
-            ),
-            pw.Table(
-              border: pw.TableBorder.all(),
-              children: [
-                pw.TableRow(
-                  children: [
-                    pw.Padding(
-                      padding: const pw.EdgeInsets.all(5),
-                      child: pw.Text('',
-                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                    ),
-                    pw.Padding(
-                      padding: const pw.EdgeInsets.all(5),
-                      child: pw.Text('',
-                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                    ),
-                    pw.Padding(
-                      padding: const pw.EdgeInsets.all(5),
-                      child: pw.Text('Remarks',
-                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                    ),
-                  ],
-                ),
-                _buildPDFTableRow(
-                    'Module', _formatAsBulletList(folder['Mode']), ''),
-                _buildPDFTableRow('How long will this activity take?',
-                    _formatAsBulletList(folder['Duration']?.toString()), ''),
-                _buildPDFTableRow(
-                    'What activity/ies will my students do?',
-                    _formatAsBulletList(folder['Activity']),
-                    folder['ActivityRemarks'] ??
-                        ''), // No bullet formatting for the remarks
-                _buildPDFTableRow(
-                    'What two (2) method cards will my students use?',
-                    _formatAsBulletList(folder['Lesson']),
-                    ''),
-                _buildPDFTableRow(
-                    'What are the expected outputs?',
-                    _formatAsBulletList(folder['Output']),
-                    folder['OutputRemarks'] ??
-                        ''), // No bullet formatting for the remarks
-                _buildPDFTableRow(
-                    'What instructions will I give my students?',
-                    _formatAsBulletList(folder['Instruction']),
-                    folder['InstructionRemarks'] ??
-                        ''), // No bullet formatting for remarks
-                _buildPDFTableRow(
-                    'How can I coach my students while doing this activity?',
-                    _formatAsBulletList(folder['CoachDetail']),
-                    folder['CoachDetailRemarks'] ??
-                        ''), // No bullet formatting for remarks
-              ],
-            ),
+            _buildBasicInfoTable(folder),
+            pw.SizedBox(height: 20),
+            _buildDetailedInfoTable(folder),
           ],
         ),
       ),
@@ -836,44 +760,148 @@ class _DashboardsState extends State<Dashboards> {
     }
   }
 
-  String _formatAsBulletList(dynamic value) {
-    if (value is String && value.contains('folder')) {
-      // Check if the value is related to 'folder'
-      return value.split(',').map((item) => '- $item').join('\n');
-    } else if (value is List && value.any((item) => item.contains('folder'))) {
-      // Check if any item in the list is related to 'folder'
-      return value.map((item) => '• $item').join('\n');
-    }
-    return value?.toString() ??
-        'N/A'; // Return the value as is if not related to 'folder'
+  pw.Widget _buildBasicInfoTable(dynamic folder) {
+    return pw.Table(
+      border: pw.TableBorder.all(),
+      children: [
+        _buildTableHeader(),
+        _buildPDFTableRow('Project', folder['Lesson'] ?? 'N/A', ''),
+        _buildPDFTableRow(
+            'Project Description', folder['ProjectDescription'] ?? 'N/A', ''),
+        _buildPDFTableRow('Start Date', folder['StartDate'] ?? 'N/A', ''),
+        _buildPDFTableRow('End Date', folder['EndDate'] ?? 'N/A', ''),
+      ],
+    );
   }
 
-  pw.TableRow _buildPDFTableRow(
-      String label, String value, String remarksValue) {
+  pw.Widget _buildDetailedInfoTable(dynamic folder) {
+    return pw.Table(
+      border: pw.TableBorder.all(),
+      children: [
+        _buildTableHeader(),
+        _buildPDFTableRow('Module', _formatAsBulletList(folder['Mode']), ''),
+        _buildPDFTableRow('How long will this activity take?',
+            _formatAsBulletList(folder['Duration']), ''),
+        _buildPDFTableRow(
+            'What activity/ies will my students do?',
+            _formatAsBulletList(folder['Activity']),
+            folder['ActivityRemarks'] ?? ''),
+        _buildPDFTableRow('What two (2) method cards will my students use?',
+            _formatAsBulletList(folder['Lesson']), ''),
+        _buildPDFTableRow(
+            'What are the expected outputs?',
+            _formatAsBulletList(folder['Output']),
+            folder['OutputRemarks'] ?? ''),
+        _buildPDFTableRow(
+            'What instructions will I give my students?',
+            _formatAsBulletList(folder['Instruction']),
+            folder['InstructionRemarks'] ?? ''),
+        _buildPDFTableRow(
+            'How can I coach my students while doing this activity?',
+            _formatAsBulletList(folder['CoachDetail']),
+            folder['CoachDetailRemarks'] ?? ''),
+      ],
+    );
+  }
+
+  pw.TableRow _buildTableHeader() {
     return pw.TableRow(
       children: [
         pw.Padding(
           padding: const pw.EdgeInsets.all(5),
-          child: pw.Text(label),
+          child:
+              pw.Text('', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
         ),
         pw.Padding(
           padding: const pw.EdgeInsets.all(5),
-          child: pw.Text(value),
+          child:
+              pw.Text('', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
         ),
         pw.Padding(
           padding: const pw.EdgeInsets.all(5),
-          child: pw.Text(remarksValue),
+          child: pw.Text('Remarks',
+              style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
         ),
       ],
     );
   }
+
+  pw.TableRow _buildPDFTableRow(
+      String label, dynamic value, String remarksValue) {
+    return pw.TableRow(
+      children: [
+        pw.Expanded(
+          flex: 2,
+          child: pw.Padding(
+            padding: const pw.EdgeInsets.all(5),
+            child: pw.Text(label),
+          ),
+        ),
+        pw.Expanded(
+          flex: 5,
+          child: pw.Padding(
+            padding: const pw.EdgeInsets.all(1),
+            child: _buildMultiLineRichText(
+                value.toString()), // Use RichText function
+          ),
+        ),
+        pw.Expanded(
+          flex: 3,
+          child: pw.Padding(
+            padding: const pw.EdgeInsets.all(5),
+            child: pw.Text(remarksValue),
+          ),
+        ),
+      ],
+    );
+  }
+
+  pw.Widget _buildMultiLineRichText(String text) {
+    // Split the text by newline character
+    final lines = text.split('\n');
+
+    return pw.RichText(
+      text: pw.TextSpan(
+        children: lines.map((line) {
+          return pw.TextSpan(
+            text: line + '\n', // Add new line after each text span
+            style: pw.TextStyle(fontSize: 12), // Optionally set a font size
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  // This function formats the data for bullet points
+  String _formatAsBulletList(dynamic value, {bool useBullets = true}) {
+    if (value == null) return 'N/A';
+
+    // If it's a string that looks like an array, parse it manually
+    if (value is String) {
+      // Remove square brackets and split the string by commas
+      List<String> items = value.split(RegExp(r'\], \['));
+
+      List<String> formattedList = items.map((item) {
+        // Clean up each item, remove extra characters (including quotes)
+        String cleanItem = item.replaceAll(RegExp(r'[\[\]"]'), '').trim();
+        return useBullets ? '• $cleanItem' : cleanItem;
+      }).toList();
+
+      // Join items with newline if using bullets, otherwise with commas
+      return formattedList.join(useBullets ? '\n' : ', ');
+    }
+
+    return value.toString(); // Fallback to original behavior if not a string
+  }
+
+// Function to create PDF table rows
 
   Future<void> _generateExcel(dynamic folder) async {
     // Create a new Excel document
     final Excel excel = Excel.createExcel();
     Sheet sheet = excel['Sheet1'];
 
-    // Set the width of each column to appropriate values in the pdf
+    // Set the width of each column to appropriate values
     sheet.setColWidth(0, 50); // Column A
     sheet.setColWidth(1, 110); // Column B
     sheet.setColWidth(2, 40); // Column C
@@ -1226,7 +1254,7 @@ class _DashboardsState extends State<Dashboards> {
                                                                       "json":
                                                                           jsondata,
                                                                       "operation":
-                                                                          "getFolderId",
+                                                                          "getFolders",
                                                                     },
                                                                   );
 
