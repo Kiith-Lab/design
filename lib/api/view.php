@@ -407,8 +407,7 @@ class Get
             return json_encode(['error' => 'An error occurred']);
         }
     }
-    function getLessons()
-    {
+    function getLessons(){
         $modeId = isset($_POST['modeId']) ? $_POST['modeId'] : '';
         try {
             $sql = "SELECT 
@@ -489,7 +488,8 @@ ORDER BY
     {
         try {
             $sql = "SELECT a.*, b.role_name FROM tbl_users a
-            INNER JOIN tbl_role b ON b.role_id = a.users_roleId";
+            INNER JOIN tbl_role b ON b.role_id = a.users_roleId
+            WHERE a.register_status != 0";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute();
 
@@ -540,8 +540,7 @@ ORDER BY
             return json_encode(['error' => 'An error occurred']);
         }
     }
-    function getSchool()
-    {
+    function getSchool(){
         try {
             $sql = "SELECT * FROM tbl_school";
             $stmt = $this->pdo->prepare($sql);
@@ -561,8 +560,7 @@ ORDER BY
             return json_encode(['error' => 'An error occurred']);
         }
     }
-    function getInstructors()
-    {
+    function getInstructors(){
         try {
             $sql = "SELECT a.*, b.role_name, c.school_name, d.department_name FROM tbl_users a
             INNER JOIN tbl_role b ON b.role_id = a.users_roleId
@@ -586,8 +584,7 @@ ORDER BY
         }
     }
 
-    function getFolders()
-    {
+    function getFolders(){
         try {
             $sql = "SELECT 
             tbl_project.project_id AS ProjectId,
@@ -775,8 +772,7 @@ ORDER BY
             return json_encode(['error' => 'An error occurred']);
         }
     }
-    function getUserSchoolDepartment()
-    {
+    function getUserSchoolDepartment(){
         try {
             $sql = "SELECT * FROM `tbl_users` INNER JOIN tbl_school ON tbl_school.school_id = tbl_users.users_schoolId INNER JOIN tbl_department ON tbl_department.department_id = tbl_users.users_departmantId";
             $stmt = $this->pdo->prepare($sql);
@@ -796,8 +792,7 @@ ORDER BY
             return json_encode(['error' => 'An error occurred']);
         }
     }
-    function getDepartments()
-    {
+    function getDepartments(){
         try {
             $sql = "SELECT * FROM tbl_department";
             $stmt = $this->pdo->prepare($sql);
@@ -817,8 +812,7 @@ ORDER BY
             return json_encode(['error' => 'An error occurred']);
         }
     }
-    function getUserNotActive()
-    {
+    function getUserNotActive(){
         try {
             $sql = "SELECT tbl_users.users_firstname, tbl_users.users_middlename, tbl_users.users_lastname, tbl_role.role_name 
                     FROM tbl_users 
@@ -846,8 +840,7 @@ ORDER BY
             return json_encode(['error' => 'An error occurred']);
         }
     }
-    function getUserNotVerify()
-    {
+    function getUserNotVerify(){
         try {
             $sql = "SELECT tbl_users.*, tbl_role.role_name 
                     FROM tbl_users 
@@ -876,19 +869,9 @@ ORDER BY
         }
     }
     function UserVerify($json) {
+        $json = json_decode($json, true);
+        $updatedRegisterStatus = 1; // Set the status to 'verified'
         try {
-            $updatedRegisterStatus = 1; // Set the status to 'verified'
-            $json = json_decode($json, true);
-            
-            // Check if the JSON was decoded properly
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                return json_encode(['success' => false, 'message' => 'Invalid JSON format.']);
-            }
-    
-            if (empty($json['users_id'])) {
-                return json_encode(['success' => false, 'message' => 'User ID is missing.']);
-            }
-    
             // Prepare SQL statement
             $sql = "UPDATE tbl_users SET register_status = :updatedRegisterStatus WHERE users_id = :users_id";
             $stmt = $this->pdo->prepare($sql);
@@ -912,8 +895,7 @@ ORDER BY
         }
     }
 
-    function getAllProjects()
-    {
+    function getAllProjects(){
         try {
             // $sql = "SELECT project_subject_code, project_title FROM tbl_project";
             $sql = "SELECT * FROM tbl_project";
@@ -1034,7 +1016,6 @@ switch ($operation) {
         echo $get->getUserNotVerify();
         break;
     case "UserVerify":
-        $json = isset($_POST['json']) ? $_POST['json'] : '';
         echo $get->UserVerify($json);
         break;
     case "getAllProjects":

@@ -1,10 +1,11 @@
 import 'dart:convert';
+
 import 'package:design/config.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class UserVerification extends StatefulWidget {
-  const UserVerification({Key? key}) : super(key: key);
+  const UserVerification({super.key});
 
   @override
   _UserVerificationState createState() => _UserVerificationState();
@@ -58,17 +59,10 @@ class _UserVerificationState extends State<UserVerification> {
     });
 
     try {
+      final jsonData = jsonEncode({'users_id': userId});
       final response = await http.post(
         Uri.parse('${baseUrl}view.php'),
-        body: jsonEncode({
-          'operation': 'UserVerify',
-          'json': jsonEncode({
-            'users_id': userId,
-          }),
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        body: {"json": jsonData, "operation": "UserVerify"},
       );
 
       if (response.statusCode == 200) {
@@ -77,23 +71,34 @@ class _UserVerificationState extends State<UserVerification> {
           _isLoading = false;
           if (decodedResponse['success'] != null &&
               decodedResponse['success']) {
-            // Handle success response
-            // Optionally, refresh the user list or update UI
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('User verified successfully!')),
+            );
+            _fetchUsers(); // Refresh the user list
           } else {
             _errorMessage =
                 decodedResponse['message'] ?? 'Unknown error occurred';
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error: $_errorMessage')),
+            );
           }
         });
       } else {
         setState(() {
           _isLoading = false;
           _errorMessage = 'Failed to verify user: ${response.statusCode}';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $_errorMessage')),
+          );
         });
       }
     } catch (e) {
       setState(() {
         _isLoading = false;
         _errorMessage = 'Failed to verify user: $e';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $_errorMessage')),
+        );
       });
     }
   }
@@ -163,35 +168,52 @@ class _UserVerificationState extends State<UserVerification> {
                               itemCount: paginatedUsers.length,
                               itemBuilder: (context, index) {
                                 final user = paginatedUsers[index];
-                                return ListTile(
-                                  title: Text(
-                                    '${user['users_firstname'] ?? 'N/A'} ${user['users_lastname'] ?? 'N/A'}',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w500),
+                                return Container(
+                                  margin: const EdgeInsets.symmetric(
+                                      vertical: 8.0), // Optional margin
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[300], // Background color
+                                    borderRadius: BorderRadius.circular(
+                                        8.0), // Rounded corners
                                   ),
-                                  subtitle: Text(user['role_name'] ?? 'N/A'),
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.check,
-                                            color: Colors.green),
-                                        onPressed: () {
-                                          // Handle approve action
-                                          final userId = user['users_id'];
-                                          _saveUpdate(userId);
-                                        },
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.clear,
-                                            color: Colors.red),
-                                        onPressed: () {
-                                          // Handle deny action
-                                          print(
-                                              'Denied: ${user['users_id'].toString()}');
-                                        },
-                                      ),
-                                    ],
+                                  child: ListTile(
+                                    title: Text(
+                                      '${user['users_firstname'] ?? 'N/A'} ${user['users_lastname'] ?? 'N/A'}',
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    subtitle: Text(user['role_name'] ?? 'N/A'),
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        TextButton(
+                                          onPressed: () {
+                                            final userId = user['users_id'];
+                                            _saveUpdate(userId);
+                                          },
+                                          style: TextButton.styleFrom(
+                                            backgroundColor: Colors
+                                                .green[700], // Green background
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16.0),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      8.0), // Rounded corners
+                                            ),
+                                            minimumSize: const Size(
+                                                0, 40), // Set minimum height
+                                          ),
+                                          child: const Text(
+                                            'Accept',
+                                            style: TextStyle(
+                                              color: Colors.white, // White text
+                                            ),
+                                          ),
+                                        ),
+                                        // Additional button for deny action can be added here
+                                      ],
+                                    ),
                                   ),
                                 );
                               },
