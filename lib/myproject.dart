@@ -22,6 +22,18 @@ class _MyProjectPageState extends State<MyProjectPage> {
   final TextEditingController _endDateController = TextEditingController();
 
   Future<void> _addProject() async {
+    // Validate that all required fields are filled
+    if (_projectNameController.text.isEmpty ||
+        _subjectController.text.isEmpty ||
+        _descriptionController.text.isEmpty ||
+        _startDateController.text.isEmpty ||
+        _endDateController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields')),
+      );
+      return; // Exit the function if validation fails
+    }
+
     const String url = "${baseUrl}add.php";
     final Map<String, dynamic> requestBody = {
       'operation': 'addProject',
@@ -322,7 +334,8 @@ class _MyProjectPageState extends State<MyProjectPage> {
                           await _addProject();
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF76BC6C).withOpacity(0.3),
+                          backgroundColor:
+                              const Color(0xFF76BC6C).withOpacity(0.3),
                           shadowColor: const Color(0xFF76BC6C).withOpacity(0.1),
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(
