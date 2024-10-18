@@ -29,7 +29,8 @@ try {
             'users_lastname',
             'users_suffix',
             'users_schoolId',
-            'users_departmantId'
+            'users_departmantId',
+            'user_email' // Added user_email
         ];
         $userData = [];
         foreach ($fields as $field) {
@@ -42,7 +43,7 @@ try {
         $userData['register_status'] = '0';
 
         // Validate input
-        foreach (['users_school_id', 'users_password', 'users_firstname', 'users_lastname', 'users_schoolId', 'users_departmantId'] as $requiredField) {
+        foreach (['users_school_id', 'users_password', 'users_firstname', 'users_lastname', 'users_schoolId', 'users_departmantId', 'user_email'] as $requiredField) {
             if (empty($userData[$requiredField])) {
                 echo json_encode(['success' => false, 'message' => 'All required fields must be filled']);
                 exit;
@@ -59,8 +60,8 @@ try {
 
         // Prepare SQL statement to insert new user
         $stmt = $pdo->prepare("
-            INSERT INTO tbl_users (users_school_id, users_password, users_firstname, users_middlename, users_lastname, users_suffix, users_schoolId, users_departmantId, users_roleId, users_status, register_status) 
-            VALUES (:schoolId, :password, :firstname, :middlename, :lastname, :suffix, :schoolIdFK, :departmentId, :roleId, :userStatus, :registerStatus)
+            INSERT INTO tbl_users (users_school_id, users_password, users_firstname, users_middlename, users_lastname, users_suffix, users_schoolId, users_departmantId, user_email, users_roleId, users_status, register_status) 
+            VALUES (:schoolId, :password, :firstname, :middlename, :lastname, :suffix, :schoolIdFK, :departmentId, :email, :roleId, :userStatus, :registerStatus)
         ");
 
         // Execute the statement
@@ -73,6 +74,7 @@ try {
             ':suffix' => $userData['users_suffix'],
             ':schoolIdFK' => $userData['users_schoolId'],
             ':departmentId' => $userData['users_departmantId'],
+            ':email' => $userData['user_email'],
             ':roleId' => $userData['users_roleId'],
             ':userStatus' => $userData['users_status'],
             ':registerStatus' => $userData['register_status']

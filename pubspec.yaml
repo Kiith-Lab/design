@@ -60,6 +60,7 @@ dependencies:
   excel: ^4.0.6
   google_fonts: ^6.2.1
   flutter_excel_table: ^0.0.4
+  mailer: ^6.2.0
 
 dev_dependencies:
   flutter_test:

@@ -53,8 +53,7 @@ class _LoginPageState extends State<LoginPage> {
 
       try {
         final response = await http.post(
-          Uri.parse(
-              '${baseUrl}login.php'), // Use your server's address
+          Uri.parse('${baseUrl}login.php'), // Use your server's address
           headers: <String, String>{
             'Content-Type': 'application/json; charset=UTF-8',
           },
