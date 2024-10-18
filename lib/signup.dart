@@ -110,8 +110,6 @@ class _SignupPageState extends State<SignupPage> {
             'users_suffix': _suffixController.text,
             'users_schoolId': _selectedSchool ?? '',
             'users_departmantId': _selectedDepartment ?? '',
-            'users_roleId': '2',
-            'users_status': '0', // Default status
           }),
         );
 

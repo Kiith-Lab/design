@@ -42,7 +42,7 @@ class _ListPageState extends State<ListPage> {
         Uri.parse('http://localhost/design/lib/api/masterlist.php'),
         body: {'operation': 'getFolder'},
       );
-      print("FOLDERS FETCH: " + response.body);
+      print("FOLDERS FETCH: ${response.body}");
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
@@ -973,7 +973,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                         cardTitles.isNotEmpty
                             ? cardTitles.map((title) => '• $title').join('\n')
                             : 'No cards available',
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 12),
                       ),
                     ),
@@ -1064,7 +1064,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
             print(
                 'JSON decoding error: $jsonError'); // Log JSON decoding errors
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Invalid response format')),
+              const SnackBar(content: Text('Invalid response format')),
             );
           }
         } else {
@@ -1107,7 +1107,8 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
               children: controllers.map((controller) {
                 return TextField(
                   controller: controller,
-                  decoration: InputDecoration(hintText: 'Enter new value'),
+                  decoration:
+                      const InputDecoration(hintText: 'Enter new value'),
                   maxLines: null, // Allow multiple lines
                 );
               }).toList(),
@@ -1235,8 +1236,8 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                 pw.Table(
                   border: pw.TableBorder.all(),
                   columnWidths: {
-                    0: pw.FlexColumnWidth(1), // Label column
-                    1: pw.FlexColumnWidth(2), // Value column
+                    0: const pw.FlexColumnWidth(1), // Label column
+                    1: const pw.FlexColumnWidth(2), // Value column
                   },
                   children: [
                     _buildPDFTableRow(
@@ -1273,8 +1274,8 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                 pw.Table(
                   border: pw.TableBorder.all(),
                   columnWidths: {
-                    0: pw.FlexColumnWidth(1), // Question column
-                    1: pw.FlexColumnWidth(2), // Notes/Remarks column
+                    0: const pw.FlexColumnWidth(1), // Question column
+                    1: const pw.FlexColumnWidth(2), // Notes/Remarks column
                   },
                   children: [
                     _buildPDFTableRow(

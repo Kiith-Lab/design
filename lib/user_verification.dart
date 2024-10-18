@@ -1,9 +1,7 @@
 import 'dart:convert';
-
 import 'package:design/config.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:shadcn_ui/shadcn_ui.dart';
 
 class UserVerification extends StatefulWidget {
   const UserVerification({Key? key}) : super(key: key);
@@ -27,24 +25,16 @@ class _UserVerificationState extends State<UserVerification> {
     _fetchUsers();
   }
 
-  _fetchUsers() async {
+  Future<void> _fetchUsers() async {
     try {
       final response = await http.post(
         Uri.parse('${baseUrl}view.php'),
-        body: {'operation': 'getUserNotActive'},
+        body: {'operation': 'getUserNotVerify'},
       );
-      print(response.body);
       if (response.statusCode == 200) {
         final decodedResponse = json.decode(response.body);
-
         setState(() {
-          if (decodedResponse is List) {
-            users = decodedResponse;
-          } else if (decodedResponse is Map) {
-            users = [decodedResponse];
-          } else {
-            users = [];
-          }
+          users = (decodedResponse is List) ? decodedResponse : [];
           _isLoading = false;
         });
       } else {
@@ -57,6 +47,53 @@ class _UserVerificationState extends State<UserVerification> {
       setState(() {
         _isLoading = false;
         _errorMessage = 'Failed to load users: $e';
+      });
+    }
+  }
+
+  Future<void> _saveUpdate(int userId) async {
+    setState(() {
+      _isLoading = true; // Start loading before the request
+      _errorMessage = ''; // Reset error message
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse('${baseUrl}view.php'),
+        body: jsonEncode({
+          'operation': 'UserVerify',
+          'json': jsonEncode({
+            'users_id': userId,
+          }),
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final decodedResponse = json.decode(response.body);
+        setState(() {
+          _isLoading = false;
+          if (decodedResponse['success'] != null &&
+              decodedResponse['success']) {
+            // Handle success response
+            // Optionally, refresh the user list or update UI
+          } else {
+            _errorMessage =
+                decodedResponse['message'] ?? 'Unknown error occurred';
+          }
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Failed to verify user: ${response.statusCode}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Failed to verify user: $e';
       });
     }
   }
@@ -81,11 +118,6 @@ class _UserVerificationState extends State<UserVerification> {
         .take(itemsPerPage)
         .toList();
     final totalPages = (filteredUsers.length / itemsPerPage).ceil();
-
-    final headings = [
-      'Full Name',
-      'Role',
-    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -120,89 +152,46 @@ class _UserVerificationState extends State<UserVerification> {
               ),
             ),
 
-            // Table Data
+            // List Data
             Expanded(
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _errorMessage.isNotEmpty
                       ? Center(child: Text(_errorMessage))
                       : users != null && users!.isNotEmpty
-                          ? ShadTable(
-                              columnCount: headings.length,
-                              rowCount: paginatedUsers.length,
-                              header: (context, column) {
-                                return ShadTableCell.header(
-                                  alignment: column == 1
-                                      ? Alignment.centerRight
-                                      : Alignment.centerLeft,
-                                  child: Text(
-                                    headings[column],
+                          ? ListView.builder(
+                              itemCount: paginatedUsers.length,
+                              itemBuilder: (context, index) {
+                                final user = paginatedUsers[index];
+                                return ListTile(
+                                  title: Text(
+                                    '${user['users_firstname'] ?? 'N/A'} ${user['users_lastname'] ?? 'N/A'}',
                                     style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
+                                        fontWeight: FontWeight.w500),
                                   ),
-                                );
-                              },
-                              columnSpanExtent: (index) {
-                                if (index == 0) {
-                                  return const FixedTableSpanExtent(150);
-                                }
-                                if (index == 1) {
-                                  return const MaxTableSpanExtent(
-                                    FixedTableSpanExtent(120),
-                                    RemainingTableSpanExtent(),
-                                  );
-                                }
-                                return null;
-                              },
-                              builder: (context, index) {
-                                final user = paginatedUsers[index.row];
-                                return ShadTableCell(
-                                  alignment: index.column == 1
-                                      ? Alignment.centerRight
-                                      : Alignment.centerLeft,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      showModalBottomSheet(
-                                        context: context,
-                                        builder: (context) {
-                                          return Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              ListTile(
-                                                leading:
-                                                    const Icon(Icons.archive),
-                                                title: const Text('Archive'),
-                                                onTap: () {
-                                                  // Handle archive action
-                                                  Navigator.pop(context);
-                                                },
-                                              ),
-                                              ListTile(
-                                                leading: const Icon(Icons.edit),
-                                                title: const Text('Edit'),
-                                                onTap: () {
-                                                  // Handle edit action
-                                                  Navigator.pop(context);
-                                                },
-                                              ),
-                                            ],
-                                          );
+                                  subtitle: Text(user['role_name'] ?? 'N/A'),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.check,
+                                            color: Colors.green),
+                                        onPressed: () {
+                                          // Handle approve action
+                                          final userId = user['users_id'];
+                                          _saveUpdate(userId);
                                         },
-                                      );
-                                    },
-                                    child: Text(
-                                      index.column == 0
-                                          ? '${user['users_firstname'] ?? 'N/A'} ${user['users_lastname'] ?? 'N/A'}'
-                                          : user['role_name'] ?? 'N/A',
-                                      style: TextStyle(
-                                        fontWeight: index.column == 0
-                                            ? FontWeight.w500
-                                            : FontWeight.normal,
-                                        fontSize: 14,
                                       ),
-                                    ),
+                                      IconButton(
+                                        icon: const Icon(Icons.clear,
+                                            color: Colors.red),
+                                        onPressed: () {
+                                          // Handle deny action
+                                          print(
+                                              'Denied: ${user['users_id'].toString()}');
+                                        },
+                                      ),
+                                    ],
                                   ),
                                 );
                               },

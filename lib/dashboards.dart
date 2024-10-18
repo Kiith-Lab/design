@@ -1019,7 +1019,7 @@ class _DashboardsState extends State<Dashboards> {
         value is List && value.isNotEmpty
             ? value.map((folder) => '• $folder').join('\n')
             : 'No items available',
-        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
       ),
     );
   }
@@ -1824,7 +1824,7 @@ class _DashboardsState extends State<Dashboards> {
                       ],
                     );
                   });
-                }).toList(),
+                }),
               ],
             ),
           ],

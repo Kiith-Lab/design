@@ -1,8 +1,8 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Content-Type: application/json");
+header('Access-Control-Allow-Origin: *'); // Allow all origins or specify your domain
+header('Access-Control-Allow-Methods: POST, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+
 
 // Database connection (ensure this file exists and has the correct PDO object)
 include 'db_connection.php';
@@ -846,6 +846,72 @@ ORDER BY
             return json_encode(['error' => 'An error occurred']);
         }
     }
+    function getUserNotVerify()
+    {
+        try {
+            $sql = "SELECT tbl_users.*, tbl_role.role_name 
+                    FROM tbl_users 
+                    JOIN tbl_role ON tbl_users.users_roleId = tbl_role.role_id
+                    WHERE tbl_users.register_status = 0";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+
+            $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // If no users are found, return an empty array
+            if (!$returnValue) {
+                $returnValue = [];
+            }
+
+            error_log("SQL Query: $sql");
+            error_log("Result: " . print_r($returnValue, true));
+
+            return json_encode($returnValue);  // Always return a list (array)
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            return json_encode(['error' => 'Database error occurred']);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage());
+            return json_encode(['error' => 'An error occurred']);
+        }
+    }
+    function UserVerify($json) {
+        try {
+            $updatedRegisterStatus = 1; // Set the status to 'verified'
+            $json = json_decode($json, true);
+            
+            // Check if the JSON was decoded properly
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return json_encode(['success' => false, 'message' => 'Invalid JSON format.']);
+            }
+    
+            if (empty($json['users_id'])) {
+                return json_encode(['success' => false, 'message' => 'User ID is missing.']);
+            }
+    
+            // Prepare SQL statement
+            $sql = "UPDATE tbl_users SET register_status = :updatedRegisterStatus WHERE users_id = :users_id";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':users_id', $json['users_id'], PDO::PARAM_INT);
+            $stmt->bindParam(':updatedRegisterStatus', $updatedRegisterStatus, PDO::PARAM_INT);
+    
+            // Execute the update
+            $stmt->execute();
+    
+            if ($stmt->rowCount() > 0) {
+                return json_encode(['success' => true, 'message' => 'User verified successfully.']);
+            } else {
+                return json_encode(['success' => false, 'message' => 'No user found or status already updated.']);
+            }
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            return json_encode(['success' => false, 'message' => 'Database error occurred.']);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage());
+            return json_encode(['success' => false, 'message' => 'An error occurred.']);
+        }
+    }
+
     function getAllProjects()
     {
         try {
@@ -881,15 +947,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 // Instantiate the Get class with the database connection
 $get = new Get($pdo);
 
-$json = isset($_POST['json']) ? $_POST['json'] : '';
-// Determine the request method and check for the operation
-$operation = '';
+$json = $_POST['json'] ?? ''; // Use null coalescing operator for cleaner syntax
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $operation = isset($_POST['operation']) ? $_POST['operation'] : '';
+    $operation = $_POST['operation'] ?? ''; // Use null coalescing operator
 } else {
     echo json_encode(['error' => 'Invalid request method']);
-    exit;
+    exit();
 }
+
+// Proceed with operation handling if needed
 
 // Handle different operations based on the request
 switch ($operation) {
@@ -962,6 +1029,13 @@ switch ($operation) {
         break;
     case "getUserNotActive":
         echo $get->getUserNotActive();
+        break;
+    case "getUserNotVerify":
+        echo $get->getUserNotVerify();
+        break;
+    case "UserVerify":
+        $json = isset($_POST['json']) ? $_POST['json'] : '';
+        echo $get->UserVerify($json);
         break;
     case "getAllProjects":
         echo $get->getAllProjects();
