@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:html' as html;
 import 'dart:io';
+import 'dart:math';
 
 import 'package:excel_dart/excel_dart.dart';
 import 'package:flip_card/flip_card.dart';
@@ -1461,10 +1462,6 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
     // Create a new Excel document
     final Excel excel = Excel.createExcel();
     Sheet sheet = excel['Sheet1'];
-    // Set the width of each column to appropriate values
-    sheet.setColWidth(0, 50); // Column A
-    sheet.setColWidth(1, 110); // Column B
-    sheet.setColWidth(2, 40); // Column C
 
     // Add main headers
     sheet.appendRow(['', 'MY DESIGN THINKING PLAN', '']);
@@ -1493,38 +1490,44 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
     sheet.appendRow([
       'What activity/ies will my students do?',
       widget.folder['activities_details_content'] ?? 'No activity',
-      widget.folder['activities_details_remarks'] ??
-          'No remarks', // Added remarks here
+      widget.folder['activities_details_remarks'] ?? 'No remarks',
     ]);
     sheet.appendRow([
       'What two (2) method cards will my students use?',
       cardData?.map((card) => card['cards_title']).join(', ') ?? 'No card',
-      widget.folder['project_cards_remarks'] ??
-          'No remarks', // Added remarks here
+      widget.folder['project_cards_remarks'] ?? 'No remarks',
     ]);
     sheet.appendRow([
-      // In the _generateExcel method
       'How long will this activity take?',
       widget.folder['activities_header_duration'] ?? 'Details here',
-      // widget.folder['duration_remarks'] ?? 'No remarks', // Added remarks here
     ]);
     sheet.appendRow([
       'What are the expected outputs?',
       widget.folder['outputs_content'] ?? 'No output',
-      widget.folder['outputs_remarks'] ?? 'No remarks', // Added remarks here
+      widget.folder['outputs_remarks'] ?? 'No remarks',
     ]);
     sheet.appendRow([
       'What instructions will I give my students?',
       widget.folder['instruction_content'] ?? 'No instruction',
-      widget.folder['instruction_remarks'] ??
-          'No remarks', // Added remarks here
+      widget.folder['instruction_remarks'] ?? 'No remarks',
     ]);
     sheet.appendRow([
       'How can I coach my students while doing this activity?',
       widget.folder['coach_detail_content'] ?? 'No coach detail',
-      widget.folder['coach_detail_renarks'] ??
-          'No remarks', // Added remarks here
+      widget.folder['coach_detail_renarks'] ?? 'No remarks',
     ]);
+
+    // Manually set column widths based on content
+    for (int i = 0; i < sheet.maxCols; i++) {
+      double maxWidth = 0;
+      for (var row in sheet.rows) {
+        if (row.length > i) {
+          final cellValue = row[i]?.value?.toString() ?? '';
+          maxWidth = max(maxWidth, cellValue.length.toDouble());
+        }
+      }
+      sheet.setColWidth(i, maxWidth + 5); // Add a little extra space
+    }
 
     try {
       if (kIsWeb) {
