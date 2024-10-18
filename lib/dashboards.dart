@@ -873,7 +873,7 @@ class _DashboardsState extends State<Dashboards> {
     final Excel excel = Excel.createExcel();
     Sheet sheet = excel['Sheet1'];
 
-    // Set the width of each column to appropriate values
+    // Set the width of each column to appropriate values in the pdf
     sheet.setColWidth(0, 50); // Column A
     sheet.setColWidth(1, 110); // Column B
     sheet.setColWidth(2, 40); // Column C

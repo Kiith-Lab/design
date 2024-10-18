@@ -630,7 +630,7 @@ ORDER BY
                 $projectId = $row['ProjectId'];
 
                 if (!isset($groupedResults[$projectId])) {
-                    // Initialize the group if it doesn't exists
+                    // Initialize the group if it doesn't exists in the data or table
                     $groupedResults[$projectId] = [
                         'ProjectId' => $projectId,
                         'users_status' => $row['users_status'],
