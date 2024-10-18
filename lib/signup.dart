@@ -16,13 +16,11 @@ class _SignupPageState extends State<SignupPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _schoolIdController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _middleNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _suffixController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   String? _selectedSchool;
@@ -38,9 +36,6 @@ class _SignupPageState extends State<SignupPage> {
   //   {'role_id': '3', 'role_name': 'Admin'},
   // ];
 
-  final PageController _pageController = PageController();
-  int _currentPage = 0;
-
   @override
   void initState() {
     super.initState();
@@ -54,12 +49,10 @@ class _SignupPageState extends State<SignupPage> {
       if (response.statusCode == 200) {
         final List<dynamic> schoolsJson = json.decode(response.body);
         setState(() {
-          _schools = schoolsJson
-              .map((school) => {
-                    'school_id': school['school_id'].toString(),
-                    'school_name': school['school_name'],
-                  })
-              .toList();
+          _schools = schoolsJson.map((school) => {
+            'school_id': school['school_id'].toString(),
+            'school_name': school['school_name'],
+          }).toList();
         });
       } else {
         throw Exception('Failed to load schools');
@@ -71,17 +64,14 @@ class _SignupPageState extends State<SignupPage> {
 
   Future<void> _fetchDepartments() async {
     try {
-      final response =
-          await http.get(Uri.parse('${baseUrl}get_departments.php'));
+      final response = await http.get(Uri.parse('${baseUrl}get_departments.php'));
       if (response.statusCode == 200) {
         final List<dynamic> departmentsJson = json.decode(response.body);
         setState(() {
-          _departments = departmentsJson
-              .map((department) => {
-                    'department_id': department['department_id'].toString(),
-                    'department_name': department['department_name'],
-                  })
-              .toList();
+          _departments = departmentsJson.map((department) => {
+            'department_id': department['department_id'].toString(),
+            'department_name': department['department_name'],
+          }).toList();
         });
       } else {
         throw Exception('Failed to load departments');
@@ -120,7 +110,8 @@ class _SignupPageState extends State<SignupPage> {
             'users_suffix': _suffixController.text,
             'users_schoolId': _selectedSchool ?? '',
             'users_departmantId': _selectedDepartment ?? '',
-            'user_email': _emailController.text,
+            'users_roleId': '2',
+            'users_status': '0', // Default status
           }),
         );
 
@@ -143,9 +134,7 @@ class _SignupPageState extends State<SignupPage> {
       } catch (e) {
         print('Error during signup: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text(
-                  'Network error. Please check your connection and try again.')),
+          const SnackBar(content: Text('Network error. Please check your connection and try again.')),
         );
       }
     }
@@ -159,7 +148,6 @@ class _SignupPageState extends State<SignupPage> {
     _middleNameController.clear();
     _lastNameController.clear();
     _suffixController.clear();
-    _emailController.clear();
     setState(() {
       _selectedSchool = null;
       _selectedDepartment = null;
@@ -183,303 +171,200 @@ class _SignupPageState extends State<SignupPage> {
           SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(10.0),
-              child: Center(
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Align(
-                        alignment: Alignment.topLeft,
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 10.0, left: 10.0),
-                          child: IconButton(
-                            icon: const Icon(Icons.arrow_back,
-                                color: Colors.black),
-                            onPressed: () {
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const LoginAppes()),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 150),
-                      const Text(
-                        'FILL UP THE FORM TO SIGN UP',
-                        style: TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        height: 600, // Adjust height as needed
-                        child: PageView(
-                          controller: _pageController,
-                          onPageChanged: (index) {
-                            setState(() {
-                              _currentPage = index;
-                            });
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 10.0, left: 10.0),
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back, color: Colors.black),
+                          onPressed: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (context) => const LoginAppes()),
+                            );
                           },
-                          children: [
-                            // First Page
-                            Column(
-                              children: [
-                                TextFormField(
-                                  controller: _schoolIdController,
-                                  decoration: InputDecoration(
-                                    labelText: 'School ID',
-                                    prefixIcon: const Icon(Icons.school),
-                                    border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                  ),
-                                  validator: (value) => value?.isEmpty ?? true
-                                      ? 'Please enter a School ID'
-                                      : null,
-                                ),
-                                const SizedBox(height: 16),
-                                TextFormField(
-                                  controller: _firstNameController,
-                                  decoration: InputDecoration(
-                                    labelText: 'First Name',
-                                    prefixIcon: const Icon(Icons.person),
-                                    border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                  ),
-                                  validator: (value) => value?.isEmpty ?? true
-                                      ? 'Please enter your First Name'
-                                      : null,
-                                ),
-                                const SizedBox(height: 16),
-                                TextFormField(
-                                  controller: _middleNameController,
-                                  decoration: InputDecoration(
-                                    labelText: 'Middle Name',
-                                    prefixIcon: const Icon(Icons.person),
-                                    border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                TextFormField(
-                                  controller: _lastNameController,
-                                  decoration: InputDecoration(
-                                    labelText: 'Last Name',
-                                    prefixIcon: const Icon(Icons.person),
-                                    border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                  ),
-                                  validator: (value) => value?.isEmpty ?? true
-                                      ? 'Please enter your Last Name'
-                                      : null,
-                                ),
-                                const SizedBox(height: 16),
-                                TextFormField(
-                                  controller: _suffixController,
-                                  decoration: InputDecoration(
-                                    labelText: 'Suffix',
-                                    prefixIcon: const Icon(Icons.person),
-                                    border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                  ),
-                                  // No validator needed, suffix is optional
-                                ),
-                                const SizedBox(height: 20),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    // Validate the form before moving to the next page
-                                    if (_formKey.currentState!.validate()) {
-                                      _pageController.nextPage(
-                                        duration:
-                                            const Duration(milliseconds: 300),
-                                        curve: Curves.easeIn,
-                                      );
-                                    }
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    shape: const CircleBorder(),
-                                    padding: const EdgeInsets.all(20),
-                                  ),
-                                  child: const Icon(Icons.arrow_forward),
-                                ),
-                              ],
-                            ),
-                            // Second Page
-                            Column(
-                              children: [
-                                DropdownButtonFormField<String>(
-                                  value: _selectedSchool,
-                                  decoration: InputDecoration(
-                                    labelText: 'School',
-                                    prefixIcon: const Icon(Icons.school),
-                                    border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                  ),
-                                  items: _schools
-                                      .map((Map<String, dynamic> school) {
-                                    return DropdownMenuItem<String>(
-                                      value: school['school_id'],
-                                      child: Text(school['school_name']),
-                                    );
-                                  }).toList(),
-                                  onChanged: (String? newValue) {
-                                    setState(() {
-                                      _selectedSchool = newValue;
-                                    });
-                                  },
-                                  validator: (value) => value == null
-                                      ? 'Please select a school'
-                                      : null,
-                                ),
-                                const SizedBox(height: 16),
-                                DropdownButtonFormField<String>(
-                                  value: _selectedDepartment,
-                                  decoration: InputDecoration(
-                                    labelText: 'Department',
-                                    prefixIcon: const Icon(Icons.business),
-                                    border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                  ),
-                                  items: _departments
-                                      .map((Map<String, dynamic> department) {
-                                    return DropdownMenuItem<String>(
-                                      value: department['department_id'],
-                                      child:
-                                          Text(department['department_name']),
-                                    );
-                                  }).toList(),
-                                  onChanged: (String? newValue) {
-                                    setState(() {
-                                      _selectedDepartment = newValue;
-                                    });
-                                  },
-                                  validator: (value) => value == null
-                                      ? 'Please select a department'
-                                      : null,
-                                ),
-                                const SizedBox(height: 16),
-                                TextFormField(
-                                  controller: _emailController,
-                                  decoration: InputDecoration(
-                                    labelText: 'Email',
-                                    prefixIcon: const Icon(Icons.email),
-                                    border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                  ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter your email';
-                                    }
-                                    if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
-                                        .hasMatch(value)) {
-                                      return 'Please enter a valid email address';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                                TextFormField(
-                                  controller: _passwordController,
-                                  obscureText: !_isPasswordVisible,
-                                  decoration: InputDecoration(
-                                    labelText: 'Password',
-                                    prefixIcon: const Icon(Icons.lock),
-                                    border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                    suffixIcon: IconButton(
-                                      icon: Icon(_isPasswordVisible
-                                          ? Icons.visibility
-                                          : Icons.visibility_off),
-                                      onPressed: _togglePasswordVisibility,
-                                    ),
-                                  ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter a password';
-                                    }
-                                    if (value.length < 6) {
-                                      return 'Password must be at least 6 characters long';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                                TextFormField(
-                                  controller: _confirmPasswordController,
-                                  obscureText: !_isConfirmPasswordVisible,
-                                  decoration: InputDecoration(
-                                    labelText: 'Confirm Password',
-                                    prefixIcon: const Icon(Icons.lock),
-                                    border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                    suffixIcon: IconButton(
-                                      icon: Icon(_isConfirmPasswordVisible
-                                          ? Icons.visibility
-                                          : Icons.visibility_off),
-                                      onPressed:
-                                          _toggleConfirmPasswordVisibility,
-                                    ),
-                                  ),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please confirm your password';
-                                    }
-                                    if (value != _passwordController.text) {
-                                      return 'Passwords do not match';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                const SizedBox(height: 20),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        _pageController.previousPage(
-                                          duration:
-                                              const Duration(milliseconds: 300),
-                                          curve: Curves.easeIn,
-                                        );
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        shape: const CircleBorder(),
-                                        padding: const EdgeInsets.all(20),
-                                      ),
-                                      child: const Icon(Icons.arrow_back),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: _signup,
-                                      style: ElevatedButton.styleFrom(
-                                        shape: const CircleBorder(),
-                                        padding: const EdgeInsets.all(20),
-                                        backgroundColor: const Color.fromARGB(
-                                            255, 241, 255, 210),
-                                      ),
-                                      child: const Icon(Icons.check),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ],
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 50),
+                    const Text(
+                      'FILL UP THE FORM TO SIGN UP',
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    TextFormField(
+                      controller: _schoolIdController,
+                      decoration: InputDecoration(
+                        labelText: 'School ID',
+                        prefixIcon: const Icon(Icons.school),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      validator: (value) => value?.isEmpty ?? true ? 'Please enter a School ID' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _firstNameController,
+                      decoration: InputDecoration(
+                        labelText: 'First Name',
+                        prefixIcon: const Icon(Icons.person),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      validator: (value) => value?.isEmpty ?? true ? 'Please enter your First Name' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _middleNameController,
+                      decoration: InputDecoration(
+                        labelText: 'Middle Name',
+                        prefixIcon: const Icon(Icons.person),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _lastNameController,
+                      decoration: InputDecoration(
+                        labelText: 'Last Name',
+                        prefixIcon: const Icon(Icons.person),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      validator: (value) => value?.isEmpty ?? true ? 'Please enter your Last Name' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _suffixController,
+                      decoration: InputDecoration(
+                        labelText: 'Suffix',
+                        prefixIcon: const Icon(Icons.person),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: _selectedSchool,
+                      decoration: InputDecoration(
+                        labelText: 'School',
+                        prefixIcon: const Icon(Icons.school),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      items: _schools.map((Map<String, dynamic> school) {
+                        return DropdownMenuItem<String>(
+                          value: school['school_id'],
+                          child: Text(school['school_name']),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _selectedSchool = newValue;
+                        });
+                      },
+                      validator: (value) => value == null ? 'Please select a school' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                      value: _selectedDepartment,
+                      decoration: InputDecoration(
+                        labelText: 'Department',
+                        prefixIcon: const Icon(Icons.business),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      items: _departments.map((Map<String, dynamic> department) {
+                        return DropdownMenuItem<String>(
+                          value: department['department_id'],
+                          child: Text(department['department_name']),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _selectedDepartment = newValue;
+                        });
+                      },
+                      validator: (value) => value == null ? 'Please select a department' : null,
+                    ),
+                    const SizedBox(height: 16),
+                    // DropdownButtonFormField<String>(
+                    //   value: _selectedRole,
+                    //   decoration: InputDecoration(
+                    //     labelText: 'Role',
+                    //     prefixIcon: const Icon(Icons.work),
+                    //     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    //   ),
+                    //   items: _roles.map((Map<String, dynamic> role) {
+                    //     return DropdownMenuItem<String>(
+                    //       value: role['role_id'],
+                    //       child: Text(role['role_name']),
+                    //     );
+                    //   }).toList(),
+                    //   onChanged: (String? newValue) {
+                    //     setState(() {
+                    //       _selectedRole = newValue;
+                    //     });
+                    //   },
+                    //   validator: (value) => value == null ? 'Please select a role' : null,
+                    // ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: !_isPasswordVisible,
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        prefixIcon: const Icon(Icons.lock),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        suffixIcon: IconButton(
+                          icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off),
+                          onPressed: _togglePasswordVisibility,
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a password';
+                        }
+                        if (value.length < 6) {
+                          return 'Password must be at least 6 characters long';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _confirmPasswordController,
+                      obscureText: !_isConfirmPasswordVisible,
+                      decoration: InputDecoration(
+                        labelText: 'Confirm Password',
+                        prefixIcon: const Icon(Icons.lock),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        suffixIcon: IconButton(
+                          icon: Icon(_isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off),
+                          onPressed: _toggleConfirmPasswordVisibility,
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please confirm your password';
+                        }
+                        if (value != _passwordController.text) {
+                          return 'Passwords do not match';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: _signup,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 241, 255, 210),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        textStyle: const TextStyle(fontSize: 16),
+                      ),
+                      child: const Text('Sign Up'),
+                    ),
+                  ],
                 ),
               ),
             ),

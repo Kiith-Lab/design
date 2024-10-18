@@ -1,7 +1,6 @@
 import 'package:design/dashboards.dart';
 import 'package:design/login.dart';
 import 'package:design/project.dart';
-import 'package:design/user_verification.dart';
 import 'package:design/view.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -24,15 +23,13 @@ class _AdminState extends State<Administrator>
   bool _isAppBarVisible = true;
 
   @override
-void initState() {
-  super.initState();
-  // Update length to 4
-  _tabController = TabController(length: 4, vsync: this);
-  _scrollController = ScrollController();
-  _scrollController.addListener(_scrollListener);
-  _tabController.addListener(_handleTabSelection);
-}
-
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+    _scrollController = ScrollController();
+    _scrollController.addListener(_scrollListener);
+    _tabController.addListener(_handleTabSelection);
+  }
 
   @override
   void dispose() {
@@ -89,9 +86,7 @@ void initState() {
                               ? 'Phinma Education'
                               : _tabController.index == 1
                                   ? 'Archive User'
-                                  : _tabController.index == 2
-                                      ? 'User Verification'
-                                      : 'Project')
+                                  : 'Project')
                           : 'Default Title',
                       style: const TextStyle(
                           color: Colors.white, fontWeight: FontWeight.bold),
@@ -121,24 +116,14 @@ void initState() {
                       controller: _tabController,
                       indicator: BoxDecoration(
                         color: Colors.green.shade300,
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(10)),
+                        borderRadius: const BorderRadius.all(Radius.circular(10)),
                       ),
                       indicatorSize: TabBarIndicatorSize.tab,
                       labelColor: Colors.white,
                       unselectedLabelColor: Colors.grey.shade400,
                       tabs: const <Tab>[
                         Tab(icon: FaIcon(FontAwesomeIcons.house)),
-                        Tab(
-                            icon: Icon(
-                          Icons.manage_accounts,
-                          size: 32,
-                        )),
-                        Tab(
-                            icon: Icon(
-                          Icons.verified_user,
-                          size: 32,
-                        )),
+                        Tab(icon: FaIcon(FontAwesomeIcons.user)),
                         Tab(icon: FaIcon(FontAwesomeIcons.folder)),
                       ],
                     ),
@@ -152,7 +137,6 @@ void initState() {
             children: const <Widget>[
               Dashboards(),
               ViewUserPage(),
-              UserVerification(),
               ProjectPage(),
             ],
           ),
@@ -201,7 +185,7 @@ void initState() {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                Navigator.of(context).pushReplacement(
+                Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => const LoginAppes(),
                   ),
