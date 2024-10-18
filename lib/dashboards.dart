@@ -3,7 +3,6 @@ import 'dart:html' as html; // Add this import for web file handling
 import 'dart:io';
 
 import 'package:excel_dart/excel_dart.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -1427,12 +1426,6 @@ class _DashboardsState extends State<Dashboards> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/Design_Thinking_Admin.png'),
-            fit: BoxFit.cover,
-          ),
-        ),
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24.0), // Overall padding
