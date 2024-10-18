@@ -342,7 +342,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       'json': jsonEncode({
         'project_cards_cardId': cardId,
         'project_cards_modulesId': lastInsertedModeId.toString(),
-        'project_cards_remarks': remarksLessonController.toString()
+        'project_cards_remarks':
+            remarksLessonController.text // Use the text property
       }),
     };
 
@@ -878,39 +879,39 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 ),
               ),
               const SizedBox(height: 20), // Added height spacing
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(5),
-                  color: Colors.white
-                      .withOpacity(0.5), // Added opacity for glass effect
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color.fromARGB(255, 23, 128, 23)
-                          .withOpacity(0.5), // Added shadow for depth
-                      spreadRadius: -2.0,
-                      blurRadius: 4.0,
-                      offset: const Offset(0, 3), // changes position of shadow
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    const Text(
-                      'Notes/Remarks',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    SizedBox(
-                      child: _buildTextField(remarksDurationController,
-                          'Remarks'), // Updated to use new controller
-                    ),
-                  ],
-                ),
-              ),
+              // Container(
+              //   padding: const EdgeInsets.all(10),
+              //   decoration: BoxDecoration(
+              //     borderRadius: BorderRadius.circular(5),
+              //     color: Colors.white
+              //         .withOpacity(0.5), // Added opacity for glass effect
+              //     boxShadow: [
+              //       BoxShadow(
+              //         color: const Color.fromARGB(255, 23, 128, 23)
+              //             .withOpacity(0.5), // Added shadow for depth
+              //         spreadRadius: -2.0,
+              //         blurRadius: 4.0,
+              //         offset: const Offset(0, 3), // changes position of shadow
+              //       ),
+              //     ],
+              //   ),
+              //   // child: Column(
+              //   //   children: [
+              //   //     const Text(
+              //   //       'Notes/Remarks',
+              //   //       style:
+              //   //           TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              //   //     ),
+              //   //     const SizedBox(
+              //   //       height: 10,
+              //   //     ),
+              //   //     SizedBox(
+              //   //       child: _buildTextField(remarksDurationController,
+              //   //           'Remarks'), // Updated to use new controller
+              //   //     ),
+              //   //   ],
+              //   // ),
+              // ),
             ],
           ),
         ),
@@ -984,8 +985,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                           Colors.white.withOpacity(0.5), // Added glass effect
                       boxShadow: [
                         BoxShadow(
-                          color:
-                              const Color.fromARGB(255, 23, 128, 23).withOpacity(0.5),
+                          color: const Color.fromARGB(255, 23, 128, 23)
+                              .withOpacity(0.5),
                           spreadRadius: 1,
                           blurRadius: 5,
                           offset: const Offset(0, 3),
@@ -1043,8 +1044,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                           Colors.white.withOpacity(0.5), // Added glass effect
                       boxShadow: [
                         BoxShadow(
-                          color:
-                              const Color.fromARGB(255, 23, 128, 23).withOpacity(0.5),
+                          color: const Color.fromARGB(255, 23, 128, 23)
+                              .withOpacity(0.5),
                           spreadRadius: 1,
                           blurRadius: 5,
                           offset: const Offset(0, 3),
@@ -1132,7 +1133,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                               .withOpacity(0.5), // Added shadow for depth
                           spreadRadius: -2.0,
                           blurRadius: 4.0,
-                          offset: const Offset(0, 3), // changes position of shadow
+                          offset:
+                              const Offset(0, 3), // changes position of shadow
                         ),
                       ],
                     ),
@@ -1182,7 +1184,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                               .withOpacity(0.5), // Added shadow for depth
                           spreadRadius: -2.0,
                           blurRadius: 4.0,
-                          offset: const Offset(0, 3), // changes position of shadow
+                          offset:
+                              const Offset(0, 3), // changes position of shadow
                         ),
                       ],
                     ),
@@ -1273,7 +1276,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                               .withOpacity(0.5), // Added shadow for depth
                           spreadRadius: -2.0,
                           blurRadius: 4.0,
-                          offset: const Offset(0, 3), // changes position of shadow
+                          offset:
+                              const Offset(0, 3), // changes position of shadow
                         ),
                       ],
                     ),
@@ -1326,7 +1330,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                               .withOpacity(0.5), // Added shadow for depth
                           spreadRadius: -2.0,
                           blurRadius: 4.0,
-                          offset: const Offset(0, 3), // changes position of shadow
+                          offset:
+                              const Offset(0, 3), // changes position of shadow
                         ),
                       ],
                     ),
@@ -1417,7 +1422,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                               .withOpacity(0.5), // Added shadow for depth
                           spreadRadius: -2.0,
                           blurRadius: 4.0,
-                          offset: const Offset(0, 3), // changes position of shadow
+                          offset:
+                              const Offset(0, 3), // changes position of shadow
                         ),
                       ],
                     ),
@@ -1463,8 +1469,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                           Colors.white.withOpacity(0.5), // Added glass effect
                       boxShadow: [
                         BoxShadow(
-                          color:
-                              const Color.fromARGB(255, 23, 128, 23).withOpacity(0.5),
+                          color: const Color.fromARGB(255, 23, 128, 23)
+                              .withOpacity(0.5),
                           spreadRadius: 1,
                           blurRadius: 5,
                           offset: const Offset(0, 3),
@@ -1504,7 +1510,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
               },
               backgroundColor: myCustomButtonColor,
               shape: const CircleBorder(),
-              child: Icon(Icons.arrow_back, color: myCustomButtonTextColor), // Changed to circular button
+              child: Icon(Icons.arrow_back,
+                  color: myCustomButtonTextColor), // Changed to circular button
             ),
             FloatingActionButton(
               onPressed: () {
@@ -1523,7 +1530,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
               },
               backgroundColor: myCustomButtonColor,
               shape: const CircleBorder(),
-              child: Icon(Icons.arrow_forward, color: myCustomButtonTextColor), // Changed to circular button
+              child: Icon(Icons.arrow_forward,
+                  color: myCustomButtonTextColor), // Changed to circular button
             ),
           ],
         ),
@@ -1560,7 +1568,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                               .withOpacity(0.5), // Added shadow for depth
                           spreadRadius: -2.0,
                           blurRadius: 4.0,
-                          offset: const Offset(0, 3), // changes position of shadow
+                          offset:
+                              const Offset(0, 3), // changes position of shadow
                         ),
                       ],
                     ),
@@ -1614,7 +1623,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                               .withOpacity(0.5), // Added shadow for depth
                           spreadRadius: -2.0,
                           blurRadius: 4.0,
-                          offset: const Offset(0, 3), // changes position of shadow
+                          offset:
+                              const Offset(0, 3), // changes position of shadow
                         ),
                       ],
                     ),
@@ -1644,7 +1654,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
               },
               backgroundColor: myCustomButtonColor,
               shape: const CircleBorder(),
-              child: Icon(Icons.arrow_back, color: myCustomButtonTextColor), // Changed to circular button
+              child: Icon(Icons.arrow_back,
+                  color: myCustomButtonTextColor), // Changed to circular button
             ),
             FloatingActionButton(
               onPressed: () {
@@ -1876,26 +1887,26 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
             child: Column(
               children: [
                 ListTile(
-                  leading:
-                      const Icon(Icons.check_circle_outline, color: Colors.green),
+                  leading: const Icon(Icons.check_circle_outline,
+                      color: Colors.green),
                   title: Text('Activities: ${addedActivities.join(', ')}',
                       style: const TextStyle(fontWeight: FontWeight.bold)),
                 ),
                 ListTile(
-                  leading:
-                      const Icon(Icons.check_circle_outline, color: Colors.green),
+                  leading: const Icon(Icons.check_circle_outline,
+                      color: Colors.green),
                   title: Text('Outputs: ${addedOutputs.join(', ')}',
                       style: const TextStyle(fontWeight: FontWeight.bold)),
                 ),
                 ListTile(
-                  leading:
-                      const Icon(Icons.check_circle_outline, color: Colors.green),
+                  leading: const Icon(Icons.check_circle_outline,
+                      color: Colors.green),
                   title: Text('Instructions: ${addedInstructions.join(', ')}',
                       style: const TextStyle(fontWeight: FontWeight.bold)),
                 ),
                 ListTile(
-                  leading:
-                      const Icon(Icons.check_circle_outline, color: Colors.green),
+                  leading: const Icon(Icons.check_circle_outline,
+                      color: Colors.green),
                   title: Text('Coach Details: ${addedCoachDetails.join(', ')}',
                       style: const TextStyle(fontWeight: FontWeight.bold)),
                 ),

@@ -468,72 +468,142 @@ class Get1
             return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
         }
     }
-    function getFolder()
-{
-    try {
-        $sql = "SELECT 
-            tbl_folder.*,
-            tbl_project_modules.*,
-            tbl_activities_details.*,
-            tbl_project_cards.*,
-            tbl_outputs.*,
-            tbl_instruction.*,
-            tbl_coach_detail.*,
-            tbl_project.*,
-            tbl_module_master.*,
-            tbl_front_cards.*,
-            tbl_back_cards_header.*
-        FROM tbl_folder
-        LEFT JOIN tbl_project_modules ON tbl_folder.project_moduleId = tbl_project_modules.project_modules_id
-        LEFT JOIN tbl_activities_details ON tbl_folder.activities_detailId = tbl_activities_details.activities_details_id
-        LEFT JOIN tbl_project_cards ON tbl_folder.project_cardsId = tbl_project_cards.project_cards_id
-        LEFT JOIN tbl_outputs ON tbl_folder.outputId = tbl_outputs.outputs_id
-        LEFT JOIN tbl_instruction ON tbl_folder.instructionId = tbl_instruction.instruction_id
-        LEFT JOIN tbl_coach_detail ON tbl_folder.coach_detailsId = tbl_coach_detail.coach_detail_id
-        LEFT JOIN tbl_project ON tbl_project.project_id = tbl_folder.projectId
-        LEFT JOIN tbl_module_master ON tbl_module_master.module_master_id = tbl_project_modules.project_modules_masterId
-        LEFT JOIN tbl_front_cards ON tbl_project_cards.project_cards_cardId = tbl_front_cards.cards_id
-        LEFT JOIN tbl_back_cards_header ON tbl_back_cards_header.back_cards_header_id = tbl_project_cards.project_cards_cardId";
+        function getFolder()
+    {
+        try {
+            $sql = "SELECT 
+                tbl_folder.*,
+                tbl_project_modules.*,
+                tbl_activities_details.*,
+                tbl_project_cards.*,
+                tbl_outputs.*,
+                tbl_instruction.*,
+                tbl_coach_detail.*,
+                tbl_project.*,
+                tbl_module_master.*,
+                tbl_front_cards.*,
+                tbl_back_cards_header.*,
+                tbl_activities_header.*
+            FROM tbl_folder
+            LEFT JOIN tbl_project_modules ON tbl_folder.project_moduleId = tbl_project_modules.project_modules_id
+            LEFT JOIN tbl_activities_details ON tbl_folder.activities_detailId = tbl_activities_details.activities_details_id
+            LEFT JOIN tbl_project_cards ON tbl_folder.project_cardsId = tbl_project_cards.project_cards_id
+            LEFT JOIN tbl_outputs ON tbl_folder.outputId = tbl_outputs.outputs_id
+            LEFT JOIN tbl_instruction ON tbl_folder.instructionId = tbl_instruction.instruction_id
+            LEFT JOIN tbl_coach_detail ON tbl_folder.coach_detailsId = tbl_coach_detail.coach_detail_id
+            LEFT JOIN tbl_project ON tbl_project.project_id = tbl_folder.projectId
+            LEFT JOIN tbl_activities_header ON tbl_activities_header.activities_header_id = tbl_activities_details.activities_details_headerId
+            LEFT JOIN tbl_module_master ON tbl_module_master.module_master_id = tbl_project_modules.project_modules_masterId
+            LEFT JOIN tbl_front_cards ON tbl_project_cards.project_cards_cardId = tbl_front_cards.cards_id
+            LEFT JOIN tbl_back_cards_header ON tbl_back_cards_header.back_cards_header_id = tbl_project_cards.project_cards_cardId";
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute();
-        $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+            $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Group folders by project ID to handle multiple cards per project
-        $groupedFolders = [];
-        foreach ($returnValue as $folder) {
-            $projectId = $folder['projectId'];
-            if (!isset($groupedFolders[$projectId])) {
-                $groupedFolders[$projectId] = $folder;
-                $groupedFolders[$projectId]['cards'] = [];
+            // Group folders by project_moduleId and module_master_id to handle multiple cards per project
+            $groupedFolders = [];
+            foreach ($returnValue as $folder) {
+                $key = $folder['project_moduleId'] . '_' . $folder['module_master_id']; // Unique key for grouping
+                if (!isset($groupedFolders[$key])) {
+                    $groupedFolders[$key] = $folder;
+                    $groupedFolders[$key]['cards'] = [];
+                }
+                if ($folder['cards_id']) {
+                    $groupedFolders[$key]['cards'][] = [
+                        'cards_id' => $folder['cards_id'],
+                        'cards_title' => $folder['cards_title'],
+                        'back_cards_header_id' => $folder['back_cards_header_id'],
+                        'back_cards_header_title' => $folder['back_cards_header_title']
+                    ];
+                }
             }
-            if ($folder['cards_id']) {
-                $groupedFolders[$projectId]['cards'][] = [
-                    'cards_id' => $folder['cards_id'],
-                    'cards_title' => $folder['cards_title'],
-                    'back_cards_header_id' => $folder['back_cards_header_id'],
-                    'back_cards_header_title' => $folder['back_cards_header_title']
-                ];
+
+            // Convert specified fields to newline-separated strings
+            foreach ($groupedFolders as &$folder) {
+                $folder['activities_details_content'] = isset($folder['activities_details_content']) ? implode("\n", json_decode($folder['activities_details_content'], true)) : '';
+                $folder['outputs_content'] = isset($folder['outputs_content']) ? implode("\n", json_decode($folder['outputs_content'], true)) : '';
+                $folder['instruction_content'] = isset($folder['instruction_content']) ? implode("\n", json_decode($folder['instruction_content'], true)) : '';
+                $folder['coach_detail_content'] = isset($folder['coach_detail_content']) ? implode("\n", json_decode($folder['coach_detail_content'], true)) : '';
             }
-        }
 
-        // Convert specified fields to newline-separated strings
-        foreach ($groupedFolders as &$folder) {
-            $folder['activities_details_content'] = isset($folder['activities_details_content']) ? implode("\n", json_decode($folder['activities_details_content'], true)) : '';
-            $folder['outputs_content'] = isset($folder['outputs_content']) ? implode("\n", json_decode($folder['outputs_content'], true)) : '';
-            $folder['instruction_content'] = isset($folder['instruction_content']) ? implode("\n", json_decode($folder['instruction_content'], true)) : '';
-            $folder['coach_detail_content'] = isset($folder['coach_detail_content']) ? implode("\n", json_decode($folder['coach_detail_content'], true)) : '';
+            return json_encode(['folders' => array_values($groupedFolders)]);
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
         }
-
-        return json_encode(['folders' => array_values($groupedFolders)]);
-    } catch (PDOException $e) {
-        error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
-        return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
-    } catch (Exception $e) {
-        error_log("General error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
-        return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
     }
-}
+    function getFolders()
+    {
+        try {
+            $sql = "SELECT 
+                tbl_folder.*,
+                tbl_project_modules.*,
+                tbl_activities_details.*,
+                tbl_project_cards.*,
+                tbl_outputs.*,
+                tbl_instruction.*,
+                tbl_coach_detail.*,
+                tbl_project.*,
+                tbl_module_master.*,
+                tbl_front_cards.*,
+                tbl_back_cards_header.*
+            FROM tbl_folder
+            LEFT JOIN tbl_project_modules ON tbl_folder.project_moduleId = tbl_project_modules.project_modules_id
+            LEFT JOIN tbl_activities_details ON tbl_folder.activities_detailId = tbl_activities_details.activities_details_id
+            LEFT JOIN tbl_project_cards ON tbl_folder.project_cardsId = tbl_project_cards.project_cards_id
+            LEFT JOIN tbl_outputs ON tbl_folder.outputId = tbl_outputs.outputs_id
+            LEFT JOIN tbl_instruction ON tbl_folder.instructionId = tbl_instruction.instruction_id
+            LEFT JOIN tbl_coach_detail ON tbl_folder.coach_detailsId = tbl_coach_detail.coach_detail_id
+            LEFT JOIN tbl_project ON tbl_project.project_id = tbl_folder.projectId
+            LEFT JOIN tbl_module_master ON tbl_module_master.module_master_id = tbl_project_modules.project_modules_masterId
+            LEFT JOIN tbl_front_cards ON tbl_project_cards.project_cards_cardId = tbl_front_cards.cards_id
+            LEFT JOIN tbl_back_cards_header ON tbl_back_cards_header.back_cards_header_id = tbl_project_cards.project_cards_cardId
+            WHERE projectId = 
+            ";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+            $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Group folders by project_moduleId and module_master_id to handle multiple cards per project
+            $groupedFolders = [];
+            foreach ($returnValue as $folder) {
+                $key = $folder['project_moduleId'] . '_' . $folder['module_master_id']; // Unique key for grouping
+                if (!isset($groupedFolders[$key])) {
+                    $groupedFolders[$key] = $folder;
+                    $groupedFolders[$key]['cards'] = [];
+                }
+                if ($folder['cards_id']) {
+                    $groupedFolders[$key]['cards'][] = [
+                        'cards_id' => $folder['cards_id'],
+                        'cards_title' => $folder['cards_title'],
+                        'back_cards_header_id' => $folder['back_cards_header_id'],
+                        'back_cards_header_title' => $folder['back_cards_header_title']
+                    ];
+                }
+            }
+
+            // Convert specified fields to newline-separated strings
+            foreach ($groupedFolders as &$folder) {
+                $folder['activities_details_content'] = isset($folder['activities_details_content']) ? implode("\n", json_decode($folder['activities_details_content'], true)) : '';
+                $folder['outputs_content'] = isset($folder['outputs_content']) ? implode("\n", json_decode($folder['outputs_content'], true)) : '';
+                $folder['instruction_content'] = isset($folder['instruction_content']) ? implode("\n", json_decode($folder['instruction_content'], true)) : '';
+                $folder['coach_detail_content'] = isset($folder['coach_detail_content']) ? implode("\n", json_decode($folder['coach_detail_content'], true)) : '';
+            }
+
+            return json_encode(['folders' => array_values($groupedFolders)]);
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
+        }
+    }
 
         function getCards1()
     {
@@ -593,6 +663,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 switch ($operation) {
     case "getFolder":
         echo $get->getFolder();
+        break;
+    case "getFolders":
+        echo $get->getFolders();
         break;
     case "getModuleId":
         echo $get->getModuleId();

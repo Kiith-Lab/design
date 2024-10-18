@@ -40,6 +40,7 @@ class _ListPageState extends State<ListPage> {
         Uri.parse('http://localhost/design/lib/api/masterlist.php'),
         body: {'operation': 'getFolder'},
       );
+      print("FOLDERS FETCH: " + response.body);
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
@@ -61,6 +62,8 @@ class _ListPageState extends State<ListPage> {
                       'module_master_name': item['module_master_name'] ?? '',
                       'activities_details_content':
                           item['activities_details_content'] ?? '',
+                      'activities_header_duration':
+                          item['activities_header_duration'] ?? '',
                       'cards_title': item['cards_title'] ?? '',
                       'outputs_content': item['outputs_content'] ?? '',
                       'instruction_content': item['instruction_content'] ?? '',
@@ -139,6 +142,9 @@ class _ListPageState extends State<ListPage> {
   Future<void> _createFolder() async {
     TextEditingController nameController = TextEditingController();
     TextEditingController dateController = TextEditingController();
+
+    TextEditingController myController = TextEditingController();
+    String textToInclude = myController.text;
     final formKey = GlobalKey<FormState>();
 
     Future<void> selectDate(BuildContext context) async {
@@ -455,13 +461,15 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
   void _showFolderDetails(BuildContext context) {
     // Gather all card titles for the same projectId
     final projectId = widget.folder['projectId'];
+    print('ProjectID: $projectId');
     final cardTitles = cardData
             ?.where((card) => card['projectId'] == projectId)
             .map((card) => card['cards_title'])
             .toList() ??
         [];
 
-    final cardTitlesString = cardTitles.join(', '); // Join titles with a comma
+    final String cardTitlesString =
+        cardTitles.join(', '); // Join titles with a comma
 
     // New: Gather remarks for the folder
     final remarks = [
@@ -497,6 +505,22 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                       title: const Text('Project Code'),
                       subtitle: Text(
                           widget.folder['project_subject_code'] ?? 'No code'),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.edit),
+                        color: Colors.black,
+                        onPressed: () {
+                          _showEditDialog(
+                              context,
+                              'Project Code',
+                              widget.folder['project_subject_code'] ?? '',
+                              'activity', (newValue) {
+                            setState(() {
+                              widget.folder['project_subject_code'] =
+                                  newValue; // Update the folder data
+                            });
+                          });
+                        },
+                      ),
                     ),
                   ),
                   Card(
@@ -505,14 +529,46 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                       subtitle: Text(
                           widget.folder['project_subject_description'] ??
                               'No description'),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.edit),
+                        color: Colors.black,
+                        onPressed: () {
+                          _showEditDialog(
+                              context,
+                              'Project Description',
+                              widget.folder['project_subject_description'] ??
+                                  '',
+                              'activity', (newValue) {
+                            setState(() {
+                              widget.folder['project_subject_description'] =
+                                  newValue; // Update the folder data
+                            });
+                          });
+                        },
+                      ),
                     ),
                   ),
-
                   Card(
                     child: ListTile(
                       title: const Text('Start Date'),
                       subtitle: Text(widget.folder['project_start_date'] ??
                           'No start date'),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.edit),
+                        color: Colors.black,
+                        onPressed: () {
+                          _showEditDialog(
+                              context,
+                              'Start Date',
+                              widget.folder['project_start_date'] ?? '',
+                              'activity', (newValue) {
+                            setState(() {
+                              widget.folder['project_start_date'] =
+                                  newValue; // Update the folder data
+                            });
+                          });
+                        },
+                      ),
                     ),
                   ),
                   Card(
@@ -520,56 +576,129 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                       title: const Text('End Date'),
                       subtitle: Text(
                           widget.folder['project_end_date'] ?? 'No end date'),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.edit),
+                        color: Colors.black,
+                        onPressed: () {
+                          _showEditDialog(
+                              context,
+                              'End Date',
+                              widget.folder['project_end_date'] ?? '',
+                              'activity', (newValue) {
+                            setState(() {
+                              widget.folder['project_end_date'] =
+                                  newValue; // Update the folder data
+                            });
+                          });
+                        },
+                      ),
                     ),
                   ),
-
                   Card(
                     child: ListTile(
                       title: const Text('Module'),
                       subtitle: Text(
                           widget.folder['module_master_name'] ?? 'Unknown'),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.edit),
+                        color: Colors.black,
+                        onPressed: () {
+                          _showEditDialog(
+                              context,
+                              'Module',
+                              widget.folder['module_master_name'] ?? '',
+                              'activity', (newValue) {
+                            setState(() {
+                              widget.folder['module_master_name'] =
+                                  newValue; // Update the folder data
+                            });
+                          });
+                        },
+                      ),
                     ),
                   ),
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        // Changed from Row to Column
-                        crossAxisAlignment: CrossAxisAlignment
-                            .start, // Align items to the start
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Activity Title
-                          const Text(
-                            'Activity',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 12),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Activity',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 12),
+                              ),
+                              Text(
+                                widget.folder['activities_details_content'] !=
+                                        null
+                                    ? widget
+                                        .folder['activities_details_content']
+                                        .split('\n')
+                                        .map((activity) => '• $activity')
+                                        .join('\n')
+                                    : 'No activity',
+                                style: TextStyle(
+                                    color: Colors.grey[700], fontSize: 12),
+                              ),
+                              const SizedBox(height: 10),
+                              const Divider(),
+                              const Text(
+                                'Remarks',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 12),
+                              ),
+                              Text(
+                                widget.folder['activities_details_remarks'] ??
+                                    'No remarks',
+                                style: TextStyle(
+                                    color: Colors.grey[700], fontSize: 12),
+                              ),
+                            ],
                           ),
-                          // Activity Content
-                          Text(
-                            widget.folder['activities_details_content'] != null
-                                ? widget.folder['activities_details_content']
-                                    .split('\n')
-                                    .map((activity) => '• $activity')
-                                    .join('\n')
-                                : 'No activity',
-                            style: TextStyle(
-                                color: Colors.grey[700], fontSize: 12),
-                          ),
-                          const SizedBox(
-                              height: 10), // Add some space between sections
-                          const Divider(), // Divider between Activity and Remarks
-                          // Remarks Title
-                          const Text(
-                            'Remarks',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 12),
-                          ),
-                          // Remarks Content
-                          Text(
-                            widget.folder['activities_details_remarks'] ??
-                                'No remarks',
-                            style: TextStyle(
-                                color: Colors.grey[700], fontSize: 12),
+                          Column(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                color: Colors.black,
+                                onPressed: () {
+                                  _showEditDialog(
+                                      context,
+                                      'Activity',
+                                      widget.folder[
+                                              'activities_details_content'] ??
+                                          '',
+                                      'activity', (newValue) {
+                                    setState(() {
+                                      widget.folder[
+                                              'activities_details_content'] =
+                                          newValue; // Update the folder data
+                                    });
+                                  });
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                color: Colors.black,
+                                onPressed: () {
+                                  _showEditDialog(
+                                      context,
+                                      'Activity Remarks',
+                                      widget.folder[
+                                              'activities_details_remarks'] ??
+                                          '',
+                                      'activity', (newValue) {
+                                    setState(() {
+                                      widget.folder[
+                                              'activities_details_remarks'] =
+                                          newValue; // Update the folder data
+                                    });
+                                  });
+                                },
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -579,42 +708,77 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        // Changed from Row to Column
-                        crossAxisAlignment: CrossAxisAlignment
-                            .start, // Align items to the start
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Output Title
-                          const Text(
-                            'Output',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 12),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Output',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 12),
+                              ),
+                              Text(
+                                widget.folder['outputs_content'] != null
+                                    ? widget.folder['outputs_content']
+                                        .split('\n')
+                                        .map((output) => '• $output')
+                                        .join('\n')
+                                    : 'No output',
+                                style: TextStyle(
+                                    color: Colors.grey[700], fontSize: 12),
+                              ),
+                              const SizedBox(height: 10),
+                              const Divider(),
+                              const Text(
+                                'Remarks',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 12),
+                              ),
+                              Text(
+                                widget.folder['outputs_remarks'] ??
+                                    'No remarks',
+                                style: TextStyle(
+                                    color: Colors.grey[700], fontSize: 12),
+                              ),
+                            ],
                           ),
-                          // Output Content
-                          Text(
-                            widget.folder['outputs_content'] != null
-                                ? widget.folder['outputs_content']
-                                    .split('\n')
-                                    .map((output) => '• $output')
-                                    .join('\n')
-                                : 'No output',
-                            style: TextStyle(
-                                color: Colors.grey[700], fontSize: 12),
-                          ),
-                          const SizedBox(
-                              height: 10), // Add some space between sections
-                          const Divider(), // Divider between Output and Remarks
-                          // Remarks Title
-                          const Text(
-                            'Remarks',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 12),
-                          ),
-                          // Remarks Content
-                          Text(
-                            widget.folder['outputs_remarks'] ?? 'No remarks',
-                            style: TextStyle(
-                                color: Colors.grey[700], fontSize: 12),
+                          Column(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                color: Colors.black,
+                                onPressed: () {
+                                  _showEditDialog(
+                                      context,
+                                      'Output',
+                                      widget.folder['outputs_content'] ?? '',
+                                      'activity', (newValue) {
+                                    setState(() {
+                                      widget.folder['outputs_content'] =
+                                          newValue; // Update the folder data
+                                    });
+                                  });
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                color: Colors.black,
+                                onPressed: () {
+                                  _showEditDialog(
+                                      context,
+                                      'Output Remarks',
+                                      widget.folder['outputs_remarks'] ?? '',
+                                      'activity', (newValue) {
+                                    setState(() {
+                                      widget.folder['outputs_remarks'] =
+                                          newValue; // Update the folder data
+                                    });
+                                  });
+                                },
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -624,43 +788,84 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        // Changed from Row to Column
-                        crossAxisAlignment: CrossAxisAlignment
-                            .start, // Align items to the start
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Instruction Title
-                          const Text(
-                            'Instruction',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Instruction',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12),
+                                ),
+                                Text(
+                                  widget.folder['instruction_content'] != null
+                                      ? widget.folder['instruction_content']
+                                          .split('\n')
+                                          .map(
+                                              (instruction) => '• $instruction')
+                                          .join('\n')
+                                      : 'No output',
+                                  style: TextStyle(
+                                      color: Colors.grey[700], fontSize: 12),
+                                ),
+                                const SizedBox(height: 10),
+                                const Divider(),
+                                const Text(
+                                  'Remarks',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12),
+                                ),
+                                Text(
+                                  widget.folder['instruction_remarks'] ??
+                                      'No remarks',
+                                  style: TextStyle(
+                                      color: Colors.grey[700], fontSize: 12),
+                                ),
+                              ],
+                            ),
                           ),
-                          // Instruction Content
-                          Text(
-                            widget.folder['coach_detail_content'] != null
-                                ? widget.folder['coach_detail_content']
-                                    .split('\n')
-                                    .map((coach) => '• $coach')
-                                    .join('\n')
-                                : 'No output',
-                            style: TextStyle(
-                                color: Colors.grey[700], fontSize: 12),
-                          ),
-                          const SizedBox(
-                              height: 10), // Add some space between sections
-                          const Divider(), // Divider between Instruction and Remarks
-                          // Remarks Title
-                          const Text(
-                            'Remarks',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 12),
-                          ),
-                          // Remarks Content
-                          Text(
-                            widget.folder['instruction_remarks'] ??
-                                'No remarks',
-                            style: TextStyle(
-                                color: Colors.grey[700], fontSize: 12),
+                          Column(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                color: Colors.black,
+                                onPressed: () {
+                                  _showEditDialog(
+                                      context,
+                                      'Instruction',
+                                      widget.folder['instruction_content'] ??
+                                          '',
+                                      'activity', (newValue) {
+                                    setState(() {
+                                      widget.folder['instruction_content'] =
+                                          newValue; // Update the folder data
+                                    });
+                                  });
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                color: Colors.black,
+                                onPressed: () {
+                                  _showEditDialog(
+                                      context,
+                                      'Instruction Remarks',
+                                      widget.folder['instruction_remarks'] ??
+                                          '',
+                                      'activity', (newValue) {
+                                    setState(() {
+                                      widget.folder['instruction_remarks'] =
+                                          newValue; // Update the folder data
+                                    });
+                                  });
+                                },
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -670,39 +875,85 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                   Card(
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        // Changed from Row to Column
-                        crossAxisAlignment: CrossAxisAlignment
-                            .start, // Align items to the start
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Coach Detail Title
-                          const Text(
-                            'Coach Detail',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Coach Detail',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12),
+                                ),
+                                Text(
+                                  widget.folder['coach_detail_content'] != null
+                                      ? widget.folder['coach_detail_content']
+                                          .split('\n')
+                                          .map((coach) => '• $coach')
+                                          .join('\n')
+                                      : 'No output',
+                                  style: TextStyle(
+                                      color: Colors.grey[700], fontSize: 12),
+                                ),
+                                const SizedBox(height: 10),
+                                const Divider(),
+                                const Text(
+                                  'Remarks',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12),
+                                ),
+                                Text(
+                                  widget.folder['coach_detail_renarks'] ??
+                                      'No remarks',
+                                  style: TextStyle(
+                                      color: Colors.grey[700], fontSize: 12),
+                                ),
+                              ],
+                            ),
                           ),
-                          // Coach Detail Content
-                          Text(
-                            widget.folder['coach_detail_content'] ??
-                                'No coach detail',
-                            style: TextStyle(
-                                color: Colors.grey[700], fontSize: 12),
-                          ),
-                          const SizedBox(
-                              height: 10), // Add some space between sections
-                          const Divider(), // Divider for separation
-                          // Remarks Title
-                          const Text(
-                            'Remarks',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 12),
-                          ),
-                          // Remarks Content
-                          Text(
-                            widget.folder['coach_detail_remarks'] ??
-                                'No remarks', // Fixed typo in the key
-                            style: TextStyle(
-                                color: Colors.grey[700], fontSize: 12),
+                          Column(
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                color: Colors.black,
+                                onPressed: () {
+                                  _showEditDialog(
+                                      context,
+                                      'Coach Detail',
+                                      widget.folder['coach_detail_content'] ??
+                                          '',
+                                      'activity', (newValue) {
+                                    setState(() {
+                                      widget.folder['coach_detail_content'] =
+                                          newValue; // Update the folder data
+                                    });
+                                  });
+                                  print('THE ID: ' +
+                                      widget.folder['coach_detail_id']);
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.edit),
+                                color: Colors.black,
+                                onPressed: () {
+                                  _showEditDialog(
+                                      context,
+                                      'Coach Detail Remarks',
+                                      widget.folder['coach_detail_renarks'] ??
+                                          '',
+                                      'activity', (newValue) {
+                                    setState(() {
+                                      widget.folder['coach_detail_renarks'] =
+                                          newValue; // Update the folder data
+                                    });
+                                  });
+                                },
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -770,6 +1021,165 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
     );
   }
 
+  Future<void> _updateFolderDetails(
+      String type, Map<String, dynamic> updatedData) async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost/design/lib/api/updates.php'),
+        headers: {
+          'Content-Type': 'application/json', // Set content type to JSON
+        },
+        body: json.encode({
+          'operation': type, // Use the type to determine the operation
+          'json': json.encode(updatedData), // Encode the updated data as JSON
+        }),
+      );
+
+      // Log the response body for debugging
+      print('Response body: ${response.body}'); // Log the raw response
+
+      if (response.statusCode == 200) {
+        if (response.body.isNotEmpty) {
+          try {
+            final result = json.decode(response.body); // Attempt to decode JSON
+            if (result['error'] != null) {
+              print('Error: ${result['error']}');
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error: ${result['error']}')),
+              );
+            } else if (result == 1) {
+              print('Update successful');
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Update successful')),
+              );
+            } else {
+              print('Update failed');
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Update failed')),
+              );
+            }
+          } catch (jsonError) {
+            print(
+                'JSON decoding error: $jsonError'); // Log JSON decoding errors
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Invalid response format')),
+            );
+          }
+        } else {
+          print('Empty response body');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Empty response from server')),
+          );
+        }
+      } else {
+        print('Failed to update. Status code: ${response.statusCode}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  'Failed to update. Status code: ${response.statusCode}')),
+        );
+      }
+    } catch (e) {
+      print('Error during update: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error during update: $e')),
+      );
+    }
+  }
+
+  // Function to show the edit dialog for multiple lines
+  void _showEditDialog(BuildContext context, String title, String initialValue,
+      String type, Function(String) onSave) {
+    List<String> initialValues = initialValue.split('\n');
+    List<TextEditingController> controllers = initialValues
+        .map((value) => TextEditingController(text: value))
+        .toList();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Edit $title'),
+          content: SingleChildScrollView(
+            child: Column(
+              children: controllers.map((controller) {
+                return TextField(
+                  controller: controller,
+                  decoration: InputDecoration(hintText: 'Enter new value'),
+                  maxLines: null, // Allow multiple lines
+                );
+              }).toList(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                String newValue =
+                    controllers.map((controller) => controller.text).join('\n');
+                onSave(newValue); // Call the save function with the new value
+                Navigator.of(context).pop(); // Close the dialog
+
+                // Prepare the updated data based on the type
+                Map<String, dynamic> updatedData = {};
+                switch (type) {
+                  case 'activity':
+                    updatedData = {
+                      'actId': widget.folder[
+                          'activities_details_id'], // Assuming you have this ID
+                      'actContent': newValue,
+                      'actRemark': widget.folder['activities_details_remarks'],
+                    };
+                    break;
+                  case 'output':
+                    updatedData = {
+                      'outId': widget
+                          .folder['outputs_id'], // Assuming you have this ID
+                      'outContent': newValue,
+                      'outRemarks': widget.folder['outputs_remarks'],
+                    };
+                    break;
+                  case 'instruction':
+                    updatedData = {
+                      'instructionId': widget.folder[
+                          'instruction_id'], // Assuming you have this ID
+                      'instructContent': newValue,
+                      'instructRemarks': widget.folder['instruction_remarks'],
+                    };
+                    break;
+                  case 'coachDetail':
+                    updatedData = {
+                      'coachId': widget.folder[
+                          'coach_detail_id'], // Assuming you have this ID
+                      'coachContent': newValue,
+                      'coachRemarks': widget.folder['coach_detail_renarks'],
+                    };
+                    break;
+                  case 'project': // Add this case if you have a project update
+                    updatedData = {
+                      'project_id': widget
+                          .folder['projectId'], // Assuming you have this ID
+                      'project_title':
+                          newValue, // Update the project title or other fields
+                      // Add other fields as necessary
+                    };
+                    break;
+                }
+
+                // Call the update function with the updated data
+                _updateFolderDetails(type, updatedData);
+              },
+              child: const Text('Save'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(), // Close the dialog
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   TableRow _buildTableRow(String label, String value, String remarks) {
     return TableRow(
       children: [
@@ -810,61 +1220,94 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
         pw.Page(
           build: (pw.Context context) {
             return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
                 pw.Header(
                   level: 0,
-                  child: pw.Text(
-                      widget.folder['project_title'] ?? 'Unnamed Folder',
+                  child: pw.Text('MY DESIGN THINKING PLAN',
                       style: pw.TextStyle(
                           fontSize: 24, fontWeight: pw.FontWeight.bold)),
                 ),
-                pw.SizedBox(height: 10),
-                pw.Text('Generated on: $formattedDate',
-                    style: pw.TextStyle(
-                        fontSize: 12, fontStyle: pw.FontStyle.italic)),
                 pw.SizedBox(height: 20),
+                // New: Add a table for the main project details
                 pw.Table(
                   border: pw.TableBorder.all(),
+                  columnWidths: {
+                    0: pw.FlexColumnWidth(1), // Label column
+                    1: pw.FlexColumnWidth(2), // Value column
+                  },
                   children: [
-                    _buildPDFTableRow('Project Code:',
-                        widget.folder['project_subject_code'] ?? 'No code'),
+                    _buildPDFTableRow(
+                        'Project:',
+                        widget.folder['project_title'] ?? 'Unnamed Project',
+                        'No remarks'),
                     _buildPDFTableRow(
                         'Project Description:',
                         widget.folder['project_subject_description'] ??
-                            'No description'),
-                    _buildPDFTableRow('Start Date:',
-                        widget.folder['project_start_date'] ?? 'No start date'),
-                    _buildPDFTableRow('End Date:',
-                        widget.folder['project_end_date'] ?? 'No end date'),
-                    _buildPDFTableRow('Module:',
-                        widget.folder['module_master_name'] ?? 'Unknown'),
+                            'No description',
+                        'No remarks'),
                     _buildPDFTableRow(
-                        'Activity:',
+                        'Start Date:',
+                        widget.folder['project_start_date'] ?? 'No start date',
+                        'No remarks'),
+                    _buildPDFTableRow(
+                        'End Date:',
+                        widget.folder['project_end_date'] ?? 'No end date',
+                        'No remarks'),
+                    // _buildPDFTableRow(
+                    //     'Schedule of Student Workshop:',
+                    //     'Details here',
+                    //     'No remarks'), // Placeholder for workshop details
+                  ],
+                ),
+                pw.SizedBox(height: 20),
+                // New: Add a section header for Empathy
+                pw.Text(
+                    'Module: ${widget.folder['module_master_name'] ?? 'Unknown'}',
+                    style: pw.TextStyle(
+                        fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 10),
+                // New: Add a table for the empathy questions
+                pw.Table(
+                  border: pw.TableBorder.all(),
+                  columnWidths: {
+                    0: pw.FlexColumnWidth(1), // Question column
+                    1: pw.FlexColumnWidth(2), // Notes/Remarks column
+                  },
+                  children: [
+                    _buildPDFTableRow(
+                        'What activities will my students do?',
                         widget.folder['activities_details_content'] ??
-                            'No activity'),
+                            'No activity',
+                        widget.folder['activities_details_remarks'] ??
+                            'No remarks'),
                     _buildPDFTableRow(
-                        'Card:', widget.folder['cards_title'] ?? 'No card'),
-                    _buildPDFTableRow('Output:',
-                        widget.folder['outputs_content'] ?? 'No output'),
+                        'What two (2) method cards will my students use?',
+                        cardData
+                                ?.map((card) => card['cards_title'])
+                                .join(', ') ??
+                            'No card',
+                        widget.folder['project_cards_remarks'] ?? 'No remarks'),
                     _buildPDFTableRow(
-                        'Instruction:',
+                        'How long will this activity take?',
+                        widget.folder['activities_header_duration'] ??
+                            'Details here',
+                        widget.folder['duration_remarks'] ??
+                            'No remarks'), // Updated to use // Updated to use 'duration'
+                    _buildPDFTableRow(
+                        'What are the expected outputs?',
+                        widget.folder['outputs_content'] ?? 'No output',
+                        widget.folder['outputs_remarks'] ?? 'No remarks'),
+                    _buildPDFTableRow(
+                        'What instructions will I give my students?',
                         widget.folder['instruction_content'] ??
-                            'No instruction'),
+                            'No instruction',
+                        widget.folder['instruction_remarks'] ?? 'No remarks'),
                     _buildPDFTableRow(
-                        'Coach Detail:',
-                        widget.folder['coach_detail_content'] ??
-                            'No coach detail'),
-                    _buildPDFTableRow(
-                        'Remarks:',
-                        [
-                          widget.folder['activities_details_remarks'] ??
-                              'No remarks',
-                          widget.folder['coach_detail_renarks'] ?? 'No remarks',
-                          widget.folder['outputs_remarks'] ?? 'No remarks',
-                          widget.folder['project_cards_remarks'] ??
-                              'No remarks',
-                          widget.folder['instruction_remarks'] ?? 'No remarks',
-                        ].join('\n')), // New row for remarks
+                        'How can I coach my students while doing this activity?',
+                        widget.folder['coach_detail_content'] ?? 'Details here',
+                        widget.folder['coach_detail_renarks'] ??
+                            'No remarks'), // Updated to use 'instruction_remarks'
                   ],
                 ),
               ],
@@ -873,12 +1316,13 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
         ),
       );
 
+      // PDF saving logic remains unchanged
       if (kIsWeb) {
         final bytes = await pdf.save();
         final blob = html.Blob([bytes], 'application/pdf');
         final url = html.Url.createObjectUrlFromBlob(blob);
         final anchor = html.AnchorElement(href: url)
-          ..setAttribute('download', 'folder_details.pdf')
+          ..setAttribute('download', 'design_thinking_plan.pdf')
           ..click();
         html.Url.revokeObjectUrl(url);
       } else {
@@ -886,20 +1330,12 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
           onLayout: (PdfPageFormat format) async => pdf.save(),
         );
       }
-      // Removed the Snackbar display
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   const SnackBar(content: Text('PDF generated successfully')),
-      // );
     } catch (e) {
       print('Error generating PDF: $e');
-      // Removed the Snackbar display
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   SnackBar(content: Text('Failed to generate PDF: $e')),
-      // );
     }
   }
 
-  pw.TableRow _buildPDFTableRow(String label, String value) {
+  pw.TableRow _buildPDFTableRow(String label, String value, String remarks) {
     return pw.TableRow(
       children: [
         pw.Padding(
@@ -909,7 +1345,13 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
         ),
         pw.Padding(
           padding: const pw.EdgeInsets.all(8),
-          child: pw.Text(value),
+          child: pw.Text(value, maxLines: 3, overflow: pw.TextOverflow.clip),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.all(8),
+          child: pw.Text(remarks.isNotEmpty
+              ? remarks
+              : 'No remarks'), // Display remarks here
         ),
       ],
     );
@@ -919,84 +1361,70 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
     // Create a new Excel document
     final Excel excel = Excel.createExcel();
     Sheet sheet = excel['Sheet1'];
+    // Set the width of each column to appropriate values
+    sheet.setColWidth(0, 50); // Column A
+    sheet.setColWidth(1, 110); // Column B
+    sheet.setColWidth(2, 40); // Column C
 
-    // Add headers and folder details
+    // Add main headers
+    sheet.appendRow(['', 'MY DESIGN THINKING PLAN', '']);
     sheet.appendRow(
-        ['Project Code', widget.folder['project_subject_code'] ?? 'No code']);
+        ['Project', widget.folder['project_title'] ?? 'Unnamed Project', '']);
     sheet.appendRow([
       'Project Description',
-      widget.folder['project_subject_description'] ?? 'No description'
-    ]);
-    sheet.appendRow(
-        ['Start Date', widget.folder['project_start_date'] ?? 'No start date']);
-    sheet.appendRow(
-        ['End Date', widget.folder['project_end_date'] ?? 'No end date']);
-    sheet.appendRow(
-        ['Module', widget.folder['module_master_name'] ?? 'Unknown']);
-    sheet.appendRow([
-      'Activity',
-      widget.folder['activities_details_content'] ?? 'No activity'
-    ]);
-    sheet.appendRow(['Card', widget.folder['cards_title'] ?? 'No card']);
-    sheet
-        .appendRow(['Output', widget.folder['outputs_content'] ?? 'No output']);
-    sheet.appendRow([
-      'Instruction',
-      widget.folder['instruction_content'] ?? 'No instruction'
+      widget.folder['project_subject_description'] ?? 'No description',
+      ''
     ]);
     sheet.appendRow([
-      'Coach Detail',
-      widget.folder['coach_detail_content'] ?? 'No coach detail'
+      'Start Date',
+      widget.folder['project_start_date'] ?? 'No start date',
+      ''
     ]);
+    // sheet.appendRow(
+    //     ['End Date', widget.folder['project_end_date'] ?? 'No end date', '']);
+    // sheet.appendRow(['Schedule of Student Workshop', '', '']);
 
-    // New: Add remarks to the Excel sheet
+    // Add EMPATHY section
     sheet.appendRow([
-      'Remarks',
-      [
-        widget.folder['activities_details_remarks'] ?? 'No remarks',
-        widget.folder['coach_detail_renarks'] ?? 'No remarks',
-        widget.folder['outputs_remarks'] ?? 'No remarks',
-        widget.folder['project_cards_remarks'] ?? 'No remarks',
-        widget.folder['instruction_remarks'] ?? 'No remarks',
-      ].join('\n') // Join remarks with a newline
+      '${widget.folder['module_master_name'] ?? 'Unknown'}',
+      '',
+      'NOTES/REMARKS'.toUpperCase()
+    ]); // Row 6
+    sheet.appendRow([
+      'What activity/ies will my students do?',
+      widget.folder['activities_details_content'] ?? 'No activity',
+      widget.folder['activities_details_remarks'] ??
+          'No remarks', // Added remarks here
     ]);
-    // Add headers for Excel table
-    final headers = ['Field', 'Details'];
-
-    // Add header row
-    sheet.appendRow(headers);
-
-    // Add the folder details in a similar structure to the PDF
-    final folderDetails = [
-      ['Project Title:', widget.folder['project_title'] ?? 'Unnamed Folder'],
-      ['Project Code:', widget.folder['project_subject_code'] ?? 'No code'],
-      [
-        'Project Description:',
-        widget.folder['project_subject_description'] ?? 'No description'
-      ],
-      ['Start Date:', widget.folder['project_start_date'] ?? 'No start date'],
-      ['End Date:', widget.folder['project_end_date'] ?? 'No end date'],
-      ['Module:', widget.folder['module_master_name'] ?? 'Unknown'],
-      [
-        'Activity:',
-        widget.folder['activities_details_content'] ?? 'No activity'
-      ],
-      ['Card:', widget.folder['cards_title'] ?? 'No card'],
-      ['Output:', widget.folder['outputs_content'] ?? 'No output'],
-      [
-        'Instruction:',
-        widget.folder['instruction_content'] ?? 'No instruction'
-      ],
-      [
-        'Coach Detail:',
-        widget.folder['coach_detail_content'] ?? 'No coach detail'
-      ],
-    ];
-
-    // Append each row with folder details to the Excel sheet
-    for (var row in folderDetails) {
-      sheet.appendRow(row);
-    }
+    sheet.appendRow([
+      'What two (2) method cards will my students use?',
+      cardData?.map((card) => card['cards_title']).join(', ') ?? 'No card',
+      widget.folder['project_cards_remarks'] ??
+          'No remarks', // Added remarks here
+    ]);
+    sheet.appendRow([
+      // In the _generateExcel method
+      'How long will this activity take?',
+      widget.folder['activities_header_duration'] ?? 'Details here',
+      // widget.folder['duration_remarks'] ?? 'No remarks', // Added remarks here
+    ]);
+    sheet.appendRow([
+      'What are the expected outputs?',
+      widget.folder['outputs_content'] ?? 'No output',
+      widget.folder['outputs_remarks'] ?? 'No remarks', // Added remarks here
+    ]);
+    sheet.appendRow([
+      'What instructions will I give my students?',
+      widget.folder['instruction_content'] ?? 'No instruction',
+      widget.folder['instruction_remarks'] ??
+          'No remarks', // Added remarks here
+    ]);
+    sheet.appendRow([
+      'How can I coach my students while doing this activity?',
+      widget.folder['coach_detail_content'] ?? 'No coach detail',
+      widget.folder['coach_detail_renarks'] ??
+          'No remarks', // Added remarks here
+    ]);
 
     try {
       if (kIsWeb) {
