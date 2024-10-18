@@ -1872,6 +1872,24 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
               ? 'Data updated successfully'
               : 'All data submitted successfully')),
     );
+
+    // Clear all controllers and lists after submission
+    durationController.clear();
+    activitiesController.clear();
+    outputsController.clear();
+    instructionsController.clear();
+    coachDetailsController.clear();
+    remarksDurationController.clear(); // Clear remarks for duration
+    remarksActivityController.clear(); // Clear remarks for activities
+    remarksLessonController.clear(); // Clear remarks for lessons
+    remarksOutputController.clear(); // Clear remarks for outputs
+    remarksInstructionController.clear(); // Clear remarks for instructions
+    remarksCoachDetailsController.clear(); // Clear remarks for coach details
+    addedActivities.clear();
+    addedOutputs.clear();
+    addedInstructions.clear();
+    addedCoachDetails.clear();
+    selectedLessons.clear();
   }
 
   void _viewAllData() {
