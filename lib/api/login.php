@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Prepare SQL statement to prevent SQL injection
-    $stmt = $pdo->prepare("SELECT users_id, users_school_id, users_password, users_roleId FROM tbl_users WHERE users_school_id = :users_school_id");
+    $stmt = $pdo->prepare("SELECT users_id, users_school_id, users_password, users_roleId FROM tbl_users WHERE users_school_id = :users_school_id AND users_status != 0 AND register_status != 0");
     $stmt->bindParam(':users_school_id', $username, PDO::PARAM_STR);
     $stmt->execute();
     $user = $stmt->fetch(PDO::FETCH_ASSOC);

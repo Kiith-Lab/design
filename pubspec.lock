@@ -174,14 +174,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.5.0"
-  flutter_excel_table:
-    dependency: "direct main"
-    description:
-      name: flutter_excel_table
-      sha256: "57dac4de155753ac5809b5612c9de63d22f7840a6715a437ceaa422b35adbb0c"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.4"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -686,26 +678,26 @@ packages:
     dependency: transitive
     description:
       name: syncfusion_flutter_core
-      sha256: becd190595cba56feac5ec17b805b35df9f006171c131c209f79b5c58fc780eb
+      sha256: "95a53df168fd4473bbf23c481db656db97434d18d60f59fbeec97a754794f7b5"
       url: "https://pub.dev"
     source: hosted
-    version: "27.1.53"
+    version: "27.1.51"
   syncfusion_flutter_xlsio:
     dependency: "direct main"
     description:
       name: syncfusion_flutter_xlsio
-      sha256: b064f1576dd4b9532580753cb6f8dcff25a1e1a09ec6bff0337d30941fed8a50
+      sha256: "65368fb0fc49a609fa721dcc0a14949360733f0b5cdc1d98605f7e665a68fa00"
       url: "https://pub.dev"
     source: hosted
-    version: "27.1.53"
+    version: "27.1.51"
   syncfusion_officecore:
     dependency: transitive
     description:
       name: syncfusion_officecore
-      sha256: "945c4f3f68450dff32ab9bcebba24ccd1b49e39ef315188e57f0aaddf16252dc"
+      sha256: "8ee98c45cc36774ac439ee01eb1de495829ec1a2db9fbe62f75f2f61ef11902e"
       url: "https://pub.dev"
     source: hosted
-    version: "27.1.53"
+    version: "27.1.51"
   term_glyph:
     dependency: transitive
     description:
@@ -782,10 +774,10 @@ packages:
     dependency: transitive
     description:
       name: vm_service
-      sha256: "5c5f338a667b4c644744b661f309fb8080bb94b18a7e91ef1dbd343bed00ed6d"
+      sha256: f652077d0bdf60abe4c1f6377448e8655008eef28f128bc023f7b5e8dfeb48fc
       url: "https://pub.dev"
     source: hosted
-    version: "14.2.5"
+    version: "14.2.4"
   web:
     dependency: transitive
     description:

@@ -19,6 +19,7 @@ class _ViewUserPageState extends State<ViewUserPage> {
   final TextEditingController _searchController = TextEditingController();
   int currentPage = 0;
   final int itemsPerPage = 10;
+  String _sortOrder = 'A-Z'; // New variable to track sorting order
 
   @override
   void initState() {
@@ -62,18 +63,41 @@ class _ViewUserPageState extends State<ViewUserPage> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredUsers = users?.where((user) {
-          return user['users_firstname']
-                  .toLowerCase()
-                  .contains(searchQuery.toLowerCase()) ||
-              user['users_lastname']
-                  .toLowerCase()
-                  .contains(searchQuery.toLowerCase()) ||
-              user['role_name']
-                  .toLowerCase()
-                  .contains(searchQuery.toLowerCase());
-        }).toList() ??
-        [];
+    // Sort users based on the selected order
+    final sortedUsers = (users ?? []).toList();
+    sortedUsers.sort((a, b) {
+      int comparison;
+      if (_sortOrder == 'A-Z' || _sortOrder == 'Z-A') {
+        comparison = a['users_firstname']
+            .toLowerCase()
+            .compareTo(b['users_firstname'].toLowerCase());
+        return _sortOrder == 'A-Z' ? comparison : -comparison;
+      } else {
+        comparison = a['role_name']
+            .toLowerCase()
+            .compareTo(b['role_name'].toLowerCase());
+        return _sortOrder == 'Admin' ? comparison : -comparison;
+      }
+    });
+
+    // Filter users based on search query and selected role
+    final filteredUsers = sortedUsers.where((user) {
+      final matchesSearchQuery = user['users_firstname']
+              .toLowerCase()
+              .contains(searchQuery.toLowerCase()) ||
+          user['users_lastname']
+              .toLowerCase()
+              .contains(searchQuery.toLowerCase()) ||
+          user['role_name'].toLowerCase().contains(searchQuery.toLowerCase());
+
+      final matchesRole = (_sortOrder == 'Admin' &&
+              user['role_name'].toLowerCase() == 'admin') ||
+          (_sortOrder == 'Instructor' &&
+              user['role_name'].toLowerCase() == 'instructor') ||
+          (_sortOrder != 'Admin' && _sortOrder != 'Instructor');
+
+      return matchesSearchQuery && matchesRole;
+    }).toList();
 
     final paginatedUsers = filteredUsers
         .skip(currentPage * itemsPerPage)
@@ -116,6 +140,32 @@ class _ViewUserPageState extends State<ViewUserPage> {
                     currentPage = 0; // Reset to first page on search
                   });
                 },
+              ),
+            ),
+
+            // Sort Options
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  const Text('Sort by: '),
+                  DropdownButton<String>(
+                    value: _sortOrder,
+                    items: const [
+                      DropdownMenuItem(value: 'A-Z', child: Text('A-Z')),
+                      DropdownMenuItem(value: 'Z-A', child: Text('Z-A')),
+                      DropdownMenuItem(value: 'Admin', child: Text('Admin')),
+                      DropdownMenuItem(
+                          value: 'Instructor', child: Text('Instructor')),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _sortOrder = value!;
+                      });
+                    },
+                  ),
+                ],
               ),
             ),
 

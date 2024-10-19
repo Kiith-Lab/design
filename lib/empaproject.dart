@@ -276,6 +276,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
         item['type'] == 'Activity' &&
         item['value'] == addedActivities.join(', '))) {
       print('Activities already added');
+      print(allAddedData);
       return;
     }
 
@@ -1005,6 +1006,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                         addedActivities.add(activitiesController.text);
                         activitiesController.clear();
                       });
+                      print(addedActivities);
                     }),
                   ),
                   const SizedBox(
@@ -1867,6 +1869,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
         await addToFolder();
     }
 
+<<<<<<< HEAD
     // Clear all remarks text fields
     remarksDurationController.clear();
     remarksActivityController.clear();
@@ -1880,6 +1883,13 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
             content: Text(isUpdating
                 ? 'Data updated successfully'
                 : 'All data submitted successfully')),
+=======
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+          content: Text(isUpdating
+              ? 'Data updated successfully'
+              : 'All data submitted successfully')),
+>>>>>>> 5de4dc6304190b99a427fc596bbf17dc85092368
     );
   }
 
