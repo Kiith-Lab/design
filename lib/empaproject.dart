@@ -28,8 +28,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   final TextEditingController remarksActivityController =
       TextEditingController();
   final TextEditingController remarksLessonController = TextEditingController();
-  final TextEditingController remarksOutputController =
-      TextEditingController();
+  final TextEditingController remarksOutputController = TextEditingController();
   final TextEditingController remarksInstructionController =
       TextEditingController();
   final TextEditingController remarksCoachDetailsController =
@@ -1855,21 +1854,20 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
 
   void _submitAll() async {
     if (isUpdating) {
-        await updateData();
+      await updateData();
     } else {
-        await addMode();
-        await addDuration();
-        await addActivity();
-        for (var lesson in selectedLessons) {
-            await addCard(lesson['back_cards_header_id'].toString());
-        }
-        await addOutput();
-        await addInstruction();
-        await addCoachDetails();
-        await addToFolder();
+      await addMode();
+      await addDuration();
+      await addActivity();
+      for (var lesson in selectedLessons) {
+        await addCard(lesson['back_cards_header_id'].toString());
+      }
+      await addOutput();
+      await addInstruction();
+      await addCoachDetails();
+       await addToFolder();
     }
 
-<<<<<<< HEAD
     // Clear all remarks text fields
     remarksDurationController.clear();
     remarksActivityController.clear();
@@ -1879,17 +1877,10 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     remarksCoachDetailsController.clear();
 
     ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(isUpdating
-                ? 'Data updated successfully'
-                : 'All data submitted successfully')),
-=======
-    ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
           content: Text(isUpdating
               ? 'Data updated successfully'
               : 'All data submitted successfully')),
->>>>>>> 5de4dc6304190b99a427fc596bbf17dc85092368
     );
   }
 
