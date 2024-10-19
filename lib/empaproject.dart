@@ -275,6 +275,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
         item['type'] == 'Activity' &&
         item['value'] == addedActivities.join(', '))) {
       print('Activities already added');
+      print(allAddedData);
       return;
     }
 
@@ -1004,6 +1005,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                         addedActivities.add(activitiesController.text);
                         activitiesController.clear();
                       });
+                      print(addedActivities);
                     }),
                   ),
                   const SizedBox(
