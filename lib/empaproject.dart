@@ -1865,7 +1865,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       await addOutput();
       await addInstruction();
       await addCoachDetails();
-       await addToFolder();
+      await addToFolder();
     }
 
     // Clear all remarks text fields
