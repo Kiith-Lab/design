@@ -407,7 +407,8 @@ class Get
             return json_encode(['error' => 'An error occurred']);
         }
     }
-    function getLessons(){
+    function getLessons()
+    {
         $modeId = isset($_POST['modeId']) ? $_POST['modeId'] : '';
         try {
             $sql = "SELECT 
@@ -488,8 +489,7 @@ ORDER BY
     {
         try {
             $sql = "SELECT a.*, b.role_name FROM tbl_users a
-            INNER JOIN tbl_role b ON b.role_id = a.users_roleId
-            WHERE a.register_status != 0";
+            INNER JOIN tbl_role b ON b.role_id = a.users_roleId";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute();
 
@@ -540,7 +540,8 @@ ORDER BY
             return json_encode(['error' => 'An error occurred']);
         }
     }
-    function getSchool(){
+    function getSchool()
+    {
         try {
             $sql = "SELECT * FROM tbl_school";
             $stmt = $this->pdo->prepare($sql);
@@ -560,7 +561,8 @@ ORDER BY
             return json_encode(['error' => 'An error occurred']);
         }
     }
-    function getInstructors(){
+    function getInstructors()
+    {
         try {
             $sql = "SELECT a.*, b.role_name, c.school_name, d.department_name FROM tbl_users a
             INNER JOIN tbl_role b ON b.role_id = a.users_roleId
@@ -708,7 +710,8 @@ ORDER BY
     //     }
     // }
 
-    function getFolders(){
+    function getFolders()
+    {
         try {
             // Your modified SQL query goes here
             $sql = "SELECT 
@@ -855,7 +858,8 @@ GROUP BY
             return json_encode(['error' => 'An error occurred']);
         }
     }
-    function getUserSchoolDepartment(){
+    function getUserSchoolDepartment()
+    {
         try {
             $sql = "SELECT * FROM `tbl_users` INNER JOIN tbl_school ON tbl_school.school_id = tbl_users.users_schoolId INNER JOIN tbl_department ON tbl_department.department_id = tbl_users.users_departmantId";
             $stmt = $this->pdo->prepare($sql);
@@ -875,7 +879,8 @@ GROUP BY
             return json_encode(['error' => 'An error occurred']);
         }
     }
-    function getDepartments(){
+    function getDepartments()
+    {
         try {
             $sql = "SELECT * FROM tbl_department";
             $stmt = $this->pdo->prepare($sql);
@@ -895,7 +900,8 @@ GROUP BY
             return json_encode(['error' => 'An error occurred']);
         }
     }
-    function getUserNotActive(){
+    function getUserNotActive()
+    {
         try {
             $sql = "SELECT tbl_users.users_firstname, tbl_users.users_middlename, tbl_users.users_lastname, tbl_role.role_name 
                     FROM tbl_users 

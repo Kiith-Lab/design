@@ -872,47 +872,28 @@ class _DashboardsState extends State<Dashboards> {
     );
   }
 
-  // Function to format as bullet list
+  // This function formats the data for bullet points
   String _formatAsBulletList(dynamic value, {bool useBullets = true}) {
-    // Check for null value
-    if (value == null) {
-      return 'N/A'; // Or any other appropriate placeholder
-    }
+    if (value == null) return 'N/A';
 
-    // Process as a string and clean up unnecessary whitespace and newline characters
+    // If it's a string that looks like an array, parse it manually
     if (value is String) {
-      value = value.trim().replaceAll('\n', '').replaceAll(RegExp(r'\s+'), ' ');
-    }
+      // Remove square brackets and split the string by commas
+      List<String> items = value.split(RegExp(r'\], \['));
 
-    // Handle if it's a List of strings, or individual string inputs
-    if (value is List) {
-      List<String> flattenedList = [];
-
-      // Flatten the list if it contains other lists
-      for (var item in value) {
-        if (item is List) {
-          // If it's a nested list, recursively process
-          flattenedList
-              .addAll(_formatAsBulletList(item, useBullets: false).split('\n'));
-        } else {
-          flattenedList.add(item.toString().trim());
-        }
-      }
-
-      // Filter out any empty strings
-      flattenedList = flattenedList.where((item) => item.isNotEmpty).toList();
-
-      // Format into bullet points
-      List<String> formattedList = flattenedList.map((item) {
-        return useBullets ? '• $item' : item; // Add bullets if required
+      List<String> formattedList = items.map((item) {
+        // Clean up each item, remove extra characters (including quotes)
+        String cleanItem = item.replaceAll(RegExp(r'[\[\]"]'), '').trim();
+        return useBullets ? '• $cleanItem' : cleanItem;
       }).toList();
 
-      return formattedList.join('\n'); // Join with newlines for output
-    } else {
-      // If value is a single non-List type
-      return value.toString().trim(); // Ensure it is returned as a string
+      // Join items with newline if using bullets, otherwise with commas
+      return formattedList.join(useBullets ? '\n' : ', ');
     }
+
+    return value.toString(); // Fallback to original behavior if not a string
   }
+
 // Function to create PDF table rows
 
   Future<void> _generateExcel(dynamic folder) async {
@@ -936,42 +917,53 @@ class _DashboardsState extends State<Dashboards> {
         ['Project Description', folder['lesson'] ?? 'No description', '']);
     sheet
         .appendRow(['Start Date', folder['start_date'] ?? 'No start date', '']);
-
-    sheet.appendRow([
-      folder['module_master_name'] ?? 'No module name',
-      '',
-      'NOTES/REMARKS'
-    ]);
+    sheet.appendRow(['Unknown', '', '']);
     sheet.appendRow([
       'What activity/ies will my students do?',
-      _formatAsBulletList(folder['Activity']),
-      folder['ActivityRemarks'] ?? 'No remarks'
+      folder['Activity'] ?? 'No activity',
+      ''
     ]);
     sheet.appendRow([
       'What two (2) method cards will my students use?',
-      _formatAsBulletList(folder['cards_title']),
-      folder['MethodCardsRemarks'] ?? 'No remarks'
+      folder['MethodCards'] ?? 'No card',
+      ''
     ]);
     sheet.appendRow([
       'How long will this activity take?',
-      _formatAsBulletList(folder['Duration']),
-      folder['DurationRemarks'] ?? ''
+      folder['Duration'] ?? 'Details here',
+      ''
     ]);
     sheet.appendRow([
       'What are the expected outputs?',
       folder['Output'] ?? 'No output',
-      folder['OutputRemarks'] ?? 'No remarks'
+      ''
     ]);
     sheet.appendRow([
       'What instructions will I give my students?',
       folder['Instruction'] ?? 'No instruction',
-      folder['InstructionRemarks'] ?? 'No remarks'
+      ''
     ]);
     sheet.appendRow([
       'How can I coach my students while doing this activity?',
       folder['CoachDetail'] ?? 'No coach detail',
-      folder['CoachDetailRemarks'] ?? 'No remarks'
+      ''
     ]);
+    sheet.appendRow(
+        ['Activity Remarks', folder['ActivityRemarks'] ?? 'No remarks', '']);
+    sheet.appendRow(
+        ['Output Remarks', folder['OutputRemarks'] ?? 'No remarks', '']);
+    sheet.appendRow([
+      'Instruction Remarks',
+      folder['InstructionRemarks'] ?? 'No remarks',
+      ''
+    ]);
+    sheet.appendRow([
+      'Coach Detail Remarks',
+      folder['CoachDetailRemarks'] ?? 'No remarks',
+      ''
+    ]);
+    sheet.appendRow(['', '', 'NOTES/REMARKS']);
+    sheet.appendRow(['', '', folder['remarks'] ?? 'No remarks']);
 
     try {
       if (kIsWeb) {
@@ -1262,10 +1254,10 @@ class _DashboardsState extends State<Dashboards> {
                                                                       "json":
                                                                           jsondata,
                                                                       "operation":
-                                                                          "getFolders",
+                                                                          "getFolderId",
                                                                     },
                                                                   );
-//olok ni andrew
+
                                                                   if (projectResponse
                                                                           .statusCode ==
                                                                       200) {
@@ -1533,6 +1525,12 @@ class _DashboardsState extends State<Dashboards> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/Design_Thinking_Admin.png'),
+            fit: BoxFit.cover,
+          ),
+        ),
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24.0), // Overall padding
