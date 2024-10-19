@@ -83,11 +83,13 @@ class _ListPageState extends State<ListPage> {
                       'back_cards_header_frontId':
                           item['back_cards_header_frontId'] ?? '',
                       'activities_details_remarks':
-                          item['activities_details_remarks'],
-                      'coach_detail_renarks': item['coach_detail_renarks'],
-                      'outputs_remarks': item['outputs_remarks'],
-                      'project_cards_remarks': item['project_cards_remarks'],
-                      'instruction_remarks': item['instruction_remarks'],
+                          item['activities_details_remarks'] ?? '',
+                      'coach_detail_renarks':
+                          item['coach_detail_renarks'] ?? '',
+                      'outputs_remarks': item['outputs_remarks'] ?? '',
+                      'project_cards_remarks':
+                          item['project_cards_remarks'] ?? '',
+                      'instruction_remarks': item['instruction_remarks'] ?? '',
                     })
                 .toList());
           });
@@ -376,11 +378,17 @@ class FolderDetailPage extends StatefulWidget {
 
 class _FolderDetailPageState extends State<FolderDetailPage> {
   List<Map<String, dynamic>>? cardData; // Change to List to hold multiple cards
+  List<Map<String, dynamic>>? moduleData;
+  List<Map<String, dynamic>>? ActData;
+  List<Map<String, dynamic>>? InsData;
+  List<Map<String, dynamic>>? OutputData;
+  List<Map<String, dynamic>>? CoachData;
 
   @override
   void initState() {
     super.initState();
     _fetchCardData();
+    _fetchProject();
   }
 
   Future<void> _fetchCardData() async {
@@ -450,6 +458,73 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
     }
   }
 
+  Future<void> _fetchProject() async {
+    final projectId = widget.folder['projectId'];
+
+    // Log the projectId to ensure it's being retrieved correctly
+    print('Fetching project data for projectId: $projectId');
+
+    try {
+      // Make the HTTP POST request to your API
+      final response = await http.post(
+        Uri.parse('http://localhost/design/lib/api/masterlist.php'),
+        body: {
+          'operation': 'getFolders', // Ensure this operation is correct
+          'projectId':
+              projectId.toString(), // Ensure projectId is sent as a string
+        },
+      );
+
+      // Log the response body for debugging
+      print('Response body: ${response.body}');
+
+      // Check if the response status is OK (HTTP 200)
+      if (response.statusCode == 200) {
+        final dynamic data = json.decode(response.body);
+
+        // Check if the response is a map (expected JSON format)
+        if (data is Map<String, dynamic>) {
+          if (data['success'] == true && data['folders'] != null) {
+            setState(() {
+              moduleData = List<Map<String, dynamic>>.from(data['folders']);
+            });
+            print('Fetched Project Data:');
+            moduleData?.forEach((module) {
+              print('Module Name: ${module['module_master_name']}');
+              print('Module Details: ${module['module_master_name']}');
+            });
+          } else {
+            print('No data found or success flag is false');
+            setState(() {
+              moduleData = null;
+            });
+          }
+        } else {
+          // Handle unexpected data types
+          print('Unexpected data format: ${data.runtimeType}');
+          print('Data content: $data');
+          setState(() {
+            moduleData = null;
+          });
+        }
+      } else {
+        // Log failure to fetch data with response details
+        print('Failed to fetch project data');
+        print('Status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        setState(() {
+          moduleData = null;
+        });
+      }
+    } catch (e) {
+      // Handle and log exceptions
+      print('Database error occurred: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Database error occurred: $e')),
+      );
+    }
+  }
+
   void _addLesson(BuildContext context) {
     // TODO: Implement lesson addition logic
     print(
@@ -470,9 +545,38 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
             .toList() ??
         [];
 
+    final projectModule = moduleData
+            ?.where((module) => module['projectId'] == projectId)
+            .map((module) => module['module_master_name'])
+            .toList() ??
+        [];
+    final projectAct = moduleData
+            ?.where((module) => module['projectId'] == projectId)
+            .map((module) => module['activities_details_content'])
+            .toList() ??
+        [];
+    final projectIns = moduleData
+            ?.where((module) => module['projectId'] == projectId)
+            .map((module) => module['instruction_content'])
+            .toList() ??
+        [];
+    final projectOuput = moduleData
+            ?.where((module) => module['projectId'] == projectId)
+            .map((module) => module['outputs_content'])
+            .toList() ??
+        [];
+    final projectCoach = moduleData
+            ?.where((module) => module['projectId'] == projectId)
+            .map((module) => module['coach_detail_content'])
+            .toList() ??
+        [];
     final String cardTitlesString =
         cardTitles.join(', '); // Join titles with a comma
-
+    final String projectModuleString = projectModule.join(', ');
+    final String projectActString = projectAct.join(', ');
+    final String projectInsString = projectIns.join(', ');
+    final String projectOuputString = projectOuput.join(', ');
+    final String projectCoachString = projectCoach.join(', ');
     // New: Gather remarks for the folder
     final remarks = [
       widget.folder['activities_details_remarks'] ?? 'No remarks',
@@ -598,24 +702,17 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                   ),
                   Card(
                     child: ListTile(
-                      title: const Text('Module'),
+                      title: const Text(
+                        'Module Names',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 12),
+                      ),
                       subtitle: Text(
-                          widget.folder['module_master_name'] ?? 'Unknown'),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.edit),
-                        color: Colors.black,
-                        onPressed: () {
-                          _showEditDialog(
-                              context,
-                              'Module',
-                              widget.folder['module_master_name'] ?? '',
-                              'activity', (newValue) {
-                            setState(() {
-                              widget.folder['module_master_name'] =
-                                  newValue; // Update the folder data
-                            });
-                          });
-                        },
+                        projectModule.isNotEmpty
+                            ? projectModule.map((name) => '• $name').join('\n')
+                            : 'No modules available',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 12),
                       ),
                     ),
                   ),
@@ -634,14 +731,12 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                                     fontWeight: FontWeight.bold, fontSize: 12),
                               ),
                               Text(
-                                widget.folder['activities_details_content'] !=
-                                        null
-                                    ? widget
-                                        .folder['activities_details_content']
-                                        .split('\n')
-                                        .map((activity) => '• $activity')
+                                projectAct.isNotEmpty
+                                    ? projectAct
+                                        .map((title) =>
+                                            '• ${title.replaceAll(RegExp(r'^\["|"\]$'), '')}')
                                         .join('\n')
-                                    : 'No activity',
+                                    : 'No cards available',
                                 style: TextStyle(
                                     color: Colors.grey[700], fontSize: 12),
                               ),
@@ -722,12 +817,12 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                                     fontWeight: FontWeight.bold, fontSize: 12),
                               ),
                               Text(
-                                widget.folder['outputs_content'] != null
-                                    ? widget.folder['outputs_content']
-                                        .split('\n')
-                                        .map((output) => '• $output')
+                                projectOuput.isNotEmpty
+                                    ? projectOuput
+                                        .map((title) =>
+                                            '• ${title.replaceAll(RegExp(r'^\["|"\]$'), '')}')
                                         .join('\n')
-                                    : 'No output',
+                                    : 'No cards available',
                                 style: TextStyle(
                                     color: Colors.grey[700], fontSize: 12),
                               ),
@@ -804,13 +899,12 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                                       fontSize: 12),
                                 ),
                                 Text(
-                                  widget.folder['instruction_content'] != null
-                                      ? widget.folder['instruction_content']
-                                          .split('\n')
-                                          .map(
-                                              (instruction) => '• $instruction')
+                                  projectIns.isNotEmpty
+                                      ? projectIns
+                                          .map((title) =>
+                                              '• ${title.replaceAll(RegExp(r'^\["|"\]$'), '')}')
                                           .join('\n')
-                                      : 'No output',
+                                      : 'No cards available',
                                   style: TextStyle(
                                       color: Colors.grey[700], fontSize: 12),
                                 ),
@@ -891,12 +985,12 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                                       fontSize: 12),
                                 ),
                                 Text(
-                                  widget.folder['coach_detail_content'] != null
-                                      ? widget.folder['coach_detail_content']
-                                          .split('\n')
-                                          .map((coach) => '• $coach')
+                                  projectCoach.isNotEmpty
+                                      ? projectCoach
+                                          .map((title) =>
+                                              '• ${title.replaceAll(RegExp(r'^\["|"\]$'), '')}')
                                           .join('\n')
-                                      : 'No output',
+                                      : 'No cards available',
                                   style: TextStyle(
                                       color: Colors.grey[700], fontSize: 12),
                                 ),
@@ -1219,106 +1313,104 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
       final formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
 
       pdf.addPage(
-        pw.Page(
-          build: (pw.Context context) {
-            return pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
+        pw.MultiPage(
+          build: (pw.Context context) => [
+            pw.Header(
+              level: 0,
+              child: pw.Text('MY DESIGN THINKING PLAN',
+                  style: pw.TextStyle(
+                      fontSize: 24, fontWeight: pw.FontWeight.bold)),
+            ),
+            pw.SizedBox(height: 20),
+            // Add project details at the top
+            pw.Table(
+              border: pw.TableBorder.all(),
+              columnWidths: {
+                0: pw.FlexColumnWidth(1),
+                1: pw.FlexColumnWidth(2),
+              },
               children: [
-                pw.Header(
-                  level: 0,
-                  child: pw.Text('MY DESIGN THINKING PLAN',
-                      style: pw.TextStyle(
-                          fontSize: 24, fontWeight: pw.FontWeight.bold)),
-                ),
-                pw.SizedBox(height: 20),
-                // New: Add a table for the main project details
-                pw.Table(
-                  border: pw.TableBorder.all(),
-                  columnWidths: {
-                    0: pw.FlexColumnWidth(1), // Label column
-                    1: pw.FlexColumnWidth(2), // Value column
-                  },
-                  children: [
-                    _buildPDFTableRow(
-                        'Project:',
-                        widget.folder['project_title'] ?? 'Unnamed Project',
-                        'No remarks'),
-                    _buildPDFTableRow(
-                        'Project Description:',
-                        widget.folder['project_subject_description'] ??
-                            'No description',
-                        'No remarks'),
-                    _buildPDFTableRow(
-                        'Start Date:',
-                        widget.folder['project_start_date'] ?? 'No start date',
-                        'No remarks'),
-                    _buildPDFTableRow(
-                        'End Date:',
-                        widget.folder['project_end_date'] ?? 'No end date',
-                        'No remarks'),
-                    // _buildPDFTableRow(
-                    //     'Schedule of Student Workshop:',
-                    //     'Details here',
-                    //     'No remarks'), // Placeholder for workshop details
-                  ],
-                ),
-                pw.SizedBox(height: 20),
-                // New: Add a section header for Empathy
-                pw.Text(
-                    'Module: ${widget.folder['module_master_name'] ?? 'Unknown'}',
-                    style: pw.TextStyle(
-                        fontSize: 18, fontWeight: pw.FontWeight.bold)),
-                pw.SizedBox(height: 10),
-                // New: Add a table for the empathy questions
-                pw.Table(
-                  border: pw.TableBorder.all(),
-                  columnWidths: {
-                    0: pw.FlexColumnWidth(1), // Question column
-                    1: pw.FlexColumnWidth(2), // Notes/Remarks column
-                  },
-                  children: [
-                    _buildPDFTableRow(
-                        'What activities will my students do?',
-                        widget.folder['activities_details_content'] ??
-                            'No activity',
-                        widget.folder['activities_details_remarks'] ??
-                            'No remarks'),
-                    _buildPDFTableRow(
-                        'What two (2) method cards will my students use?',
-                        cardData
-                                ?.map((card) => card['cards_title'])
-                                .join(', ') ??
-                            'No card',
-                        widget.folder['project_cards_remarks'] ?? 'No remarks'),
-                    _buildPDFTableRow(
-                        'How long will this activity take?',
-                        widget.folder['activities_header_duration'] ??
-                            'Details here',
-                        widget.folder['duration_remarks'] ??
-                            'No remarks'), // Updated to use // Updated to use 'duration'
-                    _buildPDFTableRow(
-                        'What are the expected outputs?',
-                        widget.folder['outputs_content'] ?? 'No output',
-                        widget.folder['outputs_remarks'] ?? 'No remarks'),
-                    _buildPDFTableRow(
-                        'What instructions will I give my students?',
-                        widget.folder['instruction_content'] ??
-                            'No instruction',
-                        widget.folder['instruction_remarks'] ?? 'No remarks'),
-                    _buildPDFTableRow(
-                        'How can I coach my students while doing this activity?',
-                        widget.folder['coach_detail_content'] ?? 'Details here',
-                        widget.folder['coach_detail_renarks'] ??
-                            'No remarks'), // Updated to use 'instruction_remarks'
-                  ],
-                ),
+                _buildPDFTableRow('Project Title:',
+                    widget.folder['project_title'] ?? 'Unnamed Project', ''),
+                _buildPDFTableRow(
+                    'Project Description:',
+                    widget.folder['project_subject_description'] ??
+                        'No description',
+                    ''),
+                _buildPDFTableRow('Start Date:',
+                    widget.folder['project_start_date'] ?? 'No start date', ''),
+                _buildPDFTableRow('End Date:',
+                    widget.folder['project_end_date'] ?? 'No end date', ''),
               ],
-            );
-          },
+            ),
+            pw.SizedBox(height: 20),
+            // Iterate over each module to create a separate table
+            for (var module in moduleData ?? [])
+              pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(
+                      'Module: ${module['module_master_name'] ?? 'Unknown'}',
+                      style: pw.TextStyle(
+                          fontSize: 18, fontWeight: pw.FontWeight.bold)),
+                  pw.SizedBox(height: 10),
+                  pw.Table(
+                    border: pw.TableBorder.all(),
+                    columnWidths: {
+                      0: pw.FlexColumnWidth(1),
+                      1: pw.FlexColumnWidth(2),
+                    },
+                    children: [
+                      if (module['activities_details_content'] != null)
+                        _buildPDFTableRow(
+                            'What activities will my students do?',
+                            module['activities_details_content'] ??
+                                'No activity',
+                            module['activities_details_remarks'] ??
+                                'No remarks'),
+                      if (module['cards_title'] != null)
+                        _buildPDFTableRow(
+                            'What two (2) method cards will my students use?',
+                            cardData
+                                    ?.where((card) =>
+                                        card['project_moduleId'] ==
+                                        module['project_moduleId'])
+                                    .map((card) => card['cards_title'])
+                                    .toSet()
+                                    .join(', ') ??
+                                'No card',
+                            widget.folder['project_cards_remarks'] ??
+                                'No remarks'),
+                      if (module['activities_header_duration'] != null)
+                        _buildPDFTableRow(
+                            'How long will this activity take?',
+                            module['activities_header_duration'] ??
+                                'Details here',
+                            module['duration_remarks'] ?? 'No remarks'),
+                      if (module['outputs_content'] != null)
+                        _buildPDFTableRow(
+                            'What are the expected outputs?',
+                            module['outputs_content'] ?? 'No output',
+                            module['outputs_remarks'] ?? 'No remarks'),
+                      if (module['instruction_content'] != null)
+                        _buildPDFTableRow(
+                            'What instructions will I give my students?',
+                            module['instruction_content'] ?? 'No instruction',
+                            module['instruction_remarks'] ?? 'No remarks'),
+                      if (module['coach_detail_content'] != null)
+                        _buildPDFTableRow(
+                            'How can I coach my students while doing this activity?',
+                            module['coach_detail_content'] ?? 'Details here',
+                            module['coach_detail_renarks'] ?? 'No remarks'),
+                    ],
+                  ),
+                  pw.SizedBox(height: 20),
+                ],
+              ),
+          ],
         ),
       );
 
-      // PDF saving logic remains unchanged
       if (kIsWeb) {
         final bytes = await pdf.save();
         final blob = html.Blob([bytes], 'application/pdf');
@@ -1360,18 +1452,13 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
   }
 
   Future<void> _generateExcel(BuildContext context) async {
-    // Create a new Excel document
     final Excel excel = Excel.createExcel();
     Sheet sheet = excel['Sheet1'];
 
-    // Set the width of each column to appropriate values
-    sheet.setColWidth(0, 50); // Column A
-    sheet.setColWidth(1, 110); // Column B
-    sheet.setColWidth(2, 40); // Column C
+    sheet.setColWidth(0, 50);
+    sheet.setColWidth(1, 110);
+    sheet.setColWidth(2, 40);
 
-    // Set row heights
-
-    // Add main headers
     sheet.appendRow(['', 'MY DESIGN THINKING PLAN', '']);
     sheet.appendRow(
         ['Project', widget.folder['project_title'] ?? 'Unnamed Project', '']);
@@ -1388,101 +1475,54 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
     sheet.appendRow(
         ['End Date', widget.folder['project_end_date'] ?? 'No end date', '']);
 
-    // Add EMPATHY section
-    sheet.appendRow(['Empathize', '', 'NOTES/REMARKS']);
+    for (var module in moduleData ?? []) {
+      sheet.appendRow([module['module_master_name'], '', 'NOTES/REMARKS']);
+      sheet.appendRow([
+        'What activities will my students do?',
+        _filterData(module['activities_details_content']),
+        _filterData(module['activities_details_remarks'])
+      ]);
 
-    // Add activities
-    sheet.appendRow([
-      'What activities will my students do?',
-      widget.folder['activities_details_content'] != null &&
-              widget.folder['activities_details_content'].isNotEmpty
-          ? widget.folder['activities_details_content']
-              .split('\n')
-              .map((activity) => '• ${activity.trim()}')
-              .join('\n')
-          : 'No activities',
-      widget.folder['activities_details_remarks'] != null &&
-              widget.folder['activities_details_remarks'].isNotEmpty
-          ? widget.folder['activities_details_remarks']
-              .split('\n')
-              .map((remark) => ' ${remark.trim()}')
-              .join('\n')
-          : 'No remarks'
-    ]);
+      final moduleCards = cardData
+          ?.where(
+              (card) => card['project_moduleId'] == module['project_moduleId'])
+          .toList();
+      if (moduleCards != null && moduleCards.isNotEmpty) {
+        String cardsText =
+            moduleCards.map((card) => '• ${card['cards_title']}').join('\n');
+        sheet.appendRow([
+          'What two (2) method cards will my students use?',
+          cardsText,
+          _filterData(widget.folder['project_cards_remarks'])
+        ]);
+      }
 
-    // Add method cards
-    sheet.appendRow([
-      'What two (2) method cards will my students use?',
-      cardData?.map((card) => '• ${card['cards_title']}').join('\n') ??
-          'No card',
-      widget.folder['project_cards_remarks'] ?? 'No remarks'
-    ]);
+      sheet.appendRow([
+        'How long will this activity take?',
+        _filterData(widget.folder['activities_header_duration'])
+      ]);
 
-    // Add duration
-    sheet.appendRow([
-      'How long will this activity take?',
-      widget.folder['activities_header_duration'] ?? 'Details here',
-      ''
-    ]);
+      sheet.appendRow([
+        'What are the expected outputs?',
+        _filterData(module['outputs_content']),
+        _filterData(module['outputs_remarks'])
+      ]);
 
-    // Add expected outputs
-    sheet.appendRow([
-      'What are the expected outputs?',
-      widget.folder['outputs_content'] != null &&
-              widget.folder['outputs_content'].isNotEmpty
-          ? widget.folder['outputs_content']
-              .split('\n')
-              .map((output) => '• $output')
-              .join('\n')
-          : 'No output',
-      widget.folder['outputs_remarks'] != null &&
-              widget.folder['outputs_remarks'].isNotEmpty
-          ? widget.folder['outputs_remarks']
-              .split('\n')
-              .map((remark) => ' $remark')
-              .join('\n')
-          : 'No remarks'
-    ]);
+      sheet.appendRow([
+        'What instructions will I give my students?',
+        _filterData(module['instruction_content']),
+        _filterData(module['instruction_remarks'])
+      ]);
 
-    // Add instructions
-    sheet.appendRow([
-      'What instructions will I give my students?',
-      widget.folder['instruction_content'] != null &&
-              widget.folder['instruction_content'].isNotEmpty
-          ? widget.folder['instruction_content']
-              .split('\n')
-              .map((instruction) => '• $instruction')
-              .join('\n')
-          : 'No instruction',
-      widget.folder['instruction_remarks'] != null &&
-              widget.folder['instruction_remarks'].isNotEmpty
-          ? widget.folder['instruction_remarks']
-              .split('\n')
-              .map((remark) => ' $remark')
-              .join('\n')
-          : 'No remarks'
-    ]);
+      sheet.appendRow([
+        'How can I coach my students while doing this activity?',
+        _filterData(module['coach_detail_content']),
+        _filterData(module['coach_detail_renarks'])
+      ]);
 
-    // Add coaching details
-    sheet.appendRow([
-      'How can I coach my students while doing this activity?',
-      widget.folder['coach_detail_content'] != null &&
-              widget.folder['coach_detail_content'].isNotEmpty
-          ? widget.folder['coach_detail_content']
-              .split('\n')
-              .map((detail) => '• $detail')
-              .join('\n')
-          : 'No coach detail',
-      widget.folder['coach_detail_renarks'] != null &&
-              widget.folder['coach_detail_renarks'].isNotEmpty
-          ? widget.folder['coach_detail_renarks']
-              .split('\n')
-              .map((remark) => ' $remark')
-              .join('\n')
-          : 'No remarks'
-    ]);
+      sheet.appendRow(['', '', '']);
+    }
 
-    // Save the Excel file
     try {
       if (kIsWeb) {
         final bytes = excel.encode();
@@ -1507,6 +1547,14 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
         SnackBar(content: Text('Failed to generate Excel: $e')),
       );
     }
+  }
+
+  // Helper function to filter out data that starts with [" and ends with "]
+  String _filterData(String? data) {
+    if (data == null) {
+      return '';
+    }
+    return data.replaceFirst('["', '').replaceFirst('"]', '');
   }
 
   @override

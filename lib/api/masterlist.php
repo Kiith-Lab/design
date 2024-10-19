@@ -116,8 +116,8 @@ class Get1
             :project_modules_projectId,
             :project_modules_masterId)";
             $stmt = $this->pdo->prepare($sql);
-            $stmt->bindParam(':project_modules_projectId', $json['project_modules_projectId'], PDO::PARAM_STR);
-            $stmt->bindParam(':project_modules_masterId', $json['project_modules_masterId'], PDO::PARAM_STR);
+            $stmt->bindParam(':project_modules_projectId', $json['project_modules_projectId'], PDO::PARAM_INT);
+            $stmt->bindParam(':project_modules_masterId', $json['project_modules_masterId'], PDO::PARAM_INT);
             $stmt->execute();
             $lastInsertId = $this->pdo->lastInsertId();
             return json_encode(['success' => true, 'id' => $lastInsertId]);
@@ -142,8 +142,8 @@ class Get1
             :activities_header_modulesId,
             :activities_header_duration)";
             $stmt = $this->pdo->prepare($sql);
-            $stmt->bindParam(':activities_header_modulesId', $json['activities_header_modulesId'], PDO::PARAM_STR);
-            $stmt->bindParam(':activities_header_duration', $json['activities_header_duration'], PDO::PARAM_STR);
+            $stmt->bindParam(':activities_header_modulesId', $json['activities_header_modulesId'], PDO::PARAM_INT);
+            $stmt->bindParam(':activities_header_duration', $json['activities_header_duration'], PDO::PARAM_INT);
             $stmt->execute();
             $lastInsertId = $this->pdo->lastInsertId();
             return json_encode(['success' => true, 'id' => $lastInsertId]);
@@ -171,7 +171,7 @@ class Get1
             $stmt = $this->pdo->prepare($sql);
             $stmt->bindParam(':activities_details_remarks', $json['activities_details_remarks'], PDO::PARAM_STR);
             $stmt->bindParam(':activities_details_content', $json['activities_details_content'], PDO::PARAM_STR);
-            $stmt->bindParam(':activities_details_headerId', $json['activities_details_headerId'], PDO::PARAM_STR);
+            $stmt->bindParam(':activities_details_headerId', $json['activities_details_headerId'], PDO::PARAM_INT);
             $stmt->execute();
             $lastInsertId = $this->pdo->lastInsertId();
 
@@ -206,8 +206,8 @@ class Get1
             :project_cards_cardId)";
             $stmt = $this->pdo->prepare($sql);
             $stmt->bindParam(':project_cards_remarks', $json['project_cards_remarks'], PDO::PARAM_STR);
-            $stmt->bindParam(':project_cards_modulesId', $json['project_cards_modulesId'], PDO::PARAM_STR);
-            $stmt->bindParam(':project_cards_cardId', $json['project_cards_cardId'], PDO::PARAM_STR);
+            $stmt->bindParam(':project_cards_modulesId', $json['project_cards_modulesId'], PDO::PARAM_INT);
+            $stmt->bindParam(':project_cards_cardId', $json['project_cards_cardId'], PDO::PARAM_INT);
             $stmt->execute();
             $lastInsertId = $this->pdo->lastInsertId();
 
@@ -241,7 +241,7 @@ class Get1
             :outputs_remarks,
             :outputs_content)";
             $stmt = $this->pdo->prepare($sql);
-            $stmt->bindParam(':outputs_moduleId', $json['outputs_moduleId'], PDO::PARAM_STR);
+            $stmt->bindParam(':outputs_moduleId', $json['outputs_moduleId'], PDO::PARAM_INT);
             $stmt->bindParam(':outputs_remarks', $json['outputs_remarks'], PDO::PARAM_STR);
             $stmt->bindParam(':outputs_content', $json['outputs_content'], PDO::PARAM_STR);
             $stmt->execute();
@@ -278,7 +278,7 @@ class Get1
             :instruction_content)";
             $stmt = $this->pdo->prepare($sql);
             $stmt->bindParam(':instruction_remarks', $json['instruction_remarks'], PDO::PARAM_STR);
-            $stmt->bindParam(':instruction_modulesId', $json['instruction_modulesId'], PDO::PARAM_STR);
+            $stmt->bindParam(':instruction_modulesId', $json['instruction_modulesId'], PDO::PARAM_INT);
             $stmt->bindParam(':instruction_content', $json['instruction_content'], PDO::PARAM_STR);
             $stmt->execute();
             $lastInsertId = $this->pdo->lastInsertId();
@@ -311,8 +311,8 @@ class Get1
             :coach_header_duration,
             :coach_header_moduleId)";
             $stmt = $this->pdo->prepare($sql);
-            $stmt->bindParam(':coach_header_duration', $json['coach_header_duration'], PDO::PARAM_STR);
-            $stmt->bindParam(':coach_header_moduleId', $json['coach_header_moduleId'], PDO::PARAM_STR);
+            $stmt->bindParam(':coach_header_duration', $json['coach_header_duration'], PDO::PARAM_INT);
+            $stmt->bindParam(':coach_header_moduleId', $json['coach_header_moduleId'], PDO::PARAM_INT);
             $stmt->execute();
             $lastInsertId = $this->pdo->lastInsertId();
             return json_encode(['success' => true, 'id' => $lastInsertId]);
@@ -341,7 +341,7 @@ class Get1
                 :coach_detail_content,	
                 :coach_detail_renarks)";
                     $stmt = $this->pdo->prepare($sql);
-                    $stmt->bindParam(':coach_detail_coachheaderId', $json['coach_detail_coachheaderId'], PDO::PARAM_STR);
+                    $stmt->bindParam(':coach_detail_coachheaderId', $json['coach_detail_coachheaderId'], PDO::PARAM_INT);
 
                     // Bind each content entry separately
                     $stmt->bindParam(':coach_detail_content', $content, PDO::PARAM_STR);
@@ -360,7 +360,7 @@ class Get1
             :coach_detail_content,	
             :coach_detail_renarks)";
                 $stmt = $this->pdo->prepare($sql);
-                $stmt->bindParam(':coach_detail_coachheaderId', $json['coach_detail_coachheaderId'], PDO::PARAM_STR);
+                $stmt->bindParam(':coach_detail_coachheaderId', $json['coach_detail_coachheaderId'], PDO::PARAM_INT);
                 $stmt->bindParam(':coach_detail_content', $json['coach_detail_content'], PDO::PARAM_STR);
                 $stmt->bindParam(':coach_detail_renarks', $json['coach_detail_renarks'], PDO::PARAM_STR);
                 $stmt->execute();
@@ -501,16 +501,16 @@ class Get1
             $stmt->execute();
             $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // Group folders by project_moduleId and module_master_id to handle multiple cards per project
+            // Group folders by projectId to handle multiple data per project
             $groupedFolders = [];
             foreach ($returnValue as $folder) {
-                $key = $folder['project_moduleId'] . '_' . $folder['module_master_id']; // Unique key for grouping
-                if (!isset($groupedFolders[$key])) {
-                    $groupedFolders[$key] = $folder;
-                    $groupedFolders[$key]['cards'] = [];
+                $projectId = $folder['projectId']; // Group by projectId
+                if (!isset($groupedFolders[$projectId])) {
+                    $groupedFolders[$projectId] = $folder;
+                    $groupedFolders[$projectId]['cards'] = [];
                 }
                 if ($folder['cards_id']) {
-                    $groupedFolders[$key]['cards'][] = [
+                    $groupedFolders[$projectId]['cards'][] = [
                         'cards_id' => $folder['cards_id'],
                         'cards_title' => $folder['cards_title'],
                         'back_cards_header_id' => $folder['back_cards_header_id'],
@@ -545,6 +545,7 @@ class Get1
     }
     function getFolders()
     {
+        $projectId = isset($_POST['projectId']) ? $_POST['projectId'] : '';
         try {
             $sql = "SELECT 
                 tbl_folder.*,
@@ -566,43 +567,24 @@ class Get1
             LEFT JOIN tbl_instruction ON tbl_folder.instructionId = tbl_instruction.instruction_id
             LEFT JOIN tbl_coach_detail ON tbl_folder.coach_detailsId = tbl_coach_detail.coach_detail_id
             LEFT JOIN tbl_project ON tbl_project.project_id = tbl_folder.projectId
+            LEFT JOIN tbl_activities_header ON tbl_activities_header.activities_header_id = tbl_activities_details.activities_details_headerId
             LEFT JOIN tbl_module_master ON tbl_module_master.module_master_id = tbl_project_modules.project_modules_masterId
             LEFT JOIN tbl_front_cards ON tbl_project_cards.project_cards_cardId = tbl_front_cards.cards_id
             LEFT JOIN tbl_back_cards_header ON tbl_back_cards_header.back_cards_header_id = tbl_project_cards.project_cards_cardId
-            WHERE projectId = 
-            ";
-
+            WHERE tbl_folder.projectId = :projectId
+            GROUP BY tbl_folder.project_moduleId";
+ 
             $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':projectId', $projectId, PDO::PARAM_INT);
             $stmt->execute();
             $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            // Group folders by project_moduleId and module_master_id to handle multiple cards per project
-            $groupedFolders = [];
-            foreach ($returnValue as $folder) {
-                $key = $folder['project_moduleId'] . '_' . $folder['module_master_id']; // Unique key for grouping
-                if (!isset($groupedFolders[$key])) {
-                    $groupedFolders[$key] = $folder;
-                    $groupedFolders[$key]['cards'] = [];
-                }
-                if ($folder['cards_id']) {
-                    $groupedFolders[$key]['cards'][] = [
-                        'cards_id' => $folder['cards_id'],
-                        'cards_title' => $folder['cards_title'],
-                        'back_cards_header_id' => $folder['back_cards_header_id'],
-                        'back_cards_header_title' => $folder['back_cards_header_title']
-                    ];
-                }
+ 
+            // Check if any folders were found
+            if (empty($returnValue)) {
+                return json_encode(['success' => false, 'message' => 'No folders found for this project.']);
             }
-
-            // Convert specified fields to newline-separated strings
-            foreach ($groupedFolders as &$folder) {
-                $folder['activities_details_content'] = isset($folder['activities_details_content']) ? implode("\n", json_decode($folder['activities_details_content'], true)) : '';
-                $folder['outputs_content'] = isset($folder['outputs_content']) ? implode("\n", json_decode($folder['outputs_content'], true)) : '';
-                $folder['instruction_content'] = isset($folder['instruction_content']) ? implode("\n", json_decode($folder['instruction_content'], true)) : '';
-                $folder['coach_detail_content'] = isset($folder['coach_detail_content']) ? implode("\n", json_decode($folder['coach_detail_content'], true)) : '';
-            }
-
-            return json_encode(['folders' => array_values($groupedFolders)]);
+ 
+            return json_encode(['success' => true, 'folders' => $returnValue]);
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
             return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);

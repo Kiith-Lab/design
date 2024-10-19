@@ -46,6 +46,43 @@ class _MyHomePageState extends State<MyHomePage> {
         curve: Curves.bounceIn,
         children: [
           SpeedDialChild(
+            child: const Icon(Icons.logout, color: Colors.white),
+            backgroundColor: Colors.green.shade700,
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: const Text('Confirm Logout'),
+                    content: const Text('Are you sure you want to logout?'),
+                    actions: <Widget>[
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const LoginAppes()),
+                          );
+                        },
+                        child: const Text('Logout'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+            label: 'LOGOUT',
+            labelStyle: const TextStyle(fontWeight: FontWeight.w500),
+            labelBackgroundColor: Colors.white,
+          ),
+          SpeedDialChild(
             child: const Icon(Icons.people, color: Colors.white),
             backgroundColor: Colors.green.shade700,
             onTap: () {
@@ -82,43 +119,6 @@ class _MyHomePageState extends State<MyHomePage> {
               );
             },
             label: 'DEVELOPER INFO',
-            labelStyle: const TextStyle(fontWeight: FontWeight.w500),
-            labelBackgroundColor: Colors.white,
-          ),
-          SpeedDialChild(
-            child: const Icon(Icons.logout, color: Colors.white),
-            backgroundColor: Colors.green.shade700,
-            onTap: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Text('Confirm Logout'),
-                    content: const Text('Are you sure you want to logout?'),
-                    actions: <Widget>[
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const LoginAppes()),
-                          );
-                        },
-                        child: const Text('Logout'),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-            label: 'LOGOUT',
             labelStyle: const TextStyle(fontWeight: FontWeight.w500),
             labelBackgroundColor: Colors.white,
           ),

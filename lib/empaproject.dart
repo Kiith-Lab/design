@@ -28,7 +28,8 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   final TextEditingController remarksActivityController =
       TextEditingController();
   final TextEditingController remarksLessonController = TextEditingController();
-  final TextEditingController remarksOutputController = TextEditingController();
+  final TextEditingController remarksOutputController =
+      TextEditingController();
   final TextEditingController remarksInstructionController =
       TextEditingController();
   final TextEditingController remarksCoachDetailsController =
@@ -1852,44 +1853,34 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
 
   void _submitAll() async {
     if (isUpdating) {
-      await updateData();
+        await updateData();
     } else {
-      await addMode();
-      await addDuration();
-      await addActivity();
-      for (var lesson in selectedLessons) {
-        await addCard(lesson['back_cards_header_id'].toString());
-      }
-      await addOutput();
-      await addInstruction();
-      await addCoachDetails();
-      await addToFolder();
+        await addMode();
+        await addDuration();
+        await addActivity();
+        for (var lesson in selectedLessons) {
+            await addCard(lesson['back_cards_header_id'].toString());
+        }
+        await addOutput();
+        await addInstruction();
+        await addCoachDetails();
+        await addToFolder();
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content: Text(isUpdating
-              ? 'Data updated successfully'
-              : 'All data submitted successfully')),
-    );
+    // Clear all remarks text fields
+    remarksDurationController.clear();
+    remarksActivityController.clear();
+    remarksLessonController.clear();
+    remarksOutputController.clear();
+    remarksInstructionController.clear();
+    remarksCoachDetailsController.clear();
 
-    // Clear all controllers and lists after submission
-    durationController.clear();
-    activitiesController.clear();
-    outputsController.clear();
-    instructionsController.clear();
-    coachDetailsController.clear();
-    remarksDurationController.clear(); // Clear remarks for duration
-    remarksActivityController.clear(); // Clear remarks for activities
-    remarksLessonController.clear(); // Clear remarks for lessons
-    remarksOutputController.clear(); // Clear remarks for outputs
-    remarksInstructionController.clear(); // Clear remarks for instructions
-    remarksCoachDetailsController.clear(); // Clear remarks for coach details
-    addedActivities.clear();
-    addedOutputs.clear();
-    addedInstructions.clear();
-    addedCoachDetails.clear();
-    selectedLessons.clear();
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(isUpdating
+                ? 'Data updated successfully'
+                : 'All data submitted successfully')),
+    );
   }
 
   void _viewAllData() {
