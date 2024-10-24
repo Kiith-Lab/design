@@ -9,7 +9,13 @@ import 'color.dart';
 
 class EmpathyProjectPage extends StatefulWidget {
   final int projectId;
-  const EmpathyProjectPage({super.key, required this.projectId});
+  final Map<String, dynamic> projectData;
+
+  const EmpathyProjectPage({
+    required this.projectId,
+    required this.projectData,
+    super.key,
+  });
 
   @override
   _EmpathyProjectPageState createState() => _EmpathyProjectPageState();
@@ -64,6 +70,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   void initState() {
     super.initState();
     fetchModes();
+    _loadFormState();
   }
 
   Future<void> fetchModes() async {
@@ -696,37 +703,65 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFE6F5E3), // Set the background color
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(
+    return WillPopScope(
+      onWillPop: () async {
+        bool? shouldDiscard = await showDialog<bool>(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Discard Changes?'),
+              content:
+                  const Text('Are you sure you want to discard your changes?'),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Cancel'),
+                  onPressed: () => Navigator.of(context).pop(false),
+                ),
+                TextButton(
+                  child: const Text('Discard'),
+                  onPressed: () => Navigator.of(context).pop(true),
+                ),
+              ],
+            );
+          },
+        );
+        if (shouldDiscard ?? false) {
+          await _saveFormState(); // Save form state before navigating back
+        }
+        return shouldDiscard ?? false;
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFE6F5E3), // Set the background color
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              SizedBox(
+                  height: MediaQuery.of(context).size.height *
+                      0.08), // Responsive height
+              Text(
+                'Step ${currentStep + 1} of 7',
+                style: const TextStyle(
+                  fontSize: 24, // Increased font size
+                  fontWeight: FontWeight.bold, // Made the text bolder
+                ),
+              ), // Displaying the step number
+              SizedBox(
+                width:
+                    MediaQuery.of(context).size.width * 0.8, // Responsive width
                 height: MediaQuery.of(context).size.height *
-                    0.08), // Responsive height
-            Text(
-              'Step ${currentStep + 1} of 7',
-              style: const TextStyle(
-                fontSize: 24, // Increased font size
-                fontWeight: FontWeight.bold, // Made the text bolder
+                    0.05, // Responsive height
+                child: LinearProgressIndicator(
+                  value: currentStep / 7, // Assuming there are 7 steps
+                  backgroundColor: Colors.grey,
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
+                ),
               ),
-            ), // Displaying the step number
-            SizedBox(
-              width:
-                  MediaQuery.of(context).size.width * 0.8, // Responsive width
-              height: MediaQuery.of(context).size.height *
-                  0.05, // Responsive height
-              child: LinearProgressIndicator(
-                value: currentStep / 7, // Assuming there are 7 steps
-                backgroundColor: Colors.grey,
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
-              ),
-            ),
-            SizedBox(
-                height: MediaQuery.of(context).size.height *
-                    0.05), // Added space between the Progress bar and the Input Fields
-            _buildPage(currentStep), // Use a method to build the current page
-          ],
+              SizedBox(
+                  height: MediaQuery.of(context).size.height *
+                      0.05), // Added space between the Progress bar and the Input Fields
+              _buildPage(currentStep), // Use a method to build the current page
+            ],
+          ),
         ),
       ),
     );
@@ -809,8 +844,54 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               FloatingActionButton(
-                onPressed: () {
-                  Navigator.pop(context); // Navigate back to MyProjectPage
+                onPressed: () async {
+                  print('Current step: $currentStep'); // Debugging print
+                  if (currentStep == 0) { // Change this to 0 for STEP 1
+                    print('Showing dialog'); // Debugging print
+                    bool? shouldDiscard = await showDialog<bool>(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Discard or Keep Changes?'),
+                          content: const Text('Do you want to discard or keep your changes?'),
+                          actions: <Widget>[
+                            TextButton(
+                              child: const Text('Keep Changes'),
+                              onPressed: () async {
+                                await _saveFormState(); // Save form state
+                                Navigator.of(context).pop(false);
+                              },
+                            ),
+                            TextButton(
+                              child: const Text('Discard'),
+                              onPressed: () {
+                                setState(() {
+                                  currentStep = 0; // Reset to the first step
+                                  _clearFormState(); // Clear the saved form state
+                                });
+                                Navigator.of(context).pop(true); // Navigate back
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                    if (shouldDiscard ?? false) {
+                      // Discard changes and navigate back
+                      setState(() {
+                        currentStep = 0; // Reset to the first step
+                        _clearFormState(); // Clear the saved form state
+                      });
+                      Navigator.of(context).pop(); // Navigate back
+                    } else {
+                      // Keep changes and navigate back
+                      Navigator.of(context).pop();
+                    }
+                  } else {
+                    setState(() {
+                      currentStep--;
+                    });
+                  }
                 },
                 backgroundColor: myCustomButtonColor,
                 child: Icon(Icons.arrow_back, color: myCustomButtonTextColor),
@@ -880,39 +961,6 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 ),
               ),
               const SizedBox(height: 20), // Added height spacing
-              // Container(
-              //   padding: const EdgeInsets.all(10),
-              //   decoration: BoxDecoration(
-              //     borderRadius: BorderRadius.circular(5),
-              //     color: Colors.white
-              //         .withOpacity(0.5), // Added opacity for glass effect
-              //     boxShadow: [
-              //       BoxShadow(
-              //         color: const Color.fromARGB(255, 23, 128, 23)
-              //             .withOpacity(0.5), // Added shadow for depth
-              //         spreadRadius: -2.0,
-              //         blurRadius: 4.0,
-              //         offset: const Offset(0, 3), // changes position of shadow
-              //       ),
-              //     ],
-              //   ),
-              //   // child: Column(
-              //   //   children: [
-              //   //     const Text(
-              //   //       'Notes/Remarks',
-              //   //       style:
-              //   //           TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              //   //     ),
-              //   //     const SizedBox(
-              //   //       height: 10,
-              //   //     ),
-              //   //     SizedBox(
-              //   //       child: _buildTextField(remarksDurationController,
-              //   //           'Remarks'), // Updated to use new controller
-              //   //     ),
-              //   //   ],
-              //   // ),
-              // ),
             ],
           ),
         ),
@@ -921,10 +969,53 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             FloatingActionButton(
-              onPressed: () {
-                setState(() {
-                  currentStep--;
-                });
+              onPressed: () async {
+                if (currentStep == 0) {
+                  bool? shouldDiscard = await showDialog<bool>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Discard or Keep Changes?'),
+                        content: const Text(
+                            'Do you want to discard or keep your changes?'),
+                        actions: <Widget>[
+                          TextButton(
+                            child: const Text('Keep Changes'),
+                            onPressed: () async {
+                              await _saveFormState(); // Save form state
+                              Navigator.of(context).pop(false);
+                            },
+                          ),
+                          TextButton(
+                            child: const Text('Discard'),
+                            onPressed: () {
+                              setState(() {
+                                currentStep = 0; // Reset to the first step
+                                _clearFormState(); // Clear the saved form state
+                              });
+                              Navigator.of(context).pop(true); // Navigate back
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                  if (shouldDiscard ?? false) {
+                    // Discard changes and navigate back
+                    setState(() {
+                      currentStep = 0; // Reset to the first step
+                      _clearFormState(); // Clear the saved form state
+                    });
+                    Navigator.of(context).pop(); // Navigate back
+                  } else {
+                    // Keep changes and navigate back
+                    Navigator.of(context).pop();
+                  }
+                } else {
+                  setState(() {
+                    currentStep--;
+                  });
+                }
               },
               backgroundColor: myCustomButtonColor,
               child: Icon(Icons.arrow_back, color: myCustomButtonTextColor),
@@ -1210,10 +1301,54 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             FloatingActionButton(
-              onPressed: () {
-                setState(() {
-                  currentStep--;
-                });
+              onPressed: () async {
+                print('Current step: $currentStep'); // Debugging print
+                if (currentStep == 0) { // Change this to 0 for STEP 1
+                  print('Showing dialog'); // Debugging print
+                  bool? shouldDiscard = await showDialog<bool>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Discard or Keep Changes?'),
+                        content: const Text('Do you want to discard or keep your changes?'),
+                        actions: <Widget>[
+                          TextButton(
+                            child: const Text('Keep Changes'),
+                            onPressed: () async {
+                              await _saveFormState(); // Save form state
+                              Navigator.of(context).pop(false);
+                            },
+                          ),
+                          TextButton(
+                            child: const Text('Discard'),
+                            onPressed: () {
+                              setState(() {
+                                currentStep = 0; // Reset to the first step
+                                _clearFormState(); // Clear the saved form state
+                              });
+                              Navigator.of(context).pop(true); // Navigate back
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                  if (shouldDiscard ?? false) {
+                    // Discard changes and navigate back
+                    setState(() {
+                      currentStep = 0; // Reset to the first step
+                      _clearFormState(); // Clear the saved form state
+                    });
+                    Navigator.of(context).pop(); // Navigate back
+                  } else {
+                    // Keep changes and navigate back
+                    Navigator.of(context).pop();
+                  }
+                } else {
+                  setState(() {
+                    currentStep--;
+                  });
+                }
               },
               backgroundColor: myCustomButtonColor,
               child: Icon(Icons.arrow_back, color: myCustomButtonTextColor),
@@ -1852,36 +1987,154 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     }
   }
 
-  void _submitAll() async {
-    if (isUpdating) {
-      await updateData();
-    } else {
-      await addMode();
-      await addDuration();
-      await addActivity();
-      for (var lesson in selectedLessons) {
-        await addCard(lesson['back_cards_header_id'].toString());
+  Future<Map<String, dynamic>> _collectAllData() async {
+    return {
+      'project': {
+        'project_subject_code': widget.projectData['project_subject_code'],
+        'project_subject_description':
+            widget.projectData['project_subject_description'],
+        'project_title': widget.projectData['project_title'],
+        'project_description': widget.projectData['project_description'],
+        'project_start_date': widget.projectData['project_start_date'],
+        'project_end_date': widget.projectData['project_end_date'],
+      },
+      'mode': {
+        'project_modules_projectId': widget.projectId.toString(),
+        'project_modules_masterId': selectedMode,
+      },
+      'duration': {
+        'activities_header_modulesId': lastInsertedModeId?.toString(),
+        'activities_header_duration': durationController.text,
+        'duration_remarks': remarksDurationController.text,
+      },
+      'activity': {
+        'activities_details_remarks': remarksActivityController.text,
+        'activities_details_content': jsonEncode(addedActivities),
+        'activities_details_headerId': lastInsertedDurationId?.toString(),
+      },
+      'cards': selectedLessons
+          .map((lesson) => {
+                'project_cards_cardId':
+                    lesson['back_cards_header_id'].toString(),
+                'project_cards_modulesId': lastInsertedModeId?.toString(),
+                'project_cards_remarks': remarksLessonController.text,
+              })
+          .toList(),
+      'outputs': {
+        'outputs_moduleId': lastInsertedModeId?.toString(),
+        'outputs_remarks': remarksOutputController.text,
+        'outputs_content': jsonEncode(addedOutputs),
+      },
+      'instructions': {
+        'instruction_remarks': remarksInstructionController.text,
+        'instruction_modulesId': lastInsertedModeId?.toString(),
+        'instruction_content': jsonEncode(addedInstructions),
+      },
+      'coachDetails': {
+        'coach_detail_coachheaderId': '1',
+        'coach_detail_content': jsonEncode(addedCoachDetails),
+        'coach_detail_remarks': remarksCoachDetailsController.text,
+      },
+    };
+  }
+
+  Future<void> _submitAll() async {
+    try {
+      final allData = await _collectAllData();
+
+      String url = "http://localhost/design/lib/api/masterlist.php";
+      Map<String, String> requestBody = {
+        'operation': 'addAllData',
+        'json': jsonEncode(allData),
+      };
+
+      http.Response response = await http
+          .post(
+            Uri.parse(url),
+            body: requestBody,
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        var decodedData = jsonDecode(response.body);
+        if (decodedData['success'] == true) {
+          // Clear all form data
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('empathyProjectFormData');
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('All data submitted successfully')),
+          );
+
+          // Reset to the mode step
+          setState(() {
+            currentStep = 0;
+          });
+
+          // Optionally, navigate back to the previous screen
+          // Navigator.of(context).pop(true); // Uncomment if you want to navigate back
+        } else {
+          throw Exception(decodedData['error']);
+        }
+      } else {
+        throw Exception('Failed to submit data: ${response.statusCode}');
       }
-      await addOutput();
-      await addInstruction();
-      await addCoachDetails();
-      await addToFolder();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error submitting data: $e')),
+      );
     }
+  }
 
-    // Clear all remarks text fields
-    remarksDurationController.clear();
-    remarksActivityController.clear();
-    remarksLessonController.clear();
-    remarksOutputController.clear();
-    remarksInstructionController.clear();
-    remarksCoachDetailsController.clear();
+  Future<void> _saveFormState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final formData = {
+      'selectedMode': selectedMode,
+      'duration': durationController.text,
+      'activities': jsonEncode(addedActivities),
+      'selectedLessons': jsonEncode(selectedLessons),
+      'outputs': jsonEncode(addedOutputs),
+      'instructions': jsonEncode(addedInstructions),
+      'coachDetails': jsonEncode(addedCoachDetails),
+      // Save remarks
+      'remarksDuration': remarksDurationController.text,
+      'remarksActivity': remarksActivityController.text,
+      'remarksLesson': remarksLessonController.text,
+      'remarksOutput': remarksOutputController.text,
+      'remarksInstruction': remarksInstructionController.text,
+      'remarksCoachDetails': remarksCoachDetailsController.text,
+    };
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-          content: Text(isUpdating
-              ? 'Data updated successfully'
-              : 'All data submitted successfully')),
-    );
+    await prefs.setString('empathyProjectFormData', jsonEncode(formData));
+    print('Form state saved successfully');
+  }
+
+  Future<void> _loadFormState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedData = prefs.getString('empathyProjectFormData');
+
+    if (savedData != null) {
+      final formData = jsonDecode(savedData);
+      setState(() {
+        selectedMode = formData['selectedMode'];
+        durationController.text = formData['duration'];
+        addedActivities = List<String>.from(jsonDecode(formData['activities']));
+        selectedLessons = List<Map<String, dynamic>>.from(
+            jsonDecode(formData['selectedLessons']));
+        addedOutputs = List<String>.from(jsonDecode(formData['outputs']));
+        addedInstructions =
+            List<String>.from(jsonDecode(formData['instructions']));
+        addedCoachDetails =
+            List<String>.from(jsonDecode(formData['coachDetails']));
+        // Load remarks
+        remarksDurationController.text = formData['remarksDuration'];
+        remarksActivityController.text = formData['remarksActivity'];
+        remarksLessonController.text = formData['remarksLesson'];
+        remarksOutputController.text = formData['remarksOutput'];
+        remarksInstructionController.text = formData['remarksInstruction'];
+        remarksCoachDetailsController.text = formData['remarksCoachDetails'];
+      });
+    }
   }
 
   void _viewAllData() {
@@ -1935,5 +2188,11 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
         );
       },
     );
+  }
+
+  Future<void> _clearFormState() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('empathyProjectFormData');
+    print('Form state cleared successfully');
   }
 }

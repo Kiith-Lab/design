@@ -627,6 +627,157 @@ class Get1
             return json_encode(['success' => false, 'error' => 'An error occurred: ' . $e->getMessage()]);
         }
     }
+
+    function addAllData($json)
+    {
+        $data = json_decode($json, true);
+        try {
+            $this->pdo->beginTransaction();
+
+            // First, ensure project exists
+            $projectStmt = $this->pdo->prepare("INSERT INTO tbl_project (
+                project_userId,
+                project_subject_code,
+                project_subject_description,
+                project_title,
+                project_description,
+                project_start_date,
+                project_end_date
+            ) VALUES (
+                :userId,
+                :subjectCode,
+                :subjectDesc,
+                :title,
+                :description,
+                :startDate,
+                :endDate
+            )");
+            
+            $projectStmt->execute([
+                ':userId' => 1, // Replace with actual user ID
+                ':subjectCode' => $data['project']['project_subject_code'],
+                ':subjectDesc' => $data['project']['project_subject_description'],
+                ':title' => $data['project']['project_title'],
+                ':description' => $data['project']['project_description'],
+                ':startDate' => $data['project']['project_start_date'],
+                ':endDate' => $data['project']['project_end_date']
+            ]);
+            $projectId = $this->pdo->lastInsertId();
+
+            // Then continue with existing code, but use new projectId
+            $modeStmt = $this->pdo->prepare("INSERT INTO tbl_project_modules (project_modules_projectId, project_modules_masterId) VALUES (:projectId, :masterId)");
+            $modeStmt->execute([
+                ':projectId' => $projectId,
+                ':masterId' => $data['mode']['project_modules_masterId']
+            ]);
+            $modeId = $this->pdo->lastInsertId();
+
+            // 2. Add Duration
+            $durationStmt = $this->pdo->prepare("INSERT INTO tbl_activities_header (activities_header_modulesId, activities_header_duration) VALUES (:moduleId, :duration)");
+            $durationStmt->execute([
+                ':moduleId' => $modeId,
+                ':duration' => $data['duration']['activities_header_duration']
+            ]);
+            $durationId = $this->pdo->lastInsertId();
+
+            // 3. Add Activity
+            $activityStmt = $this->pdo->prepare("INSERT INTO tbl_activities_details (activities_details_remarks, activities_details_content, activities_details_headerId) VALUES (:remarks, :content, :headerId)");
+            $activityStmt->execute([
+                ':remarks' => $data['activity']['activities_details_remarks'],
+                ':content' => $data['activity']['activities_details_content'],
+                ':headerId' => $durationId
+            ]);
+            $activityId = $this->pdo->lastInsertId();
+
+            // 4. Add Cards
+            $cardIds = [];
+            foreach ($data['cards'] as $card) {
+                $cardStmt = $this->pdo->prepare("INSERT INTO tbl_project_cards (project_cards_cardId, project_cards_modulesId, project_cards_remarks) VALUES (:cardId, :moduleId, :remarks)");
+                $cardStmt->execute([
+                    ':cardId' => $card['project_cards_cardId'],
+                    ':moduleId' => $modeId,
+                    ':remarks' => $card['project_cards_remarks']
+                ]);
+                $cardIds[] = $this->pdo->lastInsertId();
+            }
+
+            // 5. Add Output
+            $outputStmt = $this->pdo->prepare("INSERT INTO tbl_outputs (outputs_moduleId, outputs_remarks, outputs_content) VALUES (:moduleId, :remarks, :content)");
+            $outputStmt->execute([
+                ':moduleId' => $modeId,
+                ':remarks' => $data['outputs']['outputs_remarks'],
+                ':content' => $data['outputs']['outputs_content']
+            ]);
+            $outputId = $this->pdo->lastInsertId();
+
+            // 6. Add Instruction
+            $instructionStmt = $this->pdo->prepare("INSERT INTO tbl_instruction (instruction_remarks, instruction_modulesId, instruction_content) VALUES (:remarks, :moduleId, :content)");
+            $instructionStmt->execute([
+                ':remarks' => $data['instructions']['instruction_remarks'],
+                ':moduleId' => $modeId,
+                ':content' => $data['instructions']['instruction_content']
+            ]);
+            $instructionId = $this->pdo->lastInsertId();
+
+            // 7. Add Coach Details
+            $coachStmt = $this->pdo->prepare("INSERT INTO tbl_coach_detail (coach_detail_coachheaderId, coach_detail_content, coach_detail_renarks) VALUES (:headerId, :content, :remarks)");
+            $coachStmt->execute([
+                ':headerId' => $data['coachDetails']['coach_detail_coachheaderId'],
+                ':content' => $data['coachDetails']['coach_detail_content'],
+                ':remarks' => $data['coachDetails']['coach_detail_remarks']
+            ]);
+            $coachId = $this->pdo->lastInsertId();
+
+            // After all other insertions, add to folder table for each card
+            foreach ($data['cards'] as $card) {
+                $folderSql = "INSERT INTO tbl_folder (
+                    projectId,
+                    project_moduleId,
+                    activities_detailId,
+                    project_cardsId,
+                    outputId,
+                    instructionId,
+                    coach_detailsId
+                ) VALUES (
+                    :projectId,
+                    :project_moduleId,
+                    :activities_detailId,
+                    :project_cardsId,
+                    :outputId,
+                    :instructionId,
+                    :coach_detailsId
+                )";
+                
+                $folderStmt = $this->pdo->prepare($folderSql);
+                $folderStmt->execute([
+                    ':projectId' => $projectId,
+                    ':project_moduleId' => $modeId,
+                    ':activities_detailId' => $activityId,
+                    ':project_cardsId' => $card['project_cards_cardId'],
+                    ':outputId' => $outputId,
+                    ':instructionId' => $instructionId,
+                    ':coach_detailsId' => $coachId
+                ]);
+            }
+
+            $this->pdo->commit();
+            return json_encode([
+                'success' => true,
+                'ids' => [
+                    'modeId' => $modeId,
+                    'durationId' => $durationId,
+                    'activityId' => $activityId,
+                    'cardIds' => $cardIds,
+                    'outputId' => $outputId,
+                    'instructionId' => $instructionId,
+                    'coachId' => $coachId
+                ]
+            ]);
+        } catch (Exception $e) {
+            $this->pdo->rollBack();
+            return json_encode(['success' => false, 'error' => $e->getMessage()]);
+        }
+    }
 }
 
 // Handle preflight requests for CORS (for OPTIONS request)
@@ -650,6 +801,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 // Handle different operations based on the request
 switch ($operation) {
+    case "addAllData":
+        echo $get->addAllData($json);
+        break;
     case "getFolder":
         echo $get->getFolder();
         break;
@@ -702,3 +856,4 @@ switch ($operation) {
         echo $get->getCards1();
         break;
 }
+

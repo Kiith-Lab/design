@@ -1,9 +1,10 @@
 import 'dart:ui';
 
-import 'package:design/empaproject.dart';
+import 'package:design/empaproject.dart'; // Replace 'your_package_name' with the actual package name
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'config.dart';
 
@@ -21,6 +22,61 @@ class _MyProjectPageState extends State<MyProjectPage> {
   final TextEditingController _startDateController = TextEditingController();
   final TextEditingController _endDateController = TextEditingController();
 
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedData();
+
+    // Add listeners to save data when text changes
+    _projectNameController.addListener(_saveFormData);
+    _subjectController.addListener(_saveFormData);
+    _descriptionController.addListener(_saveFormData);
+    _startDateController.addListener(_saveFormData);
+    _endDateController.addListener(_saveFormData);
+  }
+
+  @override
+  void dispose() {
+    // Remove listeners when disposing
+    _projectNameController.removeListener(_saveFormData);
+    _subjectController.removeListener(_saveFormData);
+    _descriptionController.removeListener(_saveFormData);
+    _startDateController.removeListener(_saveFormData);
+    _endDateController.removeListener(_saveFormData);
+
+    super.dispose();
+  }
+
+  Future<void> _loadSavedData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _projectNameController.text = prefs.getString('project_name') ?? '';
+      _subjectController.text = prefs.getString('subject') ?? '';
+      _descriptionController.text = prefs.getString('description') ?? '';
+      _startDateController.text = prefs.getString('start_date') ?? '';
+      _endDateController.text = prefs.getString('end_date') ?? '';
+    });
+  }
+
+  Future<void> _saveFormData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('project_name', _projectNameController.text);
+    await prefs.setString('subject', _subjectController.text);
+    await prefs.setString('description', _descriptionController.text);
+    await prefs.setString('start_date', _startDateController.text);
+    await prefs.setString('end_date', _endDateController.text);
+  }
+
+  // Add this method to clear saved data after successful project creation
+  Future<void> _clearSavedData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('project_name');
+    await prefs.remove('subject');
+    await prefs.remove('description');
+    await prefs.remove('start_date');
+    await prefs.remove('end_date');
+  }
+
   Future<void> _addProject() async {
     // Validate that all required fields are filled
     if (_projectNameController.text.isEmpty ||
@@ -34,55 +90,26 @@ class _MyProjectPageState extends State<MyProjectPage> {
       return; // Exit the function if validation fails
     }
 
-    const String url = "${baseUrl}add.php";
-    final Map<String, dynamic> requestBody = {
-      'operation': 'addProject',
-      'json': jsonEncode({
-        'project_userId': 1, // Replace with actual user ID
-        'project_subject_code': _subjectController.text,
-        'project_subject_description': _descriptionController.text,
-        'project_title': _projectNameController.text,
-        'project_description': _descriptionController.text,
-        'project_start_date': _startDateController.text,
-        'project_end_date': _endDateController.text,
-      }),
+    // Prepare data for navigation
+    final Map<String, dynamic> projectData = {
+      'project_userId': 1, // Replace with actual user ID
+      'project_subject_code': _subjectController.text,
+      'project_subject_description': _descriptionController.text,
+      'project_title': _projectNameController.text,
+      'project_description': _descriptionController.text,
+      'project_start_date': _startDateController.text,
+      'project_end_date': _endDateController.text,
     };
 
-    try {
-      final http.Response response = await http.post(
-        Uri.parse(url),
-        body: requestBody,
-      );
+    // Navigate with the project data
+    await _fetchAllDataAndNavigate(projectData);
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = jsonDecode(response.body);
-        if (responseData['success'] == true) {
-          final int projectId = int.parse(responseData['id'].toString());
-          print('Fetched project ID: $projectId');
-          await _fetchAllDataAndNavigate(projectId);
-        } else {
-          print('Failed to add project: ${responseData['error']}');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content:
-                    Text('Failed to add project: ${responseData['error']}')),
-          );
-        }
-      } else {
-        print('Server error: ${response.statusCode}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Server error: ${response.statusCode}')),
-        );
-      }
-    } catch (e) {
-      print('Network error: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Network error: $e')),
-      );
-    }
+    // Optionally clear saved data after successful project creation
+    // await _clearSavedData();
   }
 
-  Future<void> _fetchAllDataAndNavigate(int projectId) async {
+  Future<void> _fetchAllDataAndNavigate(
+      Map<String, dynamic> projectData) async {
     const String url = "${baseUrl}view.php";
     final Map<String, String> requestBody = {
       'operation': 'getProject',
@@ -108,7 +135,9 @@ class _MyProjectPageState extends State<MyProjectPage> {
             context,
             MaterialPageRoute(
               builder: (context) => EmpathyProjectPage(
-                projectId: projectId,
+                projectId: projectData['project_id'] ??
+                    0, // Provide a default value or handle null case
+                projectData: projectData, // Pass the entire project data map
               ),
             ),
           );
@@ -150,7 +179,43 @@ class _MyProjectPageState extends State<MyProjectPage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back,
               color: Color.fromARGB(255, 14, 14, 14)),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () async {
+            // Show confirmation dialog
+            final shouldPop = await showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Are you sure?'),
+                content: const Text(
+                    'You have unsaved changes. Do you want to discard them?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(false),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      // Clear input fields
+                      _projectNameController.clear();
+                      _subjectController.clear();
+                      _descriptionController.clear();
+                      _startDateController.clear();
+                      _endDateController.clear();
+                      Navigator.of(context).pop(true);
+                    },
+                    child: const Text('Discard'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text('Keep'),
+                  ),
+                ],
+              ),
+            );
+
+            if (shouldPop ?? false) {
+              Navigator.of(context).pop();
+            }
+          },
         ),
         backgroundColor: Colors.green.shade700,
         elevation: 0.0,
