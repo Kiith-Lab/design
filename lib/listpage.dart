@@ -1311,104 +1311,112 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
       final now = DateTime.now();
       final formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
 
-      pdf.addPage(
-        pw.MultiPage(
-          build: (pw.Context context) => [
-            pw.Header(
-              level: 0,
-              child: pw.Text('MY DESIGN THINKING PLAN',
-                  style: pw.TextStyle(
-                      fontSize: 24, fontWeight: pw.FontWeight.bold)),
-            ),
-            pw.SizedBox(height: 20),
-            // Add project details at the top
-            pw.Table(
-              border: pw.TableBorder.all(),
-              columnWidths: {
-                0: pw.FlexColumnWidth(1),
-                1: pw.FlexColumnWidth(2),
-              },
-              children: [
-                _buildPDFTableRow('Project Title:',
-                    widget.folder['project_title'] ?? 'Unnamed Project', ''),
-                _buildPDFTableRow(
-                    'Project Description:',
-                    widget.folder['project_subject_description'] ??
-                        'No description',
-                    ''),
-                _buildPDFTableRow('Start Date:',
-                    widget.folder['project_start_date'] ?? 'No start date', ''),
-                _buildPDFTableRow('End Date:',
-                    widget.folder['project_end_date'] ?? 'No end date', ''),
-              ],
-            ),
-            pw.SizedBox(height: 20),
-            // Iterate over each module to create a separate table
-            for (var module in moduleData ?? [])
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
+      for (var module in moduleData ?? []) {
+        pdf.addPage(
+          pw.MultiPage(
+            build: (pw.Context context) => [
+              pw.Header(
+                level: 0,
+                child: pw.Text('MY DESIGN THINKING PLAN',
+                    style: pw.TextStyle(
+                        fontSize: 24, fontWeight: pw.FontWeight.bold)),
+              ),
+              pw.SizedBox(height: 20),
+              // Add project details at the top
+              pw.Table(
+                border: pw.TableBorder.all(),
+                columnWidths: {
+                  0: pw.FlexColumnWidth(1),
+                  1: pw.FlexColumnWidth(2),
+                },
                 children: [
-                  pw.Text(
-                      'Module: ${module['module_master_name'] ?? 'Unknown'}',
-                      style: pw.TextStyle(
-                          fontSize: 18, fontWeight: pw.FontWeight.bold)),
-                  pw.SizedBox(height: 10),
-                  pw.Table(
-                    border: pw.TableBorder.all(),
-                    columnWidths: {
-                      0: pw.FlexColumnWidth(1),
-                      1: pw.FlexColumnWidth(2),
-                    },
-                    children: [
-                      if (module['activities_details_content'] != null)
-                        _buildPDFTableRow(
-                            'What activities will my students do?',
-                            module['activities_details_content'] ??
-                                'No activity',
-                            module['activities_details_remarks'] ??
-                                'No remarks'),
-                      if (module['cards_title'] != null)
-                        _buildPDFTableRow(
-                            'What two (2) method cards will my students use?',
-                            cardData
-                                    ?.where((card) =>
-                                        card['project_moduleId'] ==
-                                        module['project_moduleId'])
-                                    .map((card) => card['cards_title'])
-                                    .toSet()
-                                    .join(', ') ??
-                                'No card',
-                            widget.folder['project_cards_remarks'] ??
-                                'No remarks'),
-                      if (module['activities_header_duration'] != null)
-                        _buildPDFTableRow(
-                            'How long will this activity take?',
-                            module['activities_header_duration'] ??
-                                'Details here',
-                            module['duration_remarks'] ?? 'No remarks'),
-                      if (module['outputs_content'] != null)
-                        _buildPDFTableRow(
-                            'What are the expected outputs?',
-                            module['outputs_content'] ?? 'No output',
-                            module['outputs_remarks'] ?? 'No remarks'),
-                      if (module['instruction_content'] != null)
-                        _buildPDFTableRow(
-                            'What instructions will I give my students?',
-                            module['instruction_content'] ?? 'No instruction',
-                            module['instruction_remarks'] ?? 'No remarks'),
-                      if (module['coach_detail_content'] != null)
-                        _buildPDFTableRow(
-                            'How can I coach my students while doing this activity?',
-                            module['coach_detail_content'] ?? 'Details here',
-                            module['coach_detail_renarks'] ?? 'No remarks'),
-                    ],
-                  ),
-                  pw.SizedBox(height: 20),
+                  _buildPDFTableRow(
+                      'Project Title:',
+                      _cleanData(
+                          widget.folder['project_title'] ?? 'Unnamed Project'),
+                      ''),
+                  _buildPDFTableRow(
+                      'Project Description:',
+                      _cleanData(widget.folder['project_subject_description'] ??
+                          'No description'),
+                      ''),
+                  _buildPDFTableRow(
+                      'Start Date:',
+                      _cleanData(widget.folder['project_start_date'] ??
+                          'No start date'),
+                      ''),
+                  _buildPDFTableRow(
+                      'End Date:',
+                      _cleanData(
+                          widget.folder['project_end_date'] ?? 'No end date'),
+                      ''),
                 ],
               ),
-          ],
-        ),
-      );
+              pw.SizedBox(height: 20),
+              // Module details
+              pw.Text(
+                  'Module: ${_cleanData(module['module_master_name'] ?? 'Unknown')}',
+                  style: pw.TextStyle(
+                      fontSize: 18, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 10),
+              pw.Table(
+                border: pw.TableBorder.all(),
+                columnWidths: {
+                  0: pw.FlexColumnWidth(1),
+                  1: pw.FlexColumnWidth(2),
+                },
+                children: [
+                  if (module['activities_details_content'] != null)
+                    _buildPDFTableRow(
+                        'What activities will my students do?',
+                        _cleanData(module['activities_details_content'] ??
+                            'No activity'),
+                        _cleanData(module['activities_details_remarks'] ??
+                            'No remarks')),
+                  if (module['cards_title'] != null)
+                    _buildPDFTableRow(
+                        'What two (2) method cards will my students use?',
+                        _cleanData(cardData
+                                ?.where((card) =>
+                                    card['project_moduleId'] ==
+                                    module['project_moduleId'])
+                                .map((card) => card['cards_title'])
+                                .toSet()
+                                .join(', ') ??
+                            'No card'),
+                        _cleanData(widget.folder['project_cards_remarks'] ??
+                            'No remarks')),
+                  if (module['activities_header_duration'] != null)
+                    _buildPDFTableRow(
+                        'How long will this activity take?',
+                        _cleanData(module['activities_header_duration'] ??
+                            'Details here'),
+                        _cleanData(module['duration_remarks'] ?? 'No remarks')),
+                  if (module['outputs_content'] != null)
+                    _buildPDFTableRow(
+                        'What are the expected outputs?',
+                        _cleanData(module['outputs_content'] ?? 'No output'),
+                        _cleanData(module['outputs_remarks'] ?? 'No remarks')),
+                  if (module['instruction_content'] != null)
+                    _buildPDFTableRow(
+                        'What instructions will I give my students?',
+                        _cleanData(
+                            module['instruction_content'] ?? 'No instruction'),
+                        _cleanData(
+                            module['instruction_remarks'] ?? 'No remarks')),
+                  if (module['coach_detail_content'] != null)
+                    _buildPDFTableRow(
+                        'How can I coach my students while doing this activity?',
+                        _cleanData(
+                            module['coach_detail_content'] ?? 'Details here'),
+                        _cleanData(
+                            module['coach_detail_renarks'] ?? 'No remarks')),
+                ],
+              ),
+            ],
+          ),
+        );
+      }
 
       if (kIsWeb) {
         final bytes = await pdf.save();
@@ -1428,6 +1436,14 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
     }
   }
 
+  String _cleanData(String data) {
+    // Remove the array-like format and split into new lines with gaps
+    return data
+        .replaceAll(RegExp(r'^\["|"\]$'), '')
+        .split('","')
+        .join('\n\n'); // Add an extra new line for gap
+  }
+
   pw.TableRow _buildPDFTableRow(String label, String value, String remarks) {
     return pw.TableRow(
       children: [
@@ -1438,7 +1454,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
         ),
         pw.Padding(
           padding: const pw.EdgeInsets.all(8),
-          child: pw.Text(value, maxLines: 3, overflow: pw.TextOverflow.clip),
+          child: pw.Text(value, maxLines: 10, overflow: pw.TextOverflow.clip),
         ),
         pw.Padding(
           padding: const pw.EdgeInsets.all(8),
@@ -1548,12 +1564,16 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
     }
   }
 
-  // Helper function to filter out data that starts with [" and ends with "]
+  // Helper function to format data in bullet form with new lines
   String _filterData(String? data) {
     if (data == null) {
       return '';
     }
-    return data.replaceFirst('["', '').replaceFirst('"]', '');
+    // Remove the array-like format and split into individual items
+    List<String> items = data.replaceAll(RegExp(r'^\["|"\]$'), '').split('","');
+
+    // Prepend a bullet point to each item and join them with new lines
+    return items.map((item) => '• $item').join('\n');
   }
 
   @override
