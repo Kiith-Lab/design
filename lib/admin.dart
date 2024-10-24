@@ -1,5 +1,6 @@
 import 'package:design/dashboards.dart';
 import 'package:design/login.dart';
+import 'package:design/main.dart';
 import 'package:design/project.dart';
 import 'package:design/user_verification.dart';
 import 'package:design/view.dart';
