@@ -910,18 +910,18 @@ class _DashboardsState extends State<Dashboards> {
     sheet.appendRow([
       'Project',
       'MY DESIGN THINKING PLAN',
-      ''
     ]); // Updated headers for clarity
     sheet.appendRow(['Project', 'Unnamed Project', '']);
     sheet.appendRow(
         ['Project Description', folder['lesson'] ?? 'No description', '']);
     sheet
         .appendRow(['Start Date', folder['start_date'] ?? 'No start date', '']);
-    sheet.appendRow(['Unknown', '', '']);
+    sheet.appendRow(['Unknown', '', 'NOTES/REMARKS']);
     sheet.appendRow([
       'What activity/ies will my students do?',
       folder['Activity'] ?? 'No activity',
-      ''
+      folder['ActivityRemarks'] ??
+          'No remarks' // Move Activity Remarks to third column
     ]);
     sheet.appendRow([
       'What two (2) method cards will my students use?',
@@ -930,40 +930,32 @@ class _DashboardsState extends State<Dashboards> {
     ]);
     sheet.appendRow([
       'How long will this activity take?',
-      folder['Duration'] ?? 'Details here',
+      folder['Duration'] ?? 'No Duration',
       ''
     ]);
     sheet.appendRow([
       'What are the expected outputs?',
       folder['Output'] ?? 'No output',
-      ''
+      folder['OutputRemarks'] ??
+          'No remarks' // Move Output Remarks to third column
     ]);
     sheet.appendRow([
       'What instructions will I give my students?',
       folder['Instruction'] ?? 'No instruction',
-      ''
+      folder['InstructionRemarks'] ??
+          'No remarks' // Move Instruction Remarks to third column
     ]);
     sheet.appendRow([
       'How can I coach my students while doing this activity?',
       folder['CoachDetail'] ?? 'No coach detail',
-      ''
+      folder['CoachDetailRemarks'] ??
+          'No remarks' // Move Coach Detail Remarks to third column
     ]);
-    sheet.appendRow(
-        ['Activity Remarks', folder['ActivityRemarks'] ?? 'No remarks', '']);
-    sheet.appendRow(
-        ['Output Remarks', folder['OutputRemarks'] ?? 'No remarks', '']);
-    sheet.appendRow([
-      'Instruction Remarks',
-      folder['InstructionRemarks'] ?? 'No remarks',
-      ''
-    ]);
-    sheet.appendRow([
-      'Coach Detail Remarks',
-      folder['CoachDetailRemarks'] ?? 'No remarks',
-      ''
-    ]);
-    sheet.appendRow(['', '', 'NOTES/REMARKS']);
-    sheet.appendRow(['', '', folder['remarks'] ?? 'No remarks']);
+    // sheet.appendRow([
+    //   '',
+    //   '',
+    //   folder['remarks'] ?? 'No remarks'
+    // ]); // Keep general remarks in the third column
 
     try {
       if (kIsWeb) {
