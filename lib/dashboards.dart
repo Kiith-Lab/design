@@ -894,8 +894,32 @@ class _DashboardsState extends State<Dashboards> {
     return value.toString(); // Fallback to original behavior if not a string
   }
 
-// Function to create PDF table rows
+  List<String> _formatAsRowsForExcel(dynamic value) {
+    if (value == null) return ['N/A'];
 
+    // If it's a string that looks like an array, parse it manually
+    if (value is String) {
+      // Remove square brackets and split the string by commas
+      List<String> items = value.split(RegExp(r'\], \['));
+
+      List<String> formattedList = items.map((item) {
+        // Clean up each item: remove extra characters (including quotes), backslashes, and newlines
+        String cleanItem = item
+            .replaceAll(
+                RegExp(r'[\[\]"]'), '') // Remove square brackets and quotes
+            .replaceAll(r'\', '') // Remove backslashes
+            .replaceAll(r'\n', ' ') // Replace newlines with space
+            .trim();
+        return cleanItem; // No need for bullet points for Excel rows
+      }).toList();
+
+      return formattedList; // Return list of cleaned-up items
+    }
+
+    return [value.toString()]; // Fallback to original behavior if not a string
+  }
+
+// Function to create Excel file
   Future<void> _generateExcel(dynamic folder) async {
     // Create a new Excel document
     final Excel excel = Excel.createExcel();
@@ -907,64 +931,33 @@ class _DashboardsState extends State<Dashboards> {
     sheet.setColWidth(2, 40); // Column C
 
     // Add main headers
+    sheet.appendRow(['', 'MY DESIGN THINKING PLAN']);
+    sheet.appendRow(['Project', folder['Lesson'] ?? 'Unnamed Project', '']);
     sheet.appendRow([
-      'Project',
-      'MY DESIGN THINKING PLAN',
-      ''
-    ]); // Updated headers for clarity
-    sheet.appendRow(['Project', 'Unnamed Project', '']);
-    sheet.appendRow(
-        ['Project Description', folder['lesson'] ?? 'No description', '']);
-    sheet
-        .appendRow(['Start Date', folder['start_date'] ?? 'No start date', '']);
-    sheet.appendRow(['Unknown', '', '']);
-    sheet.appendRow([
-      'What activity/ies will my students do?',
-      folder['Activity'] ?? 'No activity',
+      'Project Description',
+      folder['ProjectDescription'] ?? 'No description',
       ''
     ]);
-    sheet.appendRow([
-      'What two (2) method cards will my students use?',
-      folder['MethodCards'] ?? 'No card',
-      ''
-    ]);
-    sheet.appendRow([
-      'How long will this activity take?',
-      folder['Duration'] ?? 'Details here',
-      ''
-    ]);
-    sheet.appendRow([
-      'What are the expected outputs?',
-      folder['Output'] ?? 'No output',
-      ''
-    ]);
-    sheet.appendRow([
-      'What instructions will I give my students?',
-      folder['Instruction'] ?? 'No instruction',
-      ''
-    ]);
-    sheet.appendRow([
-      'How can I coach my students while doing this activity?',
-      folder['CoachDetail'] ?? 'No coach detail',
-      ''
-    ]);
-    sheet.appendRow(
-        ['Activity Remarks', folder['ActivityRemarks'] ?? 'No remarks', '']);
-    sheet.appendRow(
-        ['Output Remarks', folder['OutputRemarks'] ?? 'No remarks', '']);
-    sheet.appendRow([
-      'Instruction Remarks',
-      folder['InstructionRemarks'] ?? 'No remarks',
-      ''
-    ]);
-    sheet.appendRow([
-      'Coach Detail Remarks',
-      folder['CoachDetailRemarks'] ?? 'No remarks',
-      ''
-    ]);
-    sheet.appendRow(['', '', 'NOTES/REMARKS']);
-    sheet.appendRow(['', '', folder['remarks'] ?? 'No remarks']);
+    sheet.appendRow(['Start Date', folder['StartDate'] ?? 'No start date', '']);
+    sheet.appendRow(['End Date', folder['EndDate'] ?? 'No end date', '']);
 
+    sheet.appendRow(['Unknown', '', 'NOTES/REMARKS']);
+
+    // Handle different sections
+    _appendSection(sheet, folder['Activity'], folder['ActivityRemarks'],
+        'What activity/ies will my students do?');
+    _appendSection(sheet, folder['Mode'], null, 'What modes are used?');
+    _appendSection(
+        sheet, folder['Duration'], null, 'How long will this activity take?',
+        formatFunction: _formatAsBulletList);
+    _appendSection(sheet, folder['Output'], folder['OutputRemarks'],
+        'What are the expected outputs?');
+    _appendSection(sheet, folder['Instruction'], folder['InstructionRemarks'],
+        'What instructions will I give my students?');
+    _appendSection(sheet, folder['CoachDetail'], folder['CoachDetailRemarks'],
+        'How can I coach my students while doing this activity?');
+
+    // Saving the Excel file
     try {
       if (kIsWeb) {
         final bytes = excel.encode();
@@ -980,14 +973,38 @@ class _DashboardsState extends State<Dashboards> {
         final file = File(filePath);
         await file.writeAsBytes(excel.encode()!, flush: true);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Excel file saved to $filePath')),
-        );
+            SnackBar(content: Text('Excel file saved to $filePath')));
       }
     } catch (e) {
       print('Error generating Excel: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to generate Excel: $e')),
-      );
+          SnackBar(content: Text('Failed to generate Excel: $e')));
+    }
+  }
+
+  void _appendSection(Sheet sheet, dynamic items, String? remarks, String title,
+      {Function? formatFunction}) {
+    List<String> itemList = _formatAsRowsForExcel(items);
+    String itemRemarks = remarks ?? 'No remarks';
+
+    // Format item if a formatting function is provided
+    String formattedItem = formatFunction != null
+        ? formatFunction(itemList)
+        : itemList.isNotEmpty
+            ? itemList.join(', ')
+            : 'No items';
+
+    // Append the first row with the first item and the remarks
+    if (itemList.isNotEmpty) {
+      sheet.appendRow([title, itemList[0], itemRemarks]);
+
+      // Append subsequent rows for remaining items with empty first and third columns
+      for (int i = 1; i < itemList.length; i++) {
+        sheet.appendRow(['', itemList[i], '']);
+      }
+    } else {
+      // Handle case where there are no items
+      sheet.appendRow([title, 'No item', itemRemarks]);
     }
   }
 
