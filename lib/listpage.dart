@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:html' as html;
 import 'dart:io';
 
-import 'package:excel_dart/excel_dart.dart';
 import 'package:flip_card/flip_card.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/foundation.dart';
@@ -13,8 +12,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:shadcn_ui/shadcn_ui.dart';
-import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xlsio;
+import 'package:design/update-empaproject.dart';
+import 'package:excel_dart/excel_dart.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
@@ -45,7 +46,6 @@ class _ListPageState extends State<ListPage> {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
-        print('API Response: $data');
 
         if (data['folders'] != null && data['folders'] is List) {
           setState(() {
@@ -525,944 +525,11 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
   }
 
   void _addLesson(BuildContext context) {
-    // TODO: Implement lesson addition logic
     print(
         'Add lesson tapped for folder: ${widget.folder['project_title'] ?? 'Unnamed Folder'}');
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
           content: Text('Add lesson functionality to be implemented')),
-    );
-  }
-
-  void _showFolderDetails(BuildContext context) {
-    // Gather all card titles for the same projectId
-    final projectId = widget.folder['projectId'];
-    print('ProjectID: $projectId');
-    final cardTitles = cardData
-            ?.where((card) => card['projectId'] == projectId)
-            .map((card) => card['cards_title'])
-            .toList() ??
-        [];
-
-    final projectModule = moduleData
-            ?.where((module) => module['projectId'] == projectId)
-            .map((module) => module['module_master_name'])
-            .toList() ??
-        [];
-    final projectAct = moduleData
-            ?.where((module) => module['projectId'] == projectId)
-            .map((module) => module['activities_details_content'])
-            .toList() ??
-        [];
-    final projectIns = moduleData
-            ?.where((module) => module['projectId'] == projectId)
-            .map((module) => module['instruction_content'])
-            .toList() ??
-        [];
-    final projectOuput = moduleData
-            ?.where((module) => module['projectId'] == projectId)
-            .map((module) => module['outputs_content'])
-            .toList() ??
-        [];
-    final projectCoach = moduleData
-            ?.where((module) => module['projectId'] == projectId)
-            .map((module) => module['coach_detail_content'])
-            .toList() ??
-        [];
-    final String cardTitlesString =
-        cardTitles.join(', '); // Join titles with a comma
-    final String projectModuleString = projectModule.join(', ');
-    final String projectActString = projectAct.join(', ');
-    final String projectInsString = projectIns.join(', ');
-    final String projectOuputString = projectOuput.join(', ');
-    final String projectCoachString = projectCoach.join(', ');
-    // New: Gather remarks for the folder
-    final remarks = [
-      widget.folder['activities_details_remarks'] ?? 'No remarks',
-      widget.folder['coach_detail_renarks'] ?? 'No remarks',
-      widget.folder['outputs_remarks'] ?? 'No remarks',
-      widget.folder['project_cards_remarks'] ?? 'No remarks',
-      widget.folder['instruction_remarks'] ?? 'No remarks',
-    ].join('\n'); // Join remarks with a newline
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFFF5E6D3)
-              .withOpacity(0.9), // Pale sand color with opacity
-          title: Text(
-            widget.folder['project_title'] ?? 'Unnamed Folder',
-            style: const TextStyle(
-                color: Colors.black87,
-                fontSize: 24, // Increased font size
-                fontWeight: FontWeight.bold), // Increased font size and bold
-          ),
-          content: SizedBox(
-            width: MediaQuery.of(context).size.width *
-                0.8, // Set the width to 80% of the screen
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  // Replace Table with Column of Cards
-                  Card(
-                    child: ListTile(
-                      title: const Text('Project Code'),
-                      subtitle: Text(
-                          widget.folder['project_subject_code'] ?? 'No code'),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.edit),
-                        color: Colors.black,
-                        onPressed: () {
-                          _showEditDialog(
-                              context,
-                              'Project Code',
-                              widget.folder['project_subject_code'] ?? '',
-                              'activity', (newValue) {
-                            setState(() {
-                              widget.folder['project_subject_code'] =
-                                  newValue; // Update the folder data
-                            });
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                  Card(
-                    child: ListTile(
-                      title: const Text('Project Description'),
-                      subtitle: Text(
-                          widget.folder['project_subject_description'] ??
-                              'No description'),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.edit),
-                        color: Colors.black,
-                        onPressed: () {
-                          _showEditDialog(
-                              context,
-                              'Project Description',
-                              widget.folder['project_subject_description'] ??
-                                  '',
-                              'activity', (newValue) {
-                            setState(() {
-                              widget.folder['project_subject_description'] =
-                                  newValue; // Update the folder data
-                            });
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                  Card(
-                    child: ListTile(
-                      title: const Text('Start Date'),
-                      subtitle: Text(widget.folder['project_start_date'] ??
-                          'No start date'),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.edit),
-                        color: Colors.black,
-                        onPressed: () {
-                          _showEditDialog(
-                              context,
-                              'Start Date',
-                              widget.folder['project_start_date'] ?? '',
-                              'activity', (newValue) {
-                            setState(() {
-                              widget.folder['project_start_date'] =
-                                  newValue; // Update the folder data
-                            });
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                  Card(
-                    child: ListTile(
-                      title: const Text('End Date'),
-                      subtitle: Text(
-                          widget.folder['project_end_date'] ?? 'No end date'),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.edit),
-                        color: Colors.black,
-                        onPressed: () {
-                          _showEditDialog(
-                              context,
-                              'End Date',
-                              widget.folder['project_end_date'] ?? '',
-                              'activity', (newValue) {
-                            setState(() {
-                              widget.folder['project_end_date'] =
-                                  newValue; // Update the folder data
-                            });
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                  Card(
-                    child: ListTile(
-                      title: const Text(
-                        'Module Names',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 12),
-                      ),
-                      subtitle: Text(
-                        projectModule.isNotEmpty
-                            ? projectModule.map((name) => '• $name').join('\n')
-                            : 'No modules available',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 12),
-                      ),
-                    ),
-                  ),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Activity',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 12),
-                              ),
-                              Text(
-                                projectAct.isNotEmpty
-                                    ? projectAct
-                                        .map((title) =>
-                                            '• ${title.replaceAll(RegExp(r'^\["|"\]$'), '')}')
-                                        .join('\n')
-                                    : 'No cards available',
-                                style: TextStyle(
-                                    color: Colors.grey[700], fontSize: 12),
-                              ),
-                              const SizedBox(height: 10),
-                              const Divider(),
-                              const Text(
-                                'Remarks',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 12),
-                              ),
-                              Text(
-                                widget.folder['activities_details_remarks'] ??
-                                    'No remarks',
-                                style: TextStyle(
-                                    color: Colors.grey[700], fontSize: 12),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit),
-                                color: Colors.black,
-                                onPressed: () {
-                                  _showEditDialog(
-                                      context,
-                                      'Activity',
-                                      widget.folder[
-                                              'activities_details_content'] ??
-                                          '',
-                                      'activity', (newValue) {
-                                    setState(() {
-                                      widget.folder[
-                                              'activities_details_content'] =
-                                          newValue; // Update the folder data
-                                    });
-                                  });
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.edit),
-                                color: Colors.black,
-                                onPressed: () {
-                                  _showEditDialog(
-                                      context,
-                                      'Activity Remarks',
-                                      widget.folder[
-                                              'activities_details_remarks'] ??
-                                          '',
-                                      'activity', (newValue) {
-                                    setState(() {
-                                      widget.folder[
-                                              'activities_details_remarks'] =
-                                          newValue; // Update the folder data
-                                    });
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Output',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 12),
-                              ),
-                              Text(
-                                projectOuput.isNotEmpty
-                                    ? projectOuput
-                                        .map((title) =>
-                                            '• ${title.replaceAll(RegExp(r'^\["|"\]$'), '')}')
-                                        .join('\n')
-                                    : 'No cards available',
-                                style: TextStyle(
-                                    color: Colors.grey[700], fontSize: 12),
-                              ),
-                              const SizedBox(height: 10),
-                              const Divider(),
-                              const Text(
-                                'Remarks',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 12),
-                              ),
-                              Text(
-                                widget.folder['outputs_remarks'] ??
-                                    'No remarks',
-                                style: TextStyle(
-                                    color: Colors.grey[700], fontSize: 12),
-                              ),
-                            ],
-                          ),
-                          Column(
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit),
-                                color: Colors.black,
-                                onPressed: () {
-                                  _showEditDialog(
-                                      context,
-                                      'Output',
-                                      widget.folder['outputs_content'] ?? '',
-                                      'activity', (newValue) {
-                                    setState(() {
-                                      widget.folder['outputs_content'] =
-                                          newValue; // Update the folder data
-                                    });
-                                  });
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.edit),
-                                color: Colors.black,
-                                onPressed: () {
-                                  _showEditDialog(
-                                      context,
-                                      'Output Remarks',
-                                      widget.folder['outputs_remarks'] ?? '',
-                                      'activity', (newValue) {
-                                    setState(() {
-                                      widget.folder['outputs_remarks'] =
-                                          newValue; // Update the folder data
-                                    });
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Instruction',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12),
-                                ),
-                                Text(
-                                  projectIns.isNotEmpty
-                                      ? projectIns
-                                          .map((title) =>
-                                              '• ${title.replaceAll(RegExp(r'^\["|"\]$'), '')}')
-                                          .join('\n')
-                                      : 'No cards available',
-                                  style: TextStyle(
-                                      color: Colors.grey[700], fontSize: 12),
-                                ),
-                                const SizedBox(height: 10),
-                                const Divider(),
-                                const Text(
-                                  'Remarks',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12),
-                                ),
-                                Text(
-                                  widget.folder['instruction_remarks'] ??
-                                      'No remarks',
-                                  style: TextStyle(
-                                      color: Colors.grey[700], fontSize: 12),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Column(
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit),
-                                color: Colors.black,
-                                onPressed: () {
-                                  _showEditDialog(
-                                      context,
-                                      'Instruction',
-                                      widget.folder['instruction_content'] ??
-                                          '',
-                                      'activity', (newValue) {
-                                    setState(() {
-                                      widget.folder['instruction_content'] =
-                                          newValue; // Update the folder data
-                                    });
-                                  });
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.edit),
-                                color: Colors.black,
-                                onPressed: () {
-                                  _showEditDialog(
-                                      context,
-                                      'Instruction Remarks',
-                                      widget.folder['instruction_remarks'] ??
-                                          '',
-                                      'activity', (newValue) {
-                                    setState(() {
-                                      widget.folder['instruction_remarks'] =
-                                          newValue; // Update the folder data
-                                    });
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Coach Detail',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12),
-                                ),
-                                Text(
-                                  projectCoach.isNotEmpty
-                                      ? projectCoach
-                                          .map((title) =>
-                                              '• ${title.replaceAll(RegExp(r'^\["|"\]$'), '')}')
-                                          .join('\n')
-                                      : 'No cards available',
-                                  style: TextStyle(
-                                      color: Colors.grey[700], fontSize: 12),
-                                ),
-                                const SizedBox(height: 10),
-                                const Divider(),
-                                const Text(
-                                  'Remarks',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12),
-                                ),
-                                Text(
-                                  widget.folder['coach_detail_renarks'] ??
-                                      'No remarks',
-                                  style: TextStyle(
-                                      color: Colors.grey[700], fontSize: 12),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Column(
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit),
-                                color: Colors.black,
-                                onPressed: () {
-                                  _showEditDialog(
-                                      context,
-                                      'Coach Detail',
-                                      widget.folder['coach_detail_content'] ??
-                                          '',
-                                      'activity', (newValue) {
-                                    setState(() {
-                                      widget.folder['coach_detail_content'] =
-                                          newValue; // Update the folder data
-                                    });
-                                  });
-                                  print('THE ID: ' +
-                                      widget.folder['coach_detail_id']);
-                                },
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.edit),
-                                color: Colors.black,
-                                onPressed: () {
-                                  _showEditDialog(
-                                      context,
-                                      'Coach Detail Remarks',
-                                      widget.folder['coach_detail_renarks'] ??
-                                          '',
-                                      'activity', (newValue) {
-                                    setState(() {
-                                      widget.folder['coach_detail_renarks'] =
-                                          newValue; // Update the folder data
-                                    });
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  Card(
-                    child: ListTile(
-                      title: const Text(
-                        'Card Titles',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 12),
-                      ),
-                      subtitle: Text(
-                        cardTitles.isNotEmpty
-                            ? cardTitles.map((title) => '• $title').join('\n')
-                            : 'No cards available',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 12),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            Padding(
-              // Increased padding around the button row
-              padding:
-                  const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-              child: Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.spaceBetween, // Space buttons evenly
-                children: [
-                  ElevatedButton(
-                    onPressed: () => _generateExcel(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE6D0B3),
-                      foregroundColor: Colors.black87,
-                      minimumSize: const Size(100, 50), // Increased size
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 10), // Increased padding
-                    ),
-                    child: const Text('Excel'),
-                  ),
-                  const SizedBox(width: 20), // Increased space between buttons
-                  ElevatedButton(
-                    onPressed: () => _generatePDF(context),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE6D0B3),
-                      foregroundColor: Colors.black87,
-                      minimumSize: const Size(100, 50), // Increased size
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 10), // Increased padding
-                    ),
-                    child: const Text(' PDF'),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _updateFolderDetails(
-      String type, Map<String, dynamic> updatedData) async {
-    try {
-      final response = await http.post(
-        Uri.parse('http://localhost/design/lib/api/updates.php'),
-        headers: {
-          'Content-Type': 'application/json', // Set content type to JSON
-        },
-        body: json.encode({
-          'operation': type, // Use the type to determine the operation
-          'json': json.encode(updatedData), // Encode the updated data as JSON
-        }),
-      );
-
-      // Log the response body for debugging
-      print('Response body: ${response.body}'); // Log the raw response
-
-      if (response.statusCode == 200) {
-        if (response.body.isNotEmpty) {
-          try {
-            final result = json.decode(response.body); // Attempt to decode JSON
-            if (result['error'] != null) {
-              print('Error: ${result['error']}');
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error: ${result['error']}')),
-              );
-            } else if (result == 1) {
-              print('Update successful');
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Update successful')),
-              );
-            } else {
-              print('Update failed');
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Update failed')),
-              );
-            }
-          } catch (jsonError) {
-            print(
-                'JSON decoding error: $jsonError'); // Log JSON decoding errors
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Invalid response format')),
-            );
-          }
-        } else {
-          print('Empty response body');
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Empty response from server')),
-          );
-        }
-      } else {
-        print('Failed to update. Status code: ${response.statusCode}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  'Failed to update. Status code: ${response.statusCode}')),
-        );
-      }
-    } catch (e) {
-      print('Error during update: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error during update: $e')),
-      );
-    }
-  }
-
-  // Function to show the edit dialog for multiple lines
-  void _showEditDialog(BuildContext context, String title, String initialValue,
-      String type, Function(String) onSave) {
-    List<String> initialValues = initialValue.split('\n');
-    List<TextEditingController> controllers = initialValues
-        .map((value) => TextEditingController(text: value))
-        .toList();
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Edit $title'),
-          content: SingleChildScrollView(
-            child: Column(
-              children: controllers.map((controller) {
-                return TextField(
-                  controller: controller,
-                  decoration: InputDecoration(hintText: 'Enter new value'),
-                  maxLines: null, // Allow multiple lines
-                );
-              }).toList(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                String newValue =
-                    controllers.map((controller) => controller.text).join('\n');
-                onSave(newValue); // Call the save function with the new value
-                Navigator.of(context).pop(); // Close the dialog
-
-                // Prepare the updated data based on the type
-                Map<String, dynamic> updatedData = {};
-                switch (type) {
-                  case 'activity':
-                    updatedData = {
-                      'actId': widget.folder[
-                          'activities_details_id'], // Assuming you have this ID
-                      'actContent': newValue,
-                      'actRemark': widget.folder['activities_details_remarks'],
-                    };
-                    break;
-                  case 'output':
-                    updatedData = {
-                      'outId': widget
-                          .folder['outputs_id'], // Assuming you have this ID
-                      'outContent': newValue,
-                      'outRemarks': widget.folder['outputs_remarks'],
-                    };
-                    break;
-                  case 'instruction':
-                    updatedData = {
-                      'instructionId': widget.folder[
-                          'instruction_id'], // Assuming you have this ID
-                      'instructContent': newValue,
-                      'instructRemarks': widget.folder['instruction_remarks'],
-                    };
-                    break;
-                  case 'coachDetail':
-                    updatedData = {
-                      'coachId': widget.folder[
-                          'coach_detail_id'], // Assuming you have this ID
-                      'coachContent': newValue,
-                      'coachRemarks': widget.folder['coach_detail_renarks'],
-                    };
-                    break;
-                  case 'project': // Add this case if you have a project update
-                    updatedData = {
-                      'project_id': widget
-                          .folder['projectId'], // Assuming you have this ID
-                      'project_title':
-                          newValue, // Update the project title or other fields
-                      // Add other fields as necessary
-                    };
-                    break;
-                }
-
-                // Call the update function with the updated data
-                _updateFolderDetails(type, updatedData);
-              },
-              child: const Text('Save'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(), // Close the dialog
-              child: const Text('Cancel'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  TableRow _buildTableRow(String label, String value, String remarks) {
-    return TableRow(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(label,
-              style: const TextStyle(
-                  fontWeight: FontWeight.bold, color: Colors.black87)),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: value.startsWith('[') && value.endsWith(']')
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: (json.decode(value) as List<dynamic>)
-                      .map((item) => Text('• $item',
-                          style: const TextStyle(color: Colors.black87)))
-                      .toList(),
-                )
-              : Text(value, style: const TextStyle(color: Colors.black87)),
-        ),
-        // New: Add a column for remarks
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(remarks, style: const TextStyle(color: Colors.black87)),
-        ),
-      ],
-    );
-  }
-
-  Future<void> _generatePDF(BuildContext context) async {
-    try {
-      final pdf = pw.Document();
-      final now = DateTime.now();
-      final formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
-
-      for (var module in moduleData ?? []) {
-        pdf.addPage(
-          pw.MultiPage(
-            build: (pw.Context context) => [
-              pw.Header(
-                level: 0,
-                child: pw.Text('MY DESIGN THINKING PLAN',
-                    style: pw.TextStyle(
-                        fontSize: 24, fontWeight: pw.FontWeight.bold)),
-              ),
-              pw.SizedBox(height: 20),
-              // Add project details at the top
-              pw.Table(
-                border: pw.TableBorder.all(),
-                columnWidths: {
-                  0: pw.FlexColumnWidth(1),
-                  1: pw.FlexColumnWidth(2),
-                },
-                children: [
-                  _buildPDFTableRow(
-                      'Project Title:',
-                      _cleanData(
-                          widget.folder['project_title'] ?? 'Unnamed Project'),
-                      ''),
-                  _buildPDFTableRow(
-                      'Project Description:',
-                      _cleanData(widget.folder['project_subject_description'] ??
-                          'No description'),
-                      ''),
-                  _buildPDFTableRow(
-                      'Start Date:',
-                      _cleanData(widget.folder['project_start_date'] ??
-                          'No start date'),
-                      ''),
-                  _buildPDFTableRow(
-                      'End Date:',
-                      _cleanData(
-                          widget.folder['project_end_date'] ?? 'No end date'),
-                      ''),
-                ],
-              ),
-              pw.SizedBox(height: 20),
-              // Module details
-              pw.Text(
-                  'Module: ${_cleanData(module['module_master_name'] ?? 'Unknown')}',
-                  style: pw.TextStyle(
-                      fontSize: 18, fontWeight: pw.FontWeight.bold)),
-              pw.SizedBox(height: 10),
-              pw.Table(
-                border: pw.TableBorder.all(),
-                columnWidths: {
-                  0: pw.FlexColumnWidth(1),
-                  1: pw.FlexColumnWidth(2),
-                },
-                children: [
-                  if (module['activities_details_content'] != null)
-                    _buildPDFTableRow(
-                        'What activities will my students do?',
-                        _cleanData(module['activities_details_content'] ??
-                            'No activity'),
-                        _cleanData(module['activities_details_remarks'] ??
-                            'No remarks')),
-                  if (module['cards_title'] != null)
-                    _buildPDFTableRow(
-                        'What two (2) method cards will my students use?',
-                        _cleanData(cardData
-                                ?.where((card) =>
-                                    card['project_moduleId'] ==
-                                    module['project_moduleId'])
-                                .map((card) => card['cards_title'])
-                                .toSet()
-                                .join(', ') ??
-                            'No card'),
-                        _cleanData(widget.folder['project_cards_remarks'] ??
-                            'No remarks')),
-                  if (module['activities_header_duration'] != null)
-                    _buildPDFTableRow(
-                        'How long will this activity take?',
-                        _cleanData(module['activities_header_duration'] ??
-                            'Details here'),
-                        _cleanData(module['duration_remarks'] ?? 'No remarks')),
-                  if (module['outputs_content'] != null)
-                    _buildPDFTableRow(
-                        'What are the expected outputs?',
-                        _cleanData(module['outputs_content'] ?? 'No output'),
-                        _cleanData(module['outputs_remarks'] ?? 'No remarks')),
-                  if (module['instruction_content'] != null)
-                    _buildPDFTableRow(
-                        'What instructions will I give my students?',
-                        _cleanData(
-                            module['instruction_content'] ?? 'No instruction'),
-                        _cleanData(
-                            module['instruction_remarks'] ?? 'No remarks')),
-                  if (module['coach_detail_content'] != null)
-                    _buildPDFTableRow(
-                        'How can I coach my students while doing this activity?',
-                        _cleanData(
-                            module['coach_detail_content'] ?? 'Details here'),
-                        _cleanData(
-                            module['coach_detail_renarks'] ?? 'No remarks')),
-                ],
-              ),
-            ],
-          ),
-        );
-      }
-
-      if (kIsWeb) {
-        final bytes = await pdf.save();
-        final blob = html.Blob([bytes], 'application/pdf');
-        final url = html.Url.createObjectUrlFromBlob(blob);
-        final anchor = html.AnchorElement(href: url)
-          ..setAttribute('download', 'design_thinking_plan.pdf')
-          ..click();
-        html.Url.revokeObjectUrl(url);
-      } else {
-        await Printing.layoutPdf(
-          onLayout: (PdfPageFormat format) async => pdf.save(),
-        );
-      }
-    } catch (e) {
-      print('Error generating PDF: $e');
-    }
-  }
-
-  String _cleanData(String data) {
-    // Remove the array-like format and split into new lines with gaps
-    return data
-        .replaceAll(RegExp(r'^\["|"\]$'), '')
-        .split('","')
-        .join('\n\n'); // Add an extra new line for gap
-  }
-
-  pw.TableRow _buildPDFTableRow(String label, String value, String remarks) {
-    return pw.TableRow(
-      children: [
-        pw.Padding(
-          padding: const pw.EdgeInsets.all(8),
-          child: pw.Text(label,
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-        ),
-        pw.Padding(
-          padding: const pw.EdgeInsets.all(8),
-          child: pw.Text(value, maxLines: 10, overflow: pw.TextOverflow.clip),
-        ),
-        pw.Padding(
-          padding: const pw.EdgeInsets.all(8),
-          child: pw.Text(remarks.isNotEmpty
-              ? remarks
-              : 'No remarks'), // Display remarks here
-        ),
-      ],
     );
   }
 
@@ -1504,7 +571,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
           .toList();
       if (moduleCards != null && moduleCards.isNotEmpty) {
         String cardsText =
-            moduleCards.map((card) => '• ${card['cards_title']}').join('\n');
+            moduleCards.map((card) => '- ${card['cards_title']}').join('\n');
         sheet.appendRow([
           'What two (2) method cards will my students use?',
           cardsText,
@@ -1514,7 +581,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
 
       sheet.appendRow([
         'How long will this activity take?',
-        _filterData(widget.folder['activities_header_duration'])
+        _filterData(module['activities_header_duration'])
       ]);
 
       sheet.appendRow([
@@ -1573,7 +640,518 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
     List<String> items = data.replaceAll(RegExp(r'^\["|"\]$'), '').split('","');
 
     // Prepend a bullet point to each item and join them with new lines
-    return items.map((item) => '• $item').join('\n');
+    return items
+        .map((item) => '- $item')
+        .join('\n\n'); // Added extra \n for 1.5 spacing
+  }
+
+  Future<void> _generatePDF(BuildContext context) async {
+    final pdf = pw.Document();
+
+    // Add the cover page with project details
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Header(
+                level: 0,
+                child: pw.Center(
+                  child: pw.Text('MY DESIGN THINKING PLAN',
+                      style: pw.TextStyle(
+                          fontSize: 24, fontWeight: pw.FontWeight.bold)),
+                ),
+              ),
+              pw.SizedBox(height: 20),
+              pw.Table(
+                border: pw.TableBorder.all(),
+                columnWidths: {
+                  0: const pw.FlexColumnWidth(1),
+                  1: const pw.FlexColumnWidth(2),
+                },
+                children: [
+                  _buildPdfTableRow(
+                      'Project', widget.folder['project_title'], null),
+                  _buildPdfTableRow('Project Description',
+                      widget.folder['project_subject_description'], null),
+                  _buildPdfTableRow(
+                      'Start Date', widget.folder['project_start_date'], null),
+                  _buildPdfTableRow(
+                      'End Date', widget.folder['project_end_date'], null),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    // Add each module on a separate page
+    for (var module in moduleData ?? []) {
+      pdf.addPage(
+        pw.Page(
+          build: (pw.Context context) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                // Module Title
+                pw.Text(
+                  module['module_master_name'] ?? '',
+                  style: pw.TextStyle(
+                      fontSize: 20, fontWeight: pw.FontWeight.bold),
+                ),
+                pw.SizedBox(height: 20),
+
+                // Module Content Table
+                pw.Table(
+                  border: pw.TableBorder.all(),
+                  columnWidths: {
+                    0: const pw.FlexColumnWidth(1),
+                    1: const pw.FlexColumnWidth(2),
+                    2: const pw.FlexColumnWidth(1),
+                  },
+                  children: [
+                    // Table Header
+                    pw.TableRow(
+                      decoration:
+                          const pw.BoxDecoration(color: PdfColors.grey300),
+                      children: [
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Field',
+                              style:
+                                  pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Details',
+                              style:
+                                  pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Remarks',
+                              style:
+                                  pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+                    // Activities
+                    _buildPdfTableRow(
+                      'What activities will my students do?',
+                      _filterData(module['activities_details_content']),
+                      _filterData(module['activities_details_remarks']),
+                    ),
+                    // Method Cards
+                    _buildPdfTableRow(
+                      'What two (2) method cards will my students use?',
+                      cardData
+                          ?.where((card) =>
+                              card['project_moduleId'] ==
+                              module['project_moduleId'])
+                          .map((card) => '- ${card['cards_title']}')
+                          .join('\n'),
+                      _filterData(widget.folder['project_cards_remarks']),
+                    ),
+                    // Duration
+                    _buildPdfTableRow(
+                      'How long will this activity take?',
+                      _filterData(module['activities_header_duration']),
+                      null,
+                    ),
+                    // Outputs
+                    _buildPdfTableRow(
+                      'What are the expected outputs?',
+                      _filterData(module['outputs_content']),
+                      _filterData(module['outputs_remarks']),
+                    ),
+                    // Instructions
+                    _buildPdfTableRow(
+                      'What instructions will I give my students?',
+                      _filterData(module['instruction_content']),
+                      _filterData(module['instruction_remarks']),
+                    ),
+                    // Coaching
+                    _buildPdfTableRow(
+                      'How can I coach my students while doing this activity?',
+                      _filterData(module['coach_detail_content']),
+                      _filterData(module['coach_detail_renarks']),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
+      );
+    }
+
+    try {
+      if (kIsWeb) {
+        final bytes = await pdf.save();
+        final blob = html.Blob([bytes], 'application/pdf');
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement(href: url)
+          ..setAttribute('download',
+              '${widget.folder['project_title'] ?? 'project'}_details.pdf')
+          ..click();
+        html.Url.revokeObjectUrl(url);
+      } else {
+        await Printing.layoutPdf(
+          onLayout: (PdfPageFormat format) async => pdf.save(),
+        );
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('PDF generated successfully')),
+      );
+    } catch (e) {
+      print('Error generating PDF: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to generate PDF: $e')),
+      );
+    }
+  }
+
+  // Helper method for building PDF table rows
+  pw.TableRow _buildPdfTableRow(
+      String field, String? content, String? remarks) {
+    return pw.TableRow(
+      children: [
+        pw.Padding(
+          padding: const pw.EdgeInsets.all(8),
+          child: pw.Text(field),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.all(8),
+          child: pw.Text(
+            content ?? 'Not specified',
+            style: const pw.TextStyle(
+              lineSpacing: 1.5, // Line spacing for content
+            ),
+          ),
+        ),
+        pw.Padding(
+          padding: const pw.EdgeInsets.all(8),
+          child: pw.Text(
+            remarks ?? '-',
+            style: const pw.TextStyle(
+              lineSpacing: 1.5, // Line spacing for remarks
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showFolderDetails(BuildContext context) {
+    final projectId = widget.folder['projectId'];
+    print('ProjectID: $projectId');
+    final cardTitles = cardData
+            ?.where((card) => card['projectId'] == projectId)
+            .map((card) => card['cards_title'])
+            .toList() ??
+        [];
+
+    final projectModule = moduleData
+            ?.where((module) => module['projectId'] == projectId)
+            .map((module) => module['module_master_name'])
+            .toList() ??
+        [];
+    final projectAct = moduleData
+            ?.where((module) => module['projectId'] == projectId)
+            .map((module) => module['activities_details_content'])
+            .toList() ??
+        [];
+    final projectIns = moduleData
+            ?.where((module) => module['projectId'] == projectId)
+            .map((module) => module['instruction_content'])
+            .toList() ??
+        [];
+    final projectOuput = moduleData
+            ?.where((module) => module['projectId'] == projectId)
+            .map((module) => module['outputs_content'])
+            .toList() ??
+        [];
+    final projectCoach = moduleData
+            ?.where((module) => module['projectId'] == projectId)
+            .map((module) => module['coach_detail_content'])
+            .toList() ??
+        [];
+    final String cardTitlesString = cardTitles.join(', ');
+    final String projectModuleString = projectModule.join(', ');
+    final String projectActString = projectAct.join(', ');
+    final String projectInsString = projectIns.join(', ');
+    final String projectOuputString = projectOuput.join(', ');
+    final String projectCoachString = projectCoach.join(', ');
+
+    final remarks = [
+      widget.folder['activities_details_remarks'] ?? 'No remarks',
+      widget.folder['coach_detail_renarks'] ?? 'No remarks',
+      widget.folder['outputs_remarks'] ?? 'No remarks',
+      widget.folder['project_cards_remarks'] ?? 'No remarks',
+      widget.folder['instruction_remarks'] ?? 'No remarks',
+    ].join('\n');
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFFF5E6D3).withOpacity(0.9),
+          title: Text(
+            widget.folder['project_title'] ?? 'Unnamed Folder',
+            style: const TextStyle(
+                color: Colors.black87,
+                fontSize: 24,
+                fontWeight: FontWeight.bold),
+          ),
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.8,
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Card(
+                    child: ListTile(
+                      title: const Text('Project Code'),
+                      subtitle: Text(
+                          widget.folder['project_subject_code'] ?? 'No code'),
+                    ),
+                  ),
+                  Card(
+                    child: ListTile(
+                      title: const Text('Project Description'),
+                      subtitle: Text(
+                          widget.folder['project_subject_description'] ??
+                              'No description'),
+                    ),
+                  ),
+                  Card(
+                    child: ListTile(
+                      title: const Text('Start Date'),
+                      subtitle: Text(widget.folder['project_start_date'] ??
+                          'No start date'),
+                    ),
+                  ),
+                  Card(
+                    child: ListTile(
+                      title: const Text('End Date'),
+                      subtitle: Text(
+                          widget.folder['project_end_date'] ?? 'No end date'),
+                    ),
+                  ),
+                  Card(
+                    child: ListTile(
+                      title: const Text('Module Names'),
+                      subtitle: Text(
+                        projectModule.isNotEmpty
+                            ? projectModule
+                                .map((name) => '- $name')
+                                .join('\n\n') // Added extra \n for 1.5 spacing
+                            : 'No modules available',
+                        style:
+                            const TextStyle(height: 1.5), // Added line height
+                      ),
+                    ),
+                  ),
+                  Card(
+                    child: ListTile(
+                      title: const Text('Activity'),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            projectAct.isNotEmpty
+                                ? projectAct
+                                    .map((title) =>
+                                        '- ${title.replaceAll(RegExp(r'^\["|"\]$'), '')}')
+                                    .join(
+                                        '\n\n') // Added extra \n for 1.5 spacing
+                                : 'No activities available',
+                            style: TextStyle(
+                              color: Colors.grey[700],
+                              fontSize: 12,
+                              height: 1.5, // Added line height
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const Divider(),
+                          const Text(
+                            'Remarks',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 12),
+                          ),
+                          Text(
+                            widget.folder['activities_details_remarks'] ??
+                                'No remarks',
+                            style: TextStyle(
+                                color: Colors.grey[700], fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Card(
+                    child: ListTile(
+                      title: const Text('Output'),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            projectOuput.isNotEmpty
+                                ? projectOuput
+                                    .map((title) =>
+                                        '- ${title.replaceAll(RegExp(r'^\["|"\]$'), '')}')
+                                    .join(
+                                        '\n\n') // Added extra \n for 1.5 spacing
+                                : 'No outputs available',
+                            style: TextStyle(
+                              color: Colors.grey[700],
+                              fontSize: 12,
+                              height: 1.5, // Added line height
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const Divider(),
+                          const Text(
+                            'Remarks',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 12),
+                          ),
+                          Text(
+                            widget.folder['outputs_remarks'] ?? 'No remarks',
+                            style: TextStyle(
+                                color: Colors.grey[700], fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Card(
+                    child: ListTile(
+                      title: const Text('Instruction'),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            projectIns.isNotEmpty
+                                ? projectIns
+                                    .map((title) =>
+                                        '- ${title.replaceAll(RegExp(r'^\["|"\]$'), '')}')
+                                    .join(
+                                        '\n\n') // Added extra \n for 1.5 spacing
+                                : 'No instructions available',
+                            style: TextStyle(
+                              color: Colors.grey[700],
+                              fontSize: 12,
+                              height: 1.5, // Added line height
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const Divider(),
+                          const Text(
+                            'Remarks',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 12),
+                          ),
+                          Text(
+                            widget.folder['instruction_remarks'] ??
+                                'No remarks',
+                            style: TextStyle(
+                                color: Colors.grey[700], fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Card(
+                    child: ListTile(
+                      title: const Text('Coach Detail'),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            projectCoach.isNotEmpty
+                                ? projectCoach
+                                    .map((title) =>
+                                        '- ${title.replaceAll(RegExp(r'^\["|"\]$'), '')}')
+                                    .join(
+                                        '\n\n') // Added extra \n for 1.5 spacing
+                                : 'No coach details available',
+                            style: TextStyle(
+                              color: Colors.grey[700],
+                              fontSize: 12,
+                              height: 1.5, // Added line height
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          const Divider(),
+                          const Text(
+                            'Remarks',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 12),
+                          ),
+                          Text(
+                            widget.folder['coach_detail_renarks'] ??
+                                'No remarks',
+                            style: TextStyle(
+                                color: Colors.grey[700], fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Card(
+                    child: ListTile(
+                      title: const Text(
+                        'Card Titles',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 12),
+                      ),
+                      subtitle: Text(
+                        cardTitles.isNotEmpty
+                            ? cardTitles
+                                .map((title) => '- $title')
+                                .join('\n\n') // Added extra \n for 1.5 spacing
+                            : 'No cards available',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          height: 1.5, // Added line height
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => _generatePDF(context),
+              child: const Text('Generate PDF'),
+            ),
+            TextButton(
+              onPressed: () => _generateExcel(context),
+              child: const Text('Generate Excel'),
+            ),
+            TextButton(
+              onPressed: () {
+                // Navigate to the UpdateProjectPage
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => UpdateProjectPage(
+                      initialData: widget.folder,
+                    ),
+                  ),
+                );
+              },
+              child: const Text('Edit'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -1713,11 +1291,6 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                 },
               ),
             ),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () => _addLesson(context),
-      //   tooltip: 'Add Lesson',
-      //   child: const Icon(Icons.add),
-      // ),
     );
   }
 }

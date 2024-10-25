@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'package:design/empaproject.dart'; // Replace 'your_package_name' with the actual package name
+import 'package:design/empaproject.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -9,7 +9,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'config.dart';
 
 class MyProjectPage extends StatefulWidget {
-  const MyProjectPage({super.key});
+  final String usersId; // Add this line
+
+  const MyProjectPage({super.key, required this.usersId}); // Modify constructor
 
   @override
   _MyProjectPageState createState() => _MyProjectPageState();
@@ -90,9 +92,9 @@ class _MyProjectPageState extends State<MyProjectPage> {
       return; // Exit the function if validation fails
     }
 
-    // Prepare data for navigation
+    // Instead of sending data to the database, prepare it for navigation
     final Map<String, dynamic> projectData = {
-      'project_userId': 1, // Replace with actual user ID
+      'project_userId': widget.usersId, // Use widget.usersId here
       'project_subject_code': _subjectController.text,
       'project_subject_description': _descriptionController.text,
       'project_title': _projectNameController.text,
@@ -101,59 +103,24 @@ class _MyProjectPageState extends State<MyProjectPage> {
       'project_end_date': _endDateController.text,
     };
 
+    // Clear saved data after successful creation
+    await _clearSavedData();
+
     // Navigate with the project data
     await _fetchAllDataAndNavigate(projectData);
-
-    // Optionally clear saved data after successful project creation
-    // await _clearSavedData();
   }
 
   Future<void> _fetchAllDataAndNavigate(
       Map<String, dynamic> projectData) async {
-    const String url = "${baseUrl}view.php";
-    final Map<String, String> requestBody = {
-      'operation': 'getProject',
-    };
-
-    try {
-      final http.Response response = await http.post(
-        Uri.parse(url),
-        body: requestBody,
-      );
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = jsonDecode(response.body);
-        if (responseData.containsKey('error')) {
-          print('Failed to retrieve project data: ${responseData['error']}');
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text(
-                    'Failed to retrieve project data: ${responseData['error']}')),
-          );
-        } else {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => EmpathyProjectPage(
-                projectId: projectData['project_id'] ??
-                    0, // Provide a default value or handle null case
-                projectData: projectData, // Pass the entire project data map
-              ),
-            ),
-          );
-        }
-      } else {
-        print('Server error: ${response.statusCode}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Server error: ${response.statusCode}')),
-        );
-      }
-    } catch (e) {
-      print('Network error: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Network error: $e')),
-      );
-    }
+    // Directly navigate to the EmpathyProjectPage without making an HTTP request
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EmpathyProjectPage(
+          projectData: projectData, // Pass the entire project data map
+        ),
+      ),
+    );
   }
 
   Future<void> _selectDate(

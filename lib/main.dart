@@ -86,7 +86,11 @@ class _LoginPageState extends State<LoginPage> {
             } else if (result['data']['users_roleId'] == 2) {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => const Secondpage()),
+                MaterialPageRoute(
+                  builder: (context) => Secondpage(
+                      usersId: result['data']['users_id']
+                          .toString()), // Pass users_id
+                ),
               );
             }
           } else {

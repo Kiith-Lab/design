@@ -4,7 +4,6 @@ import 'package:design/emphathize.dart';
 import 'package:design/facilitatorModule.dart';
 import 'package:design/ideate.dart';
 import 'package:design/listpage.dart';
-import 'package:design/login.dart';
 import 'package:design/main.dart';
 import 'package:design/myproject.dart';
 import 'package:design/prototype.dart';
@@ -13,13 +12,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 class Secondpage extends StatelessWidget {
-  const Secondpage({super.key});
+  final String usersId;
+
+  const Secondpage({super.key, required this.usersId});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const MyHomePage(),
+      home: MyHomePage(usersId: usersId), // Pass usersId here
       theme: ThemeData(
         primarySwatch: Colors.teal,
       ),
@@ -28,7 +29,9 @@ class Secondpage extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+  final String usersId;
+
+  const MyHomePage({super.key, required this.usersId});
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -116,7 +119,9 @@ class _MyHomePageState extends State<MyHomePage> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const DevPage()),
+                MaterialPageRoute(
+                  builder: (context) => DevPage(usersId: widget.usersId), // Pass usersId here
+                ),
               );
             },
             label: 'DEVELOPER INFO',
@@ -129,7 +134,9 @@ class _MyHomePageState extends State<MyHomePage> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const MyProjectPage()),
+                MaterialPageRoute(
+                  builder: (context) => MyProjectPage(usersId: widget.usersId),
+                ),
               );
             },
             label: 'CREATE PROJECT',
