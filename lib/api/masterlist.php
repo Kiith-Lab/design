@@ -468,7 +468,7 @@ class Get1
             return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
         }
     }
-        function getFolder()
+    function getFolder()
     {
         try {
             $sql = "SELECT 
@@ -504,12 +504,24 @@ class Get1
             // Group folders by projectId to handle multiple data per project
             $groupedFolders = [];
             foreach ($returnValue as $folder) {
-                $projectId = $folder['projectId']; // Group by projectId
+                $projectId = $folder['projectId'];
+                
                 if (!isset($groupedFolders[$projectId])) {
                     $groupedFolders[$projectId] = $folder;
+                    // Initialize arrays for multiple values
+                    $groupedFolders[$projectId]['activities_header_durations'] = [];
                     $groupedFolders[$projectId]['cards'] = [];
                 }
-                if ($folder['cards_id']) {
+                
+                // Add duration to the durations array if it's not null (removed uniqueness check)
+                if ($folder['activities_header_duration'] !== null) {
+                    $groupedFolders[$projectId]['activities_header_durations'][] = 
+                        $folder['activities_header_duration'];
+                }
+
+                // Add card if it's not already added
+                if ($folder['cards_id'] && !in_array($folder['cards_id'], 
+                    array_column($groupedFolders[$projectId]['cards'], 'cards_id'))) {
                     $groupedFolders[$projectId]['cards'][] = [
                         'cards_id' => $folder['cards_id'],
                         'cards_title' => $folder['cards_title'],
@@ -519,27 +531,37 @@ class Get1
                 }
             }
 
-            // Convert specified fields to newline-separated strings
+            // Convert arrays to strings where needed
             foreach ($groupedFolders as &$folder) {
+                // Keep activities_header_durations as an array and allow duplicates
+                $folder['activities_header_duration'] = implode(', ', 
+                    $folder['activities_header_durations']);
+
                 $activitiesContent = json_decode($folder['activities_details_content'], true);
-                $folder['activities_details_content'] = is_array($activitiesContent) ? implode("\n", $activitiesContent) : '';
+                $folder['activities_details_content'] = is_array($activitiesContent) ? 
+                    implode("\n", $activitiesContent) : '';
 
                 $outputsContent = json_decode($folder['outputs_content'], true);
-                $folder['outputs_content'] = is_array($outputsContent) ? implode("\n", $outputsContent) : '';
+                $folder['outputs_content'] = is_array($outputsContent) ? 
+                    implode("\n", $outputsContent) : '';
 
                 $instructionContent = json_decode($folder['instruction_content'], true);
-                $folder['instruction_content'] = is_array($instructionContent) ? implode("\n", $instructionContent) : '';
+                $folder['instruction_content'] = is_array($instructionContent) ? 
+                    implode("\n", $instructionContent) : '';
 
                 $coachDetailContent = json_decode($folder['coach_detail_content'], true);
-                $folder['coach_detail_content'] = is_array($coachDetailContent) ? implode("\n", $coachDetailContent) : '';
+                $folder['coach_detail_content'] = is_array($coachDetailContent) ? 
+                    implode("\n", $coachDetailContent) : '';
             }
 
             return json_encode(['folders' => array_values($groupedFolders)]);
         } catch (PDOException $e) {
-            error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . 
+                " on line " . $e->getLine());
             return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
         } catch (Exception $e) {
-            error_log("General error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
+            error_log("General error: " . $e->getMessage() . " in " . $e->getFile() . 
+                " on line " . $e->getLine());
             return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
         }
     }
@@ -558,7 +580,8 @@ class Get1
                 tbl_project.*,
                 tbl_module_master.*,
                 tbl_front_cards.*,
-                tbl_back_cards_header.*
+                tbl_back_cards_header.*,
+                tbl_activities_header.*
             FROM tbl_folder
             LEFT JOIN tbl_project_modules ON tbl_folder.project_moduleId = tbl_project_modules.project_modules_id
             LEFT JOIN tbl_activities_details ON tbl_folder.activities_detailId = tbl_activities_details.activities_details_id
@@ -573,17 +596,17 @@ class Get1
             LEFT JOIN tbl_back_cards_header ON tbl_back_cards_header.back_cards_header_id = tbl_project_cards.project_cards_cardId
             WHERE tbl_folder.projectId = :projectId
             GROUP BY tbl_folder.project_moduleId";
- 
+
             $stmt = $this->pdo->prepare($sql);
             $stmt->bindParam(':projectId', $projectId, PDO::PARAM_INT);
             $stmt->execute();
             $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
- 
+
             // Check if any folders were found
             if (empty($returnValue)) {
                 return json_encode(['success' => false, 'message' => 'No folders found for this project.']);
             }
- 
+
             return json_encode(['success' => true, 'folders' => $returnValue]);
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
@@ -594,7 +617,7 @@ class Get1
         }
     }
 
-        function getCards1()
+    function getCards1()
     {
         $projectId = isset($_POST['projectId']) ? $_POST['projectId'] : '';
         try {
@@ -634,43 +657,84 @@ class Get1
         try {
             $this->pdo->beginTransaction();
 
-            // First, ensure project exists
-            $projectStmt = $this->pdo->prepare("INSERT INTO tbl_project (
-                project_userId,
-                project_subject_code,
-                project_subject_description,
-                project_title,
-                project_description,
-                project_start_date,
-                project_end_date
-            ) VALUES (
-                :userId,
-                :subjectCode,
-                :subjectDesc,
-                :title,
-                :description,
-                :startDate,
-                :endDate
-            )");
-            
-            $projectStmt->execute([
-                ':userId' => 1, // Replace with actual user ID
-                ':subjectCode' => $data['project']['project_subject_code'],
-                ':subjectDesc' => $data['project']['project_subject_description'],
-                ':title' => $data['project']['project_title'],
-                ':description' => $data['project']['project_description'],
-                ':startDate' => $data['project']['project_start_date'],
-                ':endDate' => $data['project']['project_end_date']
-            ]);
-            $projectId = $this->pdo->lastInsertId();
+            // Check if project already exists
+            $checkProjectStmt = $this->pdo->prepare("SELECT project_id FROM tbl_project WHERE project_title = :title");
+            $checkProjectStmt->execute([':title' => $data['project']['project_title']]);
+            $existingProject = $checkProjectStmt->fetch(PDO::FETCH_ASSOC);
 
-            // Then continue with existing code, but use new projectId
-            $modeStmt = $this->pdo->prepare("INSERT INTO tbl_project_modules (project_modules_projectId, project_modules_masterId) VALUES (:projectId, :masterId)");
-            $modeStmt->execute([
+            if ($existingProject) {
+                $projectId = $existingProject['project_id'];
+                
+                // Check if the module already exists for this project
+                $checkModuleStmt = $this->pdo->prepare("SELECT project_modules_id FROM tbl_project_modules 
+                    WHERE project_modules_projectId = :projectId 
+                    AND project_modules_masterId = :masterId");
+                $checkModuleStmt->execute([
+                    ':projectId' => $projectId,
+                    ':masterId' => $data['mode']['project_modules_masterId']
+                ]);
+                
+                if ($checkModuleStmt->fetch(PDO::FETCH_ASSOC)) {
+                    $this->pdo->rollBack();
+                    return json_encode([
+                        'success' => false,
+                        'message' => 'This module already exists for this project'
+                    ]);
+                }
+            } else {
+                // Insert new project if it doesn't exist
+                $projectStmt = $this->pdo->prepare("INSERT INTO tbl_project (
+                    project_userId,
+                    project_subject_code,
+                    project_subject_description,
+                    project_title,
+                    project_description,
+                    project_start_date,
+                    project_end_date
+                ) VALUES (
+                    :userId,
+                    :subjectCode,
+                    :subjectDesc,
+                    :title,
+                    :description,
+                    :startDate,
+                    :endDate
+                )");
+
+                $projectStmt->execute([
+                    ':userId' => $data['project']['project_userId'],
+                    ':subjectCode' => $data['project']['project_subject_code'],
+                    ':subjectDesc' => $data['project']['project_subject_description'],
+                    ':title' => $data['project']['project_title'],
+                    ':description' => $data['project']['project_description'],
+                    ':startDate' => $data['project']['project_start_date'],
+                    ':endDate' => $data['project']['project_end_date']
+                ]);
+                $projectId = $this->pdo->lastInsertId();
+            }
+
+            // 2. Mode Handling
+            $checkModeStmt = $this->pdo->prepare("SELECT project_modules_id FROM tbl_project_modules 
+      WHERE project_modules_projectId = :projectId 
+      AND project_modules_masterId = :masterId");
+            $checkModeStmt->execute([
                 ':projectId' => $projectId,
                 ':masterId' => $data['mode']['project_modules_masterId']
             ]);
-            $modeId = $this->pdo->lastInsertId();
+            $existingMode = $checkModeStmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($existingMode) {
+                $modeId = $existingMode['project_modules_id'];
+            } else {
+                $modeStmt = $this->pdo->prepare("INSERT INTO tbl_project_modules 
+          (project_modules_projectId, project_modules_masterId) 
+          VALUES (:projectId, :masterId)");
+                $modeStmt->execute([
+                    ':projectId' => $projectId,
+                    ':masterId' => $data['mode']['project_modules_masterId']
+                ]);
+                $modeId = $this->pdo->lastInsertId();
+            }
 
             // 2. Add Duration
             $durationStmt = $this->pdo->prepare("INSERT INTO tbl_activities_header (activities_header_modulesId, activities_header_duration) VALUES (:moduleId, :duration)");
@@ -728,36 +792,58 @@ class Get1
             ]);
             $coachId = $this->pdo->lastInsertId();
 
-            // After all other insertions, add to folder table for each card
-            foreach ($data['cards'] as $card) {
-                $folderSql = "INSERT INTO tbl_folder (
-                    projectId,
-                    project_moduleId,
-                    activities_detailId,
-                    project_cardsId,
-                    outputId,
-                    instructionId,
-                    coach_detailsId
-                ) VALUES (
-                    :projectId,
-                    :project_moduleId,
-                    :activities_detailId,
-                    :project_cardsId,
-                    :outputId,
-                    :instructionId,
-                    :coach_detailsId
-                )";
-                
-                $folderStmt = $this->pdo->prepare($folderSql);
-                $folderStmt->execute([
+            // Check if entry already exists in tbl_folder
+            $checkFolderStmt = $this->pdo->prepare("SELECT COUNT(*) FROM tbl_folder 
+                WHERE projectId = :projectId 
+                AND project_moduleId = :project_moduleId 
+                AND activities_detailId = :activities_detailId 
+                AND project_cardsId = :project_cardsId 
+                AND outputId = :outputId 
+                AND instructionId = :instructionId 
+                AND coach_detailsId = :coach_detailsId");
+
+            // Iterate through each cardId and create a folder entry
+            foreach ($cardIds as $cardId) {
+                $checkFolderStmt->execute([
                     ':projectId' => $projectId,
                     ':project_moduleId' => $modeId,
                     ':activities_detailId' => $activityId,
-                    ':project_cardsId' => $card['project_cards_cardId'],
+                    ':project_cardsId' => $cardId,  // Use individual cardId instead of array
                     ':outputId' => $outputId,
                     ':instructionId' => $instructionId,
                     ':coach_detailsId' => $coachId
                 ]);
+
+                if ($checkFolderStmt->fetchColumn() == 0) {
+                    $folderSql = "INSERT INTO tbl_folder (
+                        projectId,
+                        project_moduleId,
+                        activities_detailId,
+                        project_cardsId,
+                        outputId,
+                        instructionId,
+                        coach_detailsId
+                    ) VALUES (
+                        :projectId,
+                        :project_moduleId,
+                        :activities_detailId,
+                        :project_cardsId,
+                        :outputId,
+                        :instructionId,
+                        :coach_detailsId
+                    )";
+
+                    $folderStmt = $this->pdo->prepare($folderSql);
+                    $folderStmt->execute([
+                        ':projectId' => $projectId,
+                        ':project_moduleId' => $modeId,
+                        ':activities_detailId' => $activityId,
+                        ':project_cardsId' => $cardId,  // Use individual cardId instead of array
+                        ':outputId' => $outputId,
+                        ':instructionId' => $instructionId,
+                        ':coach_detailsId' => $coachId
+                    ]);
+                }
             }
 
             $this->pdo->commit();

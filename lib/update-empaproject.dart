@@ -7,19 +7,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'color.dart';
 
-class EmpathyProjectPage extends StatefulWidget {
-  final Map<String, dynamic> projectData;
+class UpdateProjectPage extends StatefulWidget {
+  final Map<String, dynamic> initialData; // Add this to receive initial data
 
-  const EmpathyProjectPage({
-    required this.projectData,
-    super.key,
-  });
+  const UpdateProjectPage({super.key, required this.initialData});
 
   @override
-  _EmpathyProjectPageState createState() => _EmpathyProjectPageState();
+  _UpdateProjectPageState createState() => _UpdateProjectPageState();
 }
 
-class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
+class _UpdateProjectPageState extends State<UpdateProjectPage> {
   final TextEditingController activitiesController = TextEditingController();
   final TextEditingController durationController = TextEditingController();
   final TextEditingController outputsController = TextEditingController();
@@ -69,6 +66,37 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     super.initState();
     fetchModes();
     _loadFormState();
+
+    // Initialize controllers with initial data
+    activitiesController.text = widget.initialData['activities'] ?? '';
+    durationController.text = widget.initialData['duration'] ?? '';
+    outputsController.text = widget.initialData['outputs'] ?? '';
+    instructionsController.text = widget.initialData['instructions'] ?? '';
+    coachDetailsController.text = widget.initialData['coachDetails'] ?? '';
+
+    // Initialize remarks controllers with initial data
+    remarksDurationController.text =
+        widget.initialData['remarksDuration'] ?? '';
+    remarksActivityController.text =
+        widget.initialData['remarksActivity'] ?? '';
+    remarksLessonController.text = widget.initialData['remarksLesson'] ?? '';
+    remarksOutputController.text = widget.initialData['remarksOutput'] ?? '';
+    remarksInstructionController.text =
+        widget.initialData['remarksInstruction'] ?? '';
+    remarksCoachDetailsController.text =
+        widget.initialData['remarksCoachDetails'] ?? '';
+
+    // Initialize other fields if needed
+    selectedMode = widget.initialData['selectedMode'];
+    selectedLessons = List<Map<String, dynamic>>.from(
+        widget.initialData['selectedLessons'] ?? []);
+    addedActivities =
+        List<String>.from(widget.initialData['addedActivities'] ?? []);
+    addedOutputs = List<String>.from(widget.initialData['addedOutputs'] ?? []);
+    addedInstructions =
+        List<String>.from(widget.initialData['addedInstructions'] ?? []);
+    addedCoachDetails =
+        List<String>.from(widget.initialData['addedCoachDetails'] ?? []);
   }
 
   Future<void> fetchModes() async {
@@ -175,18 +203,55 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       return;
     }
 
-    setState(() {
-      currentStep++;
-      allAddedData.add({
-        'type': 'Mode',
-        'value': modes.firstWhere((mode) =>
-            mode['module_master_id'].toString() ==
-            selectedMode)['module_master_name']
-      });
-    });
+    try {
+      String url = "http://localhost/design/lib/api/masterlist.php";
+      Map<String, String> requestBody = {
+        'operation': 'addMode',
+        'json': jsonEncode({
+          'project_modules_projectId':
+              widget.initialData['projectId'].toString(),
+          'project_modules_masterId': selectedMode,
+        }),
+      };
+
+      http.Response response = await http
+          .post(
+            Uri.parse(url),
+            body: requestBody,
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        var decodedData = jsonDecode(response.body);
+        if (decodedData['success'] == true) {
+          print('Mode added successfully');
+          setState(() {
+            lastInsertedModeId = int.parse(decodedData['id']);
+            currentStep++;
+            allAddedData.add({
+              'type': 'Mode',
+              'value': modes.firstWhere((mode) =>
+                  mode['module_master_id'].toString() ==
+                  selectedMode)['module_master_name']
+            });
+          });
+        } else {
+          print('Failed to add mode: ${decodedData['error']}');
+        }
+      } else {
+        throw Exception('Failed to add mode: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error adding mode: $e');
+    }
   }
 
   Future<void> addDuration() async {
+    if (lastInsertedModeId == null) {
+      print('No mode ID available');
+      return;
+    }
+
     // Check if the duration has already been added
     if (allAddedData.any((item) =>
         item['type'] == 'Duration' &&
@@ -195,29 +260,110 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       return;
     }
 
-    setState(() {
-      currentStep++;
-      allAddedData.add({'type': 'Duration', 'value': durationController.text});
-    });
+    try {
+      String url = "http://localhost/design/lib/api/masterlist.php";
+      Map<String, String> requestBody = {
+        'operation': 'addDuration',
+        'json': jsonEncode({
+          'activities_header_modulesId': lastInsertedModeId.toString(),
+          'activities_header_duration': durationController.text,
+        }),
+      };
+
+      http.Response response = await http
+          .post(
+            Uri.parse(url),
+            body: requestBody,
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        var decodedData = jsonDecode(response.body);
+        if (decodedData['success'] == true) {
+          print('Duration added successfully');
+          setState(() {
+            lastInsertedDurationId = int.parse(decodedData['id']);
+            currentStep++;
+            allAddedData
+                .add({'type': 'Duration', 'value': durationController.text});
+          });
+        } else {
+          print('Failed to add duration: ${decodedData['error']}');
+        }
+      } else {
+        throw Exception('Failed to add duration: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error adding duration: $e');
+    }
   }
 
   Future<void> addActivity() async {
+    if (lastInsertedDurationId == null) {
+      print('No duration ID available');
+      return;
+    }
+
     // Check if the activities have already been added
     if (allAddedData.any((item) =>
         item['type'] == 'Activity' &&
         item['value'] == addedActivities.join(', '))) {
       print('Activities already added');
+      print(allAddedData);
       return;
     }
 
-    setState(() {
-      currentStep++;
-      allAddedData
-          .add({'type': 'Activity', 'value': addedActivities.join(', ')});
-    });
+    try {
+      String url = "http://localhost/design/lib/api/masterlist.php";
+      Map<String, String> requestBody = {
+        'operation': 'addActivity',
+        'json': jsonEncode({
+          'activities_details_remarks':
+              remarksActivityController.text, // Use remarks controller
+          'activities_details_content': jsonEncode(addedActivities),
+          'activities_details_headerId': lastInsertedDurationId.toString(),
+        }),
+      };
+
+      http.Response response = await http
+          .post(
+            Uri.parse(url),
+            body: requestBody,
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        var decodedData = jsonDecode(response.body);
+        if (decodedData['success'] == true) {
+          print('Activity added successfully');
+          setState(() {
+            currentStep++;
+            allAddedData
+                .add({'type': 'Activity', 'value': addedActivities.join(', ')});
+            lastInsertedActivityId = int.parse(decodedData['id']);
+          });
+
+          // Store the activity details
+          var activityDetails = decodedData['activity'];
+          print('Activity ID: ${activityDetails['activities_details_id']}');
+          // You can store other activity details as needed
+        } else {
+          print('Failed to add activity: ${decodedData['error']}');
+        }
+      } else {
+        throw Exception('Failed to add activity: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error adding activity: $e');
+    }
   }
 
   Future<void> addCard(String cardId) async {
+    if (lastInsertedModeId == null) {
+      print('No mode ID available');
+      return;
+    }
+
     // Check if the card has already been added
     if (allAddedData
         .any((item) => item['type'] == 'Card' && item['value'] == cardId)) {
@@ -225,12 +371,58 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       return;
     }
 
-    setState(() {
-      allAddedData.add({'type': 'Card', 'value': cardId});
-    });
+    String url = "http://localhost/design/lib/api/masterlist.php";
+    Map<String, String> requestBody = {
+      'operation': 'addCards',
+      'json': jsonEncode({
+        'project_cards_cardId': cardId,
+        'project_cards_modulesId': lastInsertedModeId.toString(),
+        'project_cards_remarks':
+            remarksLessonController.text // Use the text property
+      }),
+    };
+
+    try {
+      http.Response response = await http
+          .post(
+            Uri.parse(url),
+            body: requestBody,
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode != 200) {
+        throw Exception(
+            'Failed to add card to database: ${response.statusCode}');
+      }
+
+      String trimmedBody = response.body.trim();
+      if (trimmedBody.isEmpty) {
+        throw Exception('Empty response received');
+      }
+
+      var decodedData = jsonDecode(trimmedBody);
+      if (decodedData['success'] != true) {
+        throw Exception(
+            'Failed to add card to database: ${decodedData['error']}');
+      }
+
+      print('Card added successfully');
+      setState(() {
+        lastInsertedCardIds.add(int.parse(decodedData['id'])); // Add to list
+        allAddedData.add({'type': 'Card', 'value': cardId});
+      });
+    } catch (e) {
+      print('Error adding card: $e');
+      throw Exception('Failed to add card to database: $e');
+    }
   }
 
   Future<void> addOutput() async {
+    if (lastInsertedModeId == null) {
+      print('No mode ID available');
+      return;
+    }
+
     // Check if the outputs have already been added
     if (allAddedData.any((item) =>
         item['type'] == 'Output' && item['value'] == addedOutputs.join(', '))) {
@@ -238,13 +430,52 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       return;
     }
 
-    setState(() {
-      currentStep++;
-      allAddedData.add({'type': 'Output', 'value': addedOutputs.join(', ')});
-    });
+    try {
+      String url = "http://localhost/design/lib/api/masterlist.php";
+      Map<String, String> requestBody = {
+        'operation': 'addOutput',
+        'json': jsonEncode({
+          'outputs_moduleId': lastInsertedModeId.toString(),
+          'outputs_remarks':
+              remarksOutputController.text, // Use remarks controller
+          'outputs_content': jsonEncode(addedOutputs),
+        }),
+      };
+
+      http.Response response = await http
+          .post(
+            Uri.parse(url),
+            body: requestBody,
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        var decodedData = jsonDecode(response.body);
+        if (decodedData['success'] == true) {
+          print('Output added successfully');
+          setState(() {
+            currentStep++;
+            allAddedData
+                .add({'type': 'Output', 'value': addedOutputs.join(', ')});
+            lastInsertedOutputId = int.parse(decodedData['id']);
+          });
+        } else {
+          print('Failed to add output: ${decodedData['error']}');
+        }
+      } else {
+        throw Exception('Failed to add output: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error adding output: $e');
+    }
   }
 
   Future<void> addInstruction() async {
+    if (lastInsertedModeId == null) {
+      print('No mode ID available');
+      return;
+    }
+
     // Check if the instructions have already been added
     if (allAddedData.any((item) =>
         item['type'] == 'Instruction' &&
@@ -253,11 +484,44 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       return;
     }
 
-    setState(() {
-      currentStep++;
-      allAddedData
-          .add({'type': 'Instruction', 'value': addedInstructions.join(', ')});
-    });
+    try {
+      String url = "http://localhost/design/lib/api/masterlist.php";
+      Map<String, String> requestBody = {
+        'operation': 'addInstruction',
+        'json': jsonEncode({
+          'instruction_remarks':
+              remarksInstructionController.text, // Use remarks controller
+          'instruction_modulesId': lastInsertedModeId.toString(),
+          'instruction_content': jsonEncode(addedInstructions),
+        }),
+      };
+
+      http.Response response = await http
+          .post(
+            Uri.parse(url),
+            body: requestBody,
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        var decodedData = jsonDecode(response.body);
+        if (decodedData['success'] == true) {
+          print('Instruction added successfully');
+          setState(() {
+            currentStep++; // Skip to coach header step
+            allAddedData.add(
+                {'type': 'Instruction', 'value': addedInstructions.join(', ')});
+            lastInsertedInstructionId = int.parse(decodedData['id']);
+          });
+        } else {
+          print('Failed to add instruction: ${decodedData['error']}');
+        }
+      } else {
+        throw Exception('Failed to add instruction: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error adding instruction: $e');
+    }
   }
 
   Future<void> addCoachDetails() async {
@@ -269,11 +533,64 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       return;
     }
 
-    setState(() {
-      currentStep = 0; // Reset to the first step
-      allAddedData.add(
-          {'type': 'Coach Details', 'value': addedCoachDetails.join(', ')});
-    });
+    try {
+      String url = "http://localhost/design/lib/api/masterlist.php";
+      Map<String, String> requestBody = {
+        'operation': 'addCoachDetails',
+        'json': jsonEncode({
+          'coach_detail_coachheaderId': '1',
+          'coach_detail_content': jsonEncode(addedCoachDetails),
+          'coach_detail_renarks':
+              remarksCoachDetailsController.text, // Use remarks controller
+        }),
+      };
+
+      http.Response response = await http
+          .post(
+            Uri.parse(url),
+            body: requestBody,
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        var decodedData = jsonDecode(response.body);
+        if (decodedData['success'] == true) {
+          print('Coach Details added successfully');
+          int coachDetailsId = int.parse(decodedData['id']);
+
+          // Store all inserted IDs
+          insertedIds = [
+            lastInsertedModeId!,
+            lastInsertedDurationId!,
+            lastInsertedActivityId!,
+            ...lastInsertedCardIds,
+            lastInsertedOutputId!,
+            lastInsertedInstructionId!,
+            coachDetailsId,
+          ];
+
+          // Store IDs in local storage
+          await storeInsertedIds();
+
+          // Add to folder operation
+          await addToFolder();
+
+          setState(() {
+            currentStep = 0; // Reset to the first step
+            allAddedData.add({
+              'type': 'Coach Details',
+              'value': addedCoachDetails.join(', ')
+            });
+          });
+        } else {
+          print('Failed to add coach details: ${decodedData['error']}');
+        }
+      } else {
+        throw Exception('Failed to add coach details: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error adding coach details: $e');
+    }
   }
 
   Future<void> storeInsertedIds() async {
@@ -294,6 +611,75 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
       if (e is MissingPluginException) {
         print('Ensure SharedPreferences is properly initialized');
       }
+    }
+  }
+
+  Future<void> addToFolder() async {
+    try {
+      // Ensure insertedIds is populated before using it
+      if (insertedIds.length < 7) {
+        print(
+            'Error: Not all required IDs are available. Current IDs: ${insertedIds.join(', ')}');
+        return;
+      }
+
+      String url = "http://localhost/design/lib/api/masterlist.php";
+
+      for (int cardId in lastInsertedCardIds) {
+        Map<String, String> requestBody = {
+          'operation': 'addFolder',
+          'json': jsonEncode({
+            'projectId': widget.initialData['projectId'].toString(),
+            'project_moduleId': insertedIds[0].toString(),
+            'activities_detailId': lastInsertedActivityId.toString(),
+            'project_cardsId': cardId.toString(),
+            'outputId': insertedIds[insertedIds.length - 3].toString(),
+            'instructionId': insertedIds[insertedIds.length - 2].toString(),
+            'coach_detailsId': insertedIds.last.toString(),
+          }),
+        };
+
+        print('Adding to folder with IDs:');
+        print('projectId: ${widget.initialData['projectId'].toString()}');
+        print('project_moduleId: ${insertedIds[0]}');
+        print('activities_detailId: $lastInsertedActivityId');
+        print('project_cardsId: $cardId');
+        print('outputId: ${insertedIds[insertedIds.length - 3]}');
+        print('instructionId: ${insertedIds[insertedIds.length - 2]}');
+        print('coach_detailsId: ${insertedIds.last}');
+
+        http.Response response = await http
+            .post(
+              Uri.parse(url),
+              body: requestBody,
+            )
+            .timeout(const Duration(seconds: 10));
+
+        if (response.statusCode == 200) {
+          String trimmedBody = response.body.trim();
+          if (trimmedBody.isEmpty) {
+            // Save the IDs to local storage if the response is empty
+            await storeInsertedIds();
+            throw Exception('Empty response received');
+          }
+
+          var decodedData = jsonDecode(trimmedBody);
+          if (decodedData['success'] == true) {
+            print('Added to folder successfully');
+            lastInsertedFolderId = int.parse(decodedData['id']);
+
+            // Save the folder ID along with other IDs
+            insertedIds.add(lastInsertedFolderId!);
+            await storeInsertedIds();
+          } else {
+            print('Failed to add to folder: ${decodedData['error']}');
+          }
+        } else {
+          throw Exception('Failed to add to folder: ${response.statusCode}');
+        }
+      }
+    } catch (e) {
+      print('Error adding to folder: $e');
     }
   }
 
@@ -1636,25 +2022,28 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
   Future<Map<String, dynamic>> _collectAllData() async {
     return {
       'project': {
-        'project_userId': widget.projectData['project_userId'],
-        'project_subject_code': widget.projectData['project_subject_code'],
+        'project_userId': widget.initialData['project_userId'],
+        'project_subject_code': widget.initialData['project_subject_code'],
         'project_subject_description':
-            widget.projectData['project_subject_description'],
-        'project_title': widget.projectData['project_title'],
-        'project_description': widget.projectData['project_description'],
-        'project_start_date': widget.projectData['project_start_date'],
-        'project_end_date': widget.projectData['project_end_date'],
+            widget.initialData['project_subject_description'],
+        'project_title': widget.initialData['project_title'],
+        'project_description': widget.initialData['project_description'],
+        'project_start_date': widget.initialData['project_start_date'],
+        'project_end_date': widget.initialData['project_end_date'],
       },
       'mode': {
+        'project_modules_projectId': widget.initialData['projectId'].toString(),
         'project_modules_masterId': selectedMode,
       },
       'duration': {
+        'activities_header_modulesId': lastInsertedModeId?.toString(),
         'activities_header_duration': durationController.text,
         'duration_remarks': remarksDurationController.text,
       },
       'activity': {
         'activities_details_remarks': remarksActivityController.text,
         'activities_details_content': jsonEncode(addedActivities),
+        'activities_details_headerId': lastInsertedDurationId?.toString(),
       },
       'cards': selectedLessons
           .map((lesson) => {
@@ -1686,8 +2075,6 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
     try {
       final allData = await _collectAllData();
 
-      print(allData);
-
       String url = "http://localhost/design/lib/api/masterlist.php";
       Map<String, String> requestBody = {
         'operation': 'addAllData',
@@ -1705,29 +2092,50 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
         var decodedData = jsonDecode(response.body);
         if (decodedData['success'] == true) {
           // Clear all form data
+          print('datas: $decodedData');
           final prefs = await SharedPreferences.getInstance();
           await prefs.remove('empathyProjectFormData');
 
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('All data submitted successfully')),
+            const SnackBar(
+              content: Text('All data submitted successfully'),
+              backgroundColor: Colors.green,
+            ),
           );
 
           // Reset to the mode step
           setState(() {
             currentStep = 0;
           });
-
-          // Optionally, navigate back to the previous screen
-          // Navigator.of(context).pop(true); // Uncomment if you want to navigate back
         } else {
-          throw Exception(decodedData['error']);
+          // Show error dialog for existing module
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Module Already Exists'),
+                content: Text(decodedData['message'] ?? 'An error occurred'),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text('OK'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
         }
       } else {
         throw Exception('Failed to submit data: ${response.statusCode}');
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error submitting data: $e')),
+        SnackBar(
+          content: Text('Error submitting data: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }

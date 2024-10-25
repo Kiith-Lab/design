@@ -2,17 +2,21 @@ import 'package:design/secondpage.dart';
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const DevPage());
+  runApp(const DevPage(
+    usersId: '',
+  ));
 }
 
 class DevPage extends StatelessWidget {
-  const DevPage({super.key});
+  final String usersId; // Add this line
+
+  const DevPage({super.key, required this.usersId}); // Modify constructor
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const DeveloperPage(),
+      home: DeveloperPage(usersId: usersId), // Pass usersId to DeveloperPage
       theme: ThemeData(
         primarySwatch: Colors.teal,
         textTheme: const TextTheme(
@@ -26,7 +30,9 @@ class DevPage extends StatelessWidget {
 }
 
 class DeveloperPage extends StatelessWidget {
-  const DeveloperPage({super.key});
+  final String usersId;
+
+  const DeveloperPage({super.key, required this.usersId});
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +68,8 @@ class DeveloperPage extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const Secondpage()),
+                              builder: (context) => Secondpage(
+                                  usersId: usersId)), // Pass usersId back
                         );
                       },
                     ),
@@ -73,6 +80,13 @@ class DeveloperPage extends StatelessWidget {
                       color: Color.fromARGB(255, 255, 255, 255),
                       fontSize: 40.0,
                       fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    'User ID: $usersId', // Display usersId
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20.0,
                     ),
                   ),
                 ],
