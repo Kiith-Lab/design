@@ -645,25 +645,36 @@ class _DashboardsState extends State<Dashboards> {
                 Expanded(
                   child: ListView(
                     children: [
-                      // Display folder details with spaces
-                      _buildFolderDetail(
+                      // Display folder details with a custom card design
+                      _buildCustomFolderDetail(
                         'Module',
                         _formatAsBulletList(folder['Mode'], useBullets: false),
                       ),
-                      _buildFolderDetail(
+                      _buildCustomFolderDetail(
                         'How long will this activity take?',
                         _formatAsBulletList(folder['Duration'],
                             useBullets: false),
                       ),
-                      _buildFolderDetail(
-                          'Activity', _formatAsBulletList(folder['Activity'])),
-                      _buildFolderDetail('Lesson', folder['Lesson'] ?? 'N/A'),
-                      _buildFolderDetail(
-                          'Output', _formatAsBulletList(folder['Output'])),
-                      _buildFolderDetail('Instruction',
-                          _formatAsBulletList(folder['Instruction'])),
-                      _buildFolderDetail('Coach Detail',
-                          _formatAsBulletList(folder['CoachDetail'])),
+                      _buildCustomFolderDetail(
+                        'Activity',
+                        _formatAsBulletList(folder['Activity']),
+                      ),
+                      _buildCustomFolderDetail(
+                        'Lesson',
+                        folder['Lesson'] ?? 'N/A',
+                      ),
+                      _buildCustomFolderDetail(
+                        'Output',
+                        _formatAsBulletList(folder['Output']),
+                      ),
+                      _buildCustomFolderDetail(
+                        'Instruction',
+                        _formatAsBulletList(folder['Instruction']),
+                      ),
+                      _buildCustomFolderDetail(
+                        'Coach Detail',
+                        _formatAsBulletList(folder['CoachDetail']),
+                      ),
                       const SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -673,8 +684,7 @@ class _DashboardsState extends State<Dashboards> {
                             onPressed: () => _printFolderDetailsPDF(folder),
                           ),
                           ShadButton(
-                            onPressed: () =>
-                                _generateExcel(folder), // Update here
+                            onPressed: () => _generateExcel(folder),
                             child: const Text('Export Excel'),
                           ),
                         ],
@@ -696,6 +706,40 @@ class _DashboardsState extends State<Dashboards> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildCustomFolderDetail(String label, String value) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      elevation: 4,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.teal,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -856,9 +900,14 @@ class _DashboardsState extends State<Dashboards> {
     );
   }
 
+  String _cleanText(String text) {
+    // Remove newline characters, tabs, and backslashes
+    return text.replaceAll(RegExp(r'[\n\t\\]'), '').trim();
+  }
+
   pw.Widget _buildMultiLineRichText(String text) {
     // Split the text by newline character
-    final lines = text.split('\n');
+    final lines = text.split('\n').map(_cleanText).toList();
 
     return pw.RichText(
       text: pw.TextSpan(
@@ -872,7 +921,7 @@ class _DashboardsState extends State<Dashboards> {
     );
   }
 
-  // This function formats the data for bullet points
+// This function formats the data for bullet points
   String _formatAsBulletList(dynamic value, {bool useBullets = true}) {
     if (value == null) return 'N/A';
 
@@ -883,7 +932,8 @@ class _DashboardsState extends State<Dashboards> {
 
       List<String> formattedList = items.map((item) {
         // Clean up each item, remove extra characters (including quotes)
-        String cleanItem = item.replaceAll(RegExp(r'[\[\]"]'), '').trim();
+        String cleanItem =
+            _cleanText(item.replaceAll(RegExp(r'[\[\]"]'), '').trim());
         return useBullets ? '• $cleanItem' : cleanItem;
       }).toList();
 
@@ -891,7 +941,8 @@ class _DashboardsState extends State<Dashboards> {
       return formattedList.join(useBullets ? '\n' : ', ');
     }
 
-    return value.toString(); // Fallback to original behavior if not a string
+    return _cleanText(
+        value.toString()); // Clean the original value if not a string
   }
 
   List<String> _formatAsRowsForExcel(dynamic value) {
@@ -909,6 +960,8 @@ class _DashboardsState extends State<Dashboards> {
                 RegExp(r'[\[\]"]'), '') // Remove square brackets and quotes
             .replaceAll(r'\', '') // Remove backslashes
             .replaceAll(r'\n', ' ') // Replace newlines with space
+            .replaceAll(r'\t', ' ') // Replace tabs with space
+            .replaceAll(r't', ' ')
             .trim();
         return cleanItem; // No need for bullet points for Excel rows
       }).toList();
@@ -932,21 +985,23 @@ class _DashboardsState extends State<Dashboards> {
 
     // Add main headers
     sheet.appendRow(['', 'MY DESIGN THINKING PLAN']);
-    sheet.appendRow(['Project', folder['Lesson'] ?? 'Unnamed Project', '']);
+    sheet.appendRow(
+        ['Project', _cleanText(folder['Lesson'] ?? 'Unnamed Project'), '']);
     sheet.appendRow([
       'Project Description',
-      folder['ProjectDescription'] ?? 'No description',
+      _cleanText(folder['ProjectDescription'] ?? 'No description'),
       ''
     ]);
-    sheet.appendRow(['Start Date', folder['StartDate'] ?? 'No start date', '']);
-    sheet.appendRow(['End Date', folder['EndDate'] ?? 'No end date', '']);
+    sheet.appendRow(
+        ['Start Date', _cleanText(folder['StartDate'] ?? 'No start date'), '']);
+    sheet.appendRow(
+        ['End Date', _cleanText(folder['EndDate'] ?? 'No end date'), '']);
 
-    sheet.appendRow(['Unknown', '', 'NOTES/REMARKS']);
+    sheet.appendRow([folder['Mode'], '', 'NOTES/REMARKS']);
 
     // Handle different sections
     _appendSection(sheet, folder['Activity'], folder['ActivityRemarks'],
         'What activity/ies will my students do?');
-    _appendSection(sheet, folder['Mode'], null, 'What modes are used?');
     _appendSection(
         sheet, folder['Duration'], null, 'How long will this activity take?',
         formatFunction: _formatAsBulletList);
