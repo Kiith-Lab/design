@@ -3,7 +3,7 @@ import 'dart:html' as html; // Add this import for web file handling
 import 'dart:io';
 
 import 'package:excel_dart/excel_dart.dart';
-import 'package:fl_chart/fl_chart.dart';
+
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -961,7 +961,7 @@ class _DashboardsState extends State<Dashboards> {
             .replaceAll(r'\', '') // Remove backslashes
             .replaceAll(r'\n', ' ') // Replace newlines with space
             .replaceAll(r'\t', ' ') // Replace tabs with space
-            .replaceAll(r't', ' ')
+
             .trim();
         return cleanItem; // No need for bullet points for Excel rows
       }).toList();
