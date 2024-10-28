@@ -915,6 +915,11 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                       title: const Text('Project Code'),
                       subtitle: Text(
                           widget.folder['project_subject_code'] ?? 'No code'),
+                      trailing: IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () =>
+                            _showUpdateDialog(context, 'project_subject_code'),
+                      ),
                     ),
                   ),
                   Card(
@@ -923,6 +928,11 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                       subtitle: Text(
                           widget.folder['project_subject_description'] ??
                               'No description'),
+                      trailing: IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () => _showUpdateDialog(
+                            context, 'project_subject_description'),
+                      ),
                     ),
                   ),
                   Card(
@@ -930,6 +940,11 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                       title: const Text('Start Date'),
                       subtitle: Text(widget.folder['project_start_date'] ??
                           'No start date'),
+                      trailing: IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () =>
+                            _showUpdateDialog(context, 'project_start_date'),
+                      ),
                     ),
                   ),
                   Card(
@@ -937,6 +952,11 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                       title: const Text('End Date'),
                       subtitle: Text(
                           widget.folder['project_end_date'] ?? 'No end date'),
+                      trailing: IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () =>
+                            _showUpdateDialog(context, 'project_end_date'),
+                      ),
                     ),
                   ),
                   Card(
@@ -950,6 +970,11 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                             : 'No modules available',
                         style:
                             const TextStyle(height: 1.5), // Added line height
+                      ),
+                      trailing: IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () =>
+                            _showUpdateDialog(context, 'module_master_name'),
                       ),
                     ),
                   ),
@@ -988,6 +1013,11 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                           ),
                         ],
                       ),
+                      trailing: IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () => _showUpdateDialog(
+                            context, 'activities_details_content'),
+                      ),
                     ),
                   ),
                   Card(
@@ -1023,6 +1053,11 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                                 color: Colors.grey[700], fontSize: 12),
                           ),
                         ],
+                      ),
+                      trailing: IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () =>
+                            _showUpdateDialog(context, 'outputs_content'),
                       ),
                     ),
                   ),
@@ -1061,6 +1096,11 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                           ),
                         ],
                       ),
+                      trailing: IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () =>
+                            _showUpdateDialog(context, 'instruction_content'),
+                      ),
                     ),
                   ),
                   Card(
@@ -1098,6 +1138,11 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                           ),
                         ],
                       ),
+                      trailing: IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () =>
+                            _showUpdateDialog(context, 'coach_detail_content'),
+                      ),
                     ),
                   ),
                   Card(
@@ -1118,6 +1163,11 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                           fontSize: 12,
                           height: 1.5, // Added line height
                         ),
+                      ),
+                      trailing: IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () =>
+                            _showUpdateDialog(context, 'cards_title'),
                       ),
                     ),
                   ),
@@ -1152,6 +1202,119 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
         );
       },
     );
+  }
+
+  void _showUpdateDialog(BuildContext context, String field) {
+    TextEditingController controller = TextEditingController();
+
+    if (field == 'project_start_date' || field == 'project_end_date') {
+      // Use a date picker for date fields
+      showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2101),
+      ).then((pickedDate) {
+        if (pickedDate != null) {
+          String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+          _updateData(field, formattedDate);
+        }
+      });
+    } else {
+      // Use a text field for other fields
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Update $field'),
+            content: TextField(
+              controller: controller,
+              decoration: InputDecoration(hintText: 'Enter new $field'),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  _updateData(field, controller.text);
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Update'),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  void _updateData(String field, String newValue) async {
+    String operation;
+    switch (field) {
+      case 'project_subject_description':
+        operation = 'Subject';
+        break;
+      case 'project_start_date':
+        operation = 'updateProjectStart';
+        break;
+      case 'End':
+        operation = 'updateProjectEnd';
+        break;
+      case 'module_master_name':
+        operation = 'updateModule';
+        break;
+      case 'activity':
+        operation = 'updateActivity';
+        break;
+      case 'output':
+        operation = 'updateOutput';
+        break;
+      case 'instruction':
+        operation = 'updateInstruction';
+        break;
+      case 'coachDetail':
+        operation = 'updateCoachDetail';
+        break;
+      default:
+        operation = 'project'; // Default operation
+    }
+
+    // Log the operation and field being updated
+    print('Attempting to update field: $field with operation: $operation');
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost/design/lib/api/updates.php'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, dynamic>{
+          'operation': operation,
+          'json': jsonEncode({
+            'project_id': widget.folder['projectId'],
+            field: newValue,
+          }),
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print('Update successful: ${response.body}');
+        setState(() {
+          widget.folder[field] = newValue;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Update successful')),
+        );
+      } else {
+        print('Failed to update: ${response.statusCode} - ${response.body}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      print('Error during update: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error during update: $e')),
+      );
+    }
   }
 
   @override

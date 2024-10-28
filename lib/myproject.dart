@@ -172,7 +172,10 @@ class _MyProjectPageState extends State<MyProjectPage> {
                     child: const Text('Discard'),
                   ),
                   TextButton(
-                    onPressed: () => Navigator.of(context).pop(true),
+                    onPressed: () async {
+                      await _saveFormData(); // Save form data when "Keep" is pressed
+                      Navigator.of(context).pop(true);
+                    },
                     child: const Text('Keep'),
                   ),
                 ],

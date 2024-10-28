@@ -296,6 +296,98 @@ class Updates
             return json_encode(['error' => $e->getMessage()]);
         }
     }
+
+    function updateCardTitle($json)
+    {
+        $json = json_decode($json, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return json_encode(['error' => 'Invalid JSON format']);
+        }
+
+        if (!isset($json['card_id'], $json['cards_title'])) {
+            return json_encode(['error' => 'Missing required fields']);
+        }
+
+        $sql = "UPDATE tbl_cards SET cards_title = :cards_title WHERE card_id = :card_id";
+
+        try {
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindParam(':cards_title', $json['cards_title']);
+            $stmt->bindParam(':card_id', $json['card_id']);
+            $stmt->execute();
+            $returnValue = $stmt->rowCount() > 0 ? 1 : 0;
+
+            error_log("Update result for card_id {$json['card_id']}: " . $returnValue);
+
+            return json_encode($returnValue);
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            return json_encode(['error' => $e->getMessage()]);
+        }
+    }
+
+    function updateCardContent($json)
+    {
+        $json = json_decode($json, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return json_encode(['error' => 'Invalid JSON format']);
+        }
+
+        if (!isset($json['card_id'], $json['cards_content'])) {
+            return json_encode(['error' => 'Missing required fields']);
+        }
+
+        $sql = "UPDATE tbl_cards SET cards_content = :cards_content WHERE card_id = :card_id";
+
+        try {
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindParam(':cards_content', $json['cards_content']);
+            $stmt->bindParam(':card_id', $json['card_id']);
+            $stmt->execute();
+            $returnValue = $stmt->rowCount() > 0 ? 1 : 0;
+
+            error_log("Update result for card_id {$json['card_id']}: " . $returnValue);
+
+            return json_encode($returnValue);
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            return json_encode(['error' => $e->getMessage()]);
+        }
+    }
+
+    function updateModule($json)
+    {
+        $json = json_decode($json, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return json_encode(['error' => 'Invalid JSON format']);
+        }
+
+        if (!isset($json['project_id'], $json['module_master_name'])) {
+            return json_encode(['error' => 'Missing required fields']);
+        }
+
+        $sql = "UPDATE tbl_project SET module_master_name = :module_master_name WHERE project_id = :project_id";
+
+        try {
+            $stmt = $this->conn->prepare($sql);
+            $stmt->bindParam(':module_master_name', $json['module_master_name']);
+            $stmt->bindParam(':project_id', $json['project_id']);
+            $stmt->execute();
+            $returnValue = $stmt->rowCount() > 0 ? 1 : 0;
+
+            error_log("Update result for project_id {$json['project_id']}: " . $returnValue);
+
+            return json_encode($returnValue);
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            return json_encode(['error' => $e->getMessage()]);
+        }
+    }
+
+    // Add more functions for other card fields as needed
 }
 
 $updates = new Updates($pdo);
@@ -325,7 +417,17 @@ switch ($operation) {
     case "Start":
         echo $updates->updateProjectStart($json);
         break;
+    case "updateCardTitle":
+        echo $updates->updateCardTitle($json);
+        break;
+    case "updateCardContent":
+        echo $updates->updateCardContent($json);
+        break;
+    case "updateModule":
+        echo $updates->updateModule($json);
+        break;
     default:
         echo json_encode(['error' => 'Invalid operation']);
         break;
 }
+
