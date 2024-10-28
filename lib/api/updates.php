@@ -45,9 +45,31 @@ class Updates
             return json_encode(['error' => 'Invalid JSON format']);
         }
 
-        if (!isset($json['actId'], $json['actContent'], $json['actRemark'])) {
+        if (!isset($json['actId'], $json['currentValue'], $json['newValue'], $json['actRemark'])) {
             return json_encode(['error' => 'Missing required fields']);
         }
+
+        // Decode the existing JSON array from the database
+        $stmt = $this->conn->prepare("SELECT activities_details_content FROM tbl_activities_details WHERE activities_details_id = :actId");
+        $stmt->bindParam(':actId', $json['actId']);
+        $stmt->execute();
+        $existingContent = $stmt->fetchColumn();
+
+        $contentArray = json_decode($existingContent, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return json_encode(['error' => 'Invalid existing JSON format']);
+        }
+
+        // Update the specific value in the array
+        $indexToUpdate = array_search($json['currentValue'], $contentArray);
+        if ($indexToUpdate !== false) {
+            $contentArray[$indexToUpdate] = $json['newValue'];
+        } else {
+            return json_encode(['error' => 'Current value not found']);
+        }
+
+        // Encode the updated array back to JSON
+        $updatedContent = json_encode($contentArray);
 
         $sql = "UPDATE tbl_activities_details SET activities_details_content = :actContent, 
                 activities_details_remarks = :actRemark
@@ -56,7 +78,7 @@ class Updates
         try {
             $stmt = $this->conn->prepare($sql);
             $stmt->bindParam(':actId', $json['actId']);
-            $stmt->bindParam(':actContent', $json['actContent']);
+            $stmt->bindParam(':actContent', $updatedContent);
             $stmt->bindParam(':actRemark', $json['actRemark']);
             $stmt->execute();
             $returnValue = $stmt->rowCount() > 0 ? 1 : 0;
@@ -78,9 +100,31 @@ class Updates
             return json_encode(['error' => 'Invalid JSON format']);
         }
 
-        if (!isset($json['outId'], $json['outContent'], $json['outRemarks'])) {
+        if (!isset($json['outId'], $json['currentValue'], $json['newValue'], $json['outRemarks'])) {
             return json_encode(['error' => 'Missing required fields']);
         }
+
+        // Decode the existing JSON array from the database
+        $stmt = $this->conn->prepare("SELECT outputs_content FROM tbl_outputs WHERE outputs_id = :outId");
+        $stmt->bindParam(':outId', $json['outId']);
+        $stmt->execute();
+        $existingContent = $stmt->fetchColumn();
+
+        $contentArray = json_decode($existingContent, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return json_encode(['error' => 'Invalid existing JSON format']);
+        }
+
+        // Update the specific value in the array
+        $indexToUpdate = array_search($json['currentValue'], $contentArray);
+        if ($indexToUpdate !== false) {
+            $contentArray[$indexToUpdate] = $json['newValue'];
+        } else {
+            return json_encode(['error' => 'Current value not found']);
+        }
+
+        // Encode the updated array back to JSON
+        $updatedContent = json_encode($contentArray);
 
         $sql = "UPDATE tbl_outputs SET outputs_content = :outContent, 
                 outputs_remarks = :outRemarks
@@ -89,7 +133,7 @@ class Updates
         try {
             $stmt = $this->conn->prepare($sql);
             $stmt->bindParam(':outId', $json['outId']);
-            $stmt->bindParam(':outContent', $json['outContent']);
+            $stmt->bindParam(':outContent', $updatedContent);
             $stmt->bindParam(':outRemarks', $json['outRemarks']);
             $stmt->execute();
             $returnValue = $stmt->rowCount() > 0 ? 1 : 0;
@@ -111,9 +155,31 @@ class Updates
             return json_encode(['error' => 'Invalid JSON format']);
         }
 
-        if (!isset($json['instructionId'], $json['instructContent'], $json['instructRemarks'])) {
+        if (!isset($json['instructionId'], $json['currentValue'], $json['newValue'], $json['instructRemarks'])) {
             return json_encode(['error' => 'Missing required fields']);
         }
+
+        // Decode the existing JSON array from the database
+        $stmt = $this->conn->prepare("SELECT instruction_content FROM tbl_instruction WHERE instruction_id = :instructionId");
+        $stmt->bindParam(':instructionId', $json['instructionId']);
+        $stmt->execute();
+        $existingContent = $stmt->fetchColumn();
+
+        $contentArray = json_decode($existingContent, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return json_encode(['error' => 'Invalid existing JSON format']);
+        }
+
+        // Update the specific value in the array
+        $indexToUpdate = array_search($json['currentValue'], $contentArray);
+        if ($indexToUpdate !== false) {
+            $contentArray[$indexToUpdate] = $json['newValue'];
+        } else {
+            return json_encode(['error' => 'Current value not found']);
+        }
+
+        // Encode the updated array back to JSON
+        $updatedContent = json_encode($contentArray);
 
         $sql = "UPDATE tbl_instruction SET instruction_content = :instructContent, 
                 instruction_remarks = :instructRemarks
@@ -122,7 +188,7 @@ class Updates
         try {
             $stmt = $this->conn->prepare($sql);
             $stmt->bindParam(':instructionId', $json['instructionId']);
-            $stmt->bindParam(':instructContent', $json['instructContent']);
+            $stmt->bindParam(':instructContent', $updatedContent);
             $stmt->bindParam(':instructRemarks', $json['instructRemarks']);
             $stmt->execute();
             $returnValue = $stmt->rowCount() > 0 ? 1 : 0;
@@ -144,18 +210,47 @@ class Updates
             return json_encode(['error' => 'Invalid JSON format']);
         }
 
-        if (!isset($json['coachId'], $json['coachContent'], $json['coachRemarks'])) {
+        if (!isset($json['coachId'], $json['currentValue'], $json['newValue'], $json['coachRemarks'])) {
             return json_encode(['error' => 'Missing required fields']);
         }
 
+        // Decode the existing JSON array from the database
+        $stmt = $this->conn->prepare("SELECT coach_detail_content FROM tbl_coach_detail WHERE coach_detail_id = :coachId");
+        $stmt->bindParam(':coachId', $json['coachId']);
+        $stmt->execute();
+        $existingContent = $stmt->fetchColumn();
+
+        // Log the existing content for debugging
+        error_log("Existing content for coachId {$json['coachId']}: " . $existingContent);
+
+        $contentArray = json_decode($existingContent, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return json_encode(['error' => 'Invalid existing JSON format']);
+        }
+
+        if (!is_array($contentArray)) {
+            return json_encode(['error' => 'Existing content is not an array']);
+        }
+
+        // Update the specific value in the array
+        $indexToUpdate = array_search($json['currentValue'], $contentArray);
+        if ($indexToUpdate !== false) {
+            $contentArray[$indexToUpdate] = $json['newValue'];
+        } else {
+            return json_encode(['error' => 'Current value not found']);
+        }
+
+        // Encode the updated array back to JSON
+        $updatedContent = json_encode($contentArray);
+
         $sql = "UPDATE tbl_coach_detail SET coach_detail_content = :coachContent, 
-                coach_detail_remarks = :coachRemarks
+                coach_detail_renarks = :coachRemarks
                 WHERE coach_detail_id = :coachId";
 
         try {
             $stmt = $this->conn->prepare($sql);
             $stmt->bindParam(':coachId', $json['coachId']);
-            $stmt->bindParam(':coachContent', $json['coachContent']);
+            $stmt->bindParam(':coachContent', $updatedContent);
             $stmt->bindParam(':coachRemarks', $json['coachRemarks']);
             $stmt->execute();
             $returnValue = $stmt->rowCount() > 0 ? 1 : 0;

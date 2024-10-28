@@ -52,6 +52,7 @@ class _ListPageState extends State<ListPage> {
             folders = List<Map<String, dynamic>>.from(data['folders']
                 .map((item) => {
                       'folder_id': item['id'] ?? '',
+                      'activity_id': item['activities_details_id'] ?? '',
                       'project_subject_code':
                           item['project_subject_code'] ?? '',
                       'project_subject_description':
@@ -61,6 +62,7 @@ class _ListPageState extends State<ListPage> {
                       'project_start_date': item['project_start_date'] ?? '',
                       'project_end_date': item['project_end_date'] ?? '',
                       'module_master_name': item['module_master_name'] ?? '',
+                      'module_master_id': item['module_master_id'] ?? '',
                       'activities_details_content':
                           item['activities_details_content'] ?? '',
                       'activities_header_duration':
@@ -89,53 +91,28 @@ class _ListPageState extends State<ListPage> {
                       'project_cards_remarks':
                           item['project_cards_remarks'] ?? '',
                       'instruction_remarks': item['instruction_remarks'] ?? '',
+                      'coach_detail_id': item['coach_detail_id'] ?? '',
+                      'instruction_id': item['instruction_id'] ?? '',
+                      'output_id': item['outputs_id'] ?? '',
                     })
                 .toList());
           });
 
-          // New print statement to show the number of project_cardsId fetched
-          print(
-              'Number of project_cardsId fetched: ${folders.map((folder) => folder['project_cardsId'].length).reduce((a, b) => a + b)}');
-
-          // Print the fetched details
-          print('Fetched Folder Details:');
+          // Debugging: Print each folder's activity_id
           for (var folder in folders) {
-            print('Folder ID: ${folder['folder_id']}');
-            print('Project Title: ${folder['project_title']}');
-            print('Project code: ${folder['project_subject_code']}');
             print(
-                'Project Description: ${folder['project_subject_description']}');
-            print('project description: ${folder['project_description']}');
-            print('project start: ${folder['project_start_date']}');
-            print('project end: ${folder['project_end_date']}');
-            print('Module Master Name: ${folder['module_master_name']}');
-            print(
-                'Activities Details: ${folder['activities_details_content']}');
-            print('Card Title: ${folder['cards_title']}');
-            print('Outputs Content: ${folder['outputs_content']}');
-            print('Instruction Content: ${folder['instruction_content']}');
-            print('Coach Detail Content: ${folder['coach_detail_content']}');
-            print('Project Cards ID: ${folder['project_cardsId']}');
-            print(
-                'back_cards_header_title: ${folder['back_cards_header_title']}');
-            print('back_content_title: ${folder['back_content_title']}');
-            print('Project ID: ${folder['projectId']}');
-            print(
-                'Back Cards Header Front ID: ${folder['back_cards_header_frontId']}');
-            print('---');
+                'Folder ID: ${folder['folder_id']}, Activity ID: ${folder['activity_id']}');
           }
         } else {
           print('Invalid data format. Response: ${response.body}');
           throw Exception('Invalid data format: ${response.body}');
         }
       } else {
-        // Improved error handling
         throw Exception(
             'Failed to load folders. Status code: ${response.statusCode}');
       }
     } catch (e) {
       print('Error fetching folders: $e');
-      // Show a more user-friendly error message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error fetching folders: ${e.toString()}')),
       );
@@ -382,6 +359,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
   List<Map<String, dynamic>>? InsData;
   List<Map<String, dynamic>>? OutputData;
   List<Map<String, dynamic>>? CoachData;
+  List<Map<String, dynamic>>? lessonsData; // Add this line
 
   @override
   void initState() {
@@ -460,32 +438,32 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
   Future<void> _fetchProject() async {
     final projectId = widget.folder['projectId'];
 
-    // Log the projectId to ensure it's being retrieved correctly
     print('Fetching project data for projectId: $projectId');
 
     try {
-      // Make the HTTP POST request to your API
       final response = await http.post(
         Uri.parse('http://localhost/design/lib/api/masterlist.php'),
         body: {
-          'operation': 'getFolders', // Ensure this operation is correct
-          'projectId':
-              projectId.toString(), // Ensure projectId is sent as a string
+          'operation': 'getFolders',
+          'projectId': projectId.toString(),
         },
       );
 
-      // Log the response body for debugging
       print('Response body: ${response.body}');
 
-      // Check if the response status is OK (HTTP 200)
       if (response.statusCode == 200) {
         final dynamic data = json.decode(response.body);
 
-        // Check if the response is a map (expected JSON format)
         if (data is Map<String, dynamic>) {
           if (data['success'] == true && data['folders'] != null) {
             setState(() {
               moduleData = List<Map<String, dynamic>>.from(data['folders']);
+              // Extract and store IDs
+              for (var module in moduleData!) {
+                print('Module ID: ${module['module_master_id']}');
+                print('Activity ID: ${module['activities_details_id']}');
+                // Add more IDs as needed
+              }
             });
             print('Fetched Project Data:');
             moduleData?.forEach((module) {
@@ -499,7 +477,6 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
             });
           }
         } else {
-          // Handle unexpected data types
           print('Unexpected data format: ${data.runtimeType}');
           print('Data content: $data');
           setState(() {
@@ -507,7 +484,6 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
           });
         }
       } else {
-        // Log failure to fetch data with response details
         print('Failed to fetch project data');
         print('Status code: ${response.statusCode}');
         print('Response body: ${response.body}');
@@ -516,7 +492,6 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
         });
       }
     } catch (e) {
-      // Handle and log exceptions
       print('Database error occurred: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Database error occurred: $e')),
@@ -917,8 +892,11 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                           widget.folder['project_subject_code'] ?? 'No code'),
                       trailing: IconButton(
                         icon: Icon(Icons.edit),
-                        onPressed: () =>
-                            _showUpdateDialog(context, 'project_subject_code'),
+                        onPressed: () => _showUpdateDialog(
+                          context,
+                          'project_subject_code',
+                          widget.folder['project_subject_code'] ?? 'No code',
+                        ),
                       ),
                     ),
                   ),
@@ -931,7 +909,11 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                       trailing: IconButton(
                         icon: Icon(Icons.edit),
                         onPressed: () => _showUpdateDialog(
-                            context, 'project_subject_description'),
+                          context,
+                          'project_subject_description',
+                          widget.folder['project_subject_description'] ??
+                              'No description',
+                        ),
                       ),
                     ),
                   ),
@@ -942,8 +924,12 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                           'No start date'),
                       trailing: IconButton(
                         icon: Icon(Icons.edit),
-                        onPressed: () =>
-                            _showUpdateDialog(context, 'project_start_date'),
+                        onPressed: () => _showUpdateDialog(
+                          context,
+                          'project_start_date',
+                          widget.folder['project_start_date'] ??
+                              'No start date',
+                        ),
                       ),
                     ),
                   ),
@@ -954,8 +940,11 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                           widget.folder['project_end_date'] ?? 'No end date'),
                       trailing: IconButton(
                         icon: Icon(Icons.edit),
-                        onPressed: () =>
-                            _showUpdateDialog(context, 'project_end_date'),
+                        onPressed: () => _showUpdateDialog(
+                          context,
+                          'project_end_date',
+                          widget.folder['project_end_date'] ?? 'No end date',
+                        ),
                       ),
                     ),
                   ),
@@ -973,8 +962,12 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                       ),
                       trailing: IconButton(
                         icon: Icon(Icons.edit),
-                        onPressed: () =>
-                            _showUpdateDialog(context, 'module_master_name'),
+                        onPressed: () => _showUpdateDialog(
+                          context,
+                          'module_master_name',
+                          widget.folder['module_master_name'] ??
+                              'No module name',
+                        ),
                       ),
                     ),
                   ),
@@ -984,20 +977,38 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            projectAct.isNotEmpty
-                                ? projectAct
-                                    .map((title) =>
-                                        '- ${title.replaceAll(RegExp(r'^\["|"\]$'), '')}')
-                                    .join(
-                                        '\n\n') // Added extra \n for 1.5 spacing
-                                : 'No activities available',
-                            style: TextStyle(
-                              color: Colors.grey[700],
-                              fontSize: 12,
-                              height: 1.5, // Added line height
-                            ),
-                          ),
+                          ...projectAct.map((title) {
+                            // Split the string into individual items
+                            List<String> items = title
+                                .replaceAll(RegExp(r'^\["|"\]$'), '')
+                                .split('","');
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: items.map((item) {
+                                return Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        '- $item',
+                                        style: TextStyle(
+                                          color: Colors.grey[700],
+                                          fontSize: 12,
+                                          height: 1.5,
+                                        ),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.edit),
+                                      onPressed: () => _showUpdateDialog(
+                                          context,
+                                          'activities_details_content',
+                                          item),
+                                    ),
+                                  ],
+                                );
+                              }).toList(),
+                            );
+                          }).toList(),
                           const SizedBox(height: 10),
                           const Divider(),
                           const Text(
@@ -1013,11 +1024,6 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                           ),
                         ],
                       ),
-                      trailing: IconButton(
-                        icon: Icon(Icons.edit),
-                        onPressed: () => _showUpdateDialog(
-                            context, 'activities_details_content'),
-                      ),
                     ),
                   ),
                   Card(
@@ -1026,20 +1032,35 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            projectOuput.isNotEmpty
-                                ? projectOuput
-                                    .map((title) =>
-                                        '- ${title.replaceAll(RegExp(r'^\["|"\]$'), '')}')
-                                    .join(
-                                        '\n\n') // Added extra \n for 1.5 spacing
-                                : 'No outputs available',
-                            style: TextStyle(
-                              color: Colors.grey[700],
-                              fontSize: 12,
-                              height: 1.5, // Added line height
-                            ),
-                          ),
+                          ...projectOuput.map((title) {
+                            List<String> items = title
+                                .replaceAll(RegExp(r'^\["|"\]$'), '')
+                                .split('","');
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: items.map((item) {
+                                return Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        '- $item',
+                                        style: TextStyle(
+                                          color: Colors.grey[700],
+                                          fontSize: 12,
+                                          height: 1.5,
+                                        ),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.edit),
+                                      onPressed: () => _showUpdateDialog(
+                                          context, 'outputs_content', item),
+                                    ),
+                                  ],
+                                );
+                              }).toList(),
+                            );
+                          }).toList(),
                           const SizedBox(height: 10),
                           const Divider(),
                           const Text(
@@ -1054,11 +1075,6 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                           ),
                         ],
                       ),
-                      trailing: IconButton(
-                        icon: Icon(Icons.edit),
-                        onPressed: () =>
-                            _showUpdateDialog(context, 'outputs_content'),
-                      ),
                     ),
                   ),
                   Card(
@@ -1067,20 +1083,35 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            projectIns.isNotEmpty
-                                ? projectIns
-                                    .map((title) =>
-                                        '- ${title.replaceAll(RegExp(r'^\["|"\]$'), '')}')
-                                    .join(
-                                        '\n\n') // Added extra \n for 1.5 spacing
-                                : 'No instructions available',
-                            style: TextStyle(
-                              color: Colors.grey[700],
-                              fontSize: 12,
-                              height: 1.5, // Added line height
-                            ),
-                          ),
+                          ...projectIns.map((title) {
+                            List<String> items = title
+                                .replaceAll(RegExp(r'^\["|"\]$'), '')
+                                .split('","');
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: items.map((item) {
+                                return Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        '- $item',
+                                        style: TextStyle(
+                                          color: Colors.grey[700],
+                                          fontSize: 12,
+                                          height: 1.5,
+                                        ),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.edit),
+                                      onPressed: () => _showUpdateDialog(
+                                          context, 'instruction_content', item),
+                                    ),
+                                  ],
+                                );
+                              }).toList(),
+                            );
+                          }).toList(),
                           const SizedBox(height: 10),
                           const Divider(),
                           const Text(
@@ -1096,11 +1127,6 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                           ),
                         ],
                       ),
-                      trailing: IconButton(
-                        icon: Icon(Icons.edit),
-                        onPressed: () =>
-                            _showUpdateDialog(context, 'instruction_content'),
-                      ),
                     ),
                   ),
                   Card(
@@ -1109,20 +1135,37 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            projectCoach.isNotEmpty
-                                ? projectCoach
-                                    .map((title) =>
-                                        '- ${title.replaceAll(RegExp(r'^\["|"\]$'), '')}')
-                                    .join(
-                                        '\n\n') // Added extra \n for 1.5 spacing
-                                : 'No coach details available',
-                            style: TextStyle(
-                              color: Colors.grey[700],
-                              fontSize: 12,
-                              height: 1.5, // Added line height
-                            ),
-                          ),
+                          ...projectCoach.map((title) {
+                            List<String> items = title
+                                .replaceAll(RegExp(r'^\["|"\]$'), '')
+                                .split('","');
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: items.map((item) {
+                                return Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        '- $item',
+                                        style: TextStyle(
+                                          color: Colors.grey[700],
+                                          fontSize: 12,
+                                          height: 1.5,
+                                        ),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(Icons.edit),
+                                      onPressed: () => _showUpdateDialog(
+                                          context,
+                                          'coach_detail_content',
+                                          item),
+                                    ),
+                                  ],
+                                );
+                              }).toList(),
+                            );
+                          }).toList(),
                           const SizedBox(height: 10),
                           const Divider(),
                           const Text(
@@ -1137,11 +1180,6 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                                 color: Colors.grey[700], fontSize: 12),
                           ),
                         ],
-                      ),
-                      trailing: IconButton(
-                        icon: Icon(Icons.edit),
-                        onPressed: () =>
-                            _showUpdateDialog(context, 'coach_detail_content'),
                       ),
                     ),
                   ),
@@ -1166,8 +1204,16 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                       ),
                       trailing: IconButton(
                         icon: Icon(Icons.edit),
-                        onPressed: () =>
-                            _showUpdateDialog(context, 'cards_title'),
+                        onPressed: () {
+                          // Use the correct variable for the title
+                          _showUpdateDialog(
+                            context,
+                            'cards_title',
+                            cardTitles.isNotEmpty
+                                ? cardTitles.first
+                                : 'No title',
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -1204,77 +1250,84 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
     );
   }
 
-  void _showUpdateDialog(BuildContext context, String field) {
-    TextEditingController controller = TextEditingController();
+  void _showUpdateDialog(
+      BuildContext context, String field, String currentValue) {
+    TextEditingController controller =
+        TextEditingController(text: currentValue);
 
-    if (field == 'project_start_date' || field == 'project_end_date') {
-      // Use a date picker for date fields
-      showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime(2000),
-        lastDate: DateTime(2101),
-      ).then((pickedDate) {
-        if (pickedDate != null) {
-          String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
-          _updateData(field, formattedDate);
-        }
-      });
-    } else {
-      // Use a text field for other fields
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Update $field'),
-            content: TextField(
-              controller: controller,
-              decoration: InputDecoration(hintText: 'Enter new $field'),
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Update $field'),
+          content: TextField(
+            controller: controller,
+            decoration: InputDecoration(hintText: 'Enter new $field'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                _updateData(field, controller.text, currentValue: currentValue);
+                Navigator.of(context).pop();
+              },
+              child: const Text('Update'),
             ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  _updateData(field, controller.text);
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Update'),
-              ),
-            ],
-          );
-        },
-      );
-    }
+          ],
+        );
+      },
+    );
   }
 
-  void _updateData(String field, String newValue) async {
+  void _updateData(String field, String newValue,
+      {String? currentValue}) async {
     String operation;
+    Map<String, dynamic> jsonData = {
+      'project_id': widget.folder['projectId'],
+    };
+
+    // Determine the correct ID based on the field being updated
     switch (field) {
-      case 'project_subject_description':
-        operation = 'Subject';
+      case 'activities_details_content':
+        operation = 'activity';
+        jsonData['actId'] = widget.folder['activity_id']; // Use the correct ID
+        jsonData['currentValue'] = currentValue;
+        jsonData['newValue'] = newValue;
+        jsonData['actRemark'] =
+            widget.folder['activities_details_remarks'] ?? '';
+        print('Updating activity with actId: ${jsonData['actId']}');
         break;
-      case 'project_start_date':
-        operation = 'updateProjectStart';
+      case 'outputs_content':
+        operation = 'output';
+        jsonData['outId'] = widget.folder['output_id']; // Use the correct ID
+        jsonData['currentValue'] = currentValue;
+        jsonData['newValue'] = newValue;
+        jsonData['outRemarks'] = widget.folder['outputs_remarks'] ?? '';
+        print('Updating output with outId: ${jsonData['outId']}');
         break;
-      case 'End':
-        operation = 'updateProjectEnd';
+      case 'instruction_content':
+        operation = 'instruction';
+        jsonData['instructionId'] =
+            widget.folder['instruction_id']; // Use the correct ID
+        jsonData['newValue'] = newValue;
+        jsonData['currentValue'] = currentValue;
+        jsonData['instructRemarks'] =
+            widget.folder['instruction_remarks'] ?? '';
+        print(
+            'Updating instruction with instructionId: ${jsonData['instructionId']}');
         break;
-      case 'module_master_name':
-        operation = 'updateModule';
-        break;
-      case 'activity':
-        operation = 'updateActivity';
-        break;
-      case 'output':
-        operation = 'updateOutput';
-        break;
-      case 'instruction':
-        operation = 'updateInstruction';
-        break;
-      case 'coachDetail':
-        operation = 'updateCoachDetail';
+      case 'coach_detail_content':
+        operation = 'coachDetail';
+        jsonData['coachId'] =
+            widget.folder['coach_detail_id']; // Use the correct ID
+        jsonData['newValue'] = newValue;
+        jsonData['currentValue'] = currentValue;
+        jsonData['coachRemarks'] = widget.folder['coach_detail_renarks'] ?? '';
+        print('Updating coach detail with coachId: ${jsonData['coachId']}');
         break;
       default:
-        operation = 'project'; // Default operation
+        operation = 'project';
+        jsonData[field] = newValue;
+        print('Updating project with project_id: ${jsonData['project_id']}');
     }
 
     // Log the operation and field being updated
@@ -1288,17 +1341,14 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
         },
         body: jsonEncode(<String, dynamic>{
           'operation': operation,
-          'json': jsonEncode({
-            'project_id': widget.folder['projectId'],
-            field: newValue,
-          }),
+          'json': jsonEncode(jsonData),
         }),
       );
 
       if (response.statusCode == 200) {
         print('Update successful: ${response.body}');
         setState(() {
-          widget.folder[field] = newValue;
+          widget.folder[field] = newValue; // Update the local state
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Update successful')),
@@ -1314,6 +1364,28 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error during update: $e')),
       );
+    }
+  }
+
+  Future<void> _fetchLessons(String moduleMasterId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost/design/lib/api/view.php'),
+        body: {'operation': 'getLessons', 'modeId': moduleMasterId},
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data is List) {
+          setState(() {
+            lessonsData = List<Map<String, dynamic>>.from(data);
+          });
+        }
+      } else {
+        print('Failed to fetch lessons: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching lessons: $e');
     }
   }
 
