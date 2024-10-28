@@ -376,7 +376,7 @@ class FolderDetailPage extends StatefulWidget {
 }
 
 class _FolderDetailPageState extends State<FolderDetailPage> {
-  List<Map<String, dynamic>>? cardData; // Change to List to hold multiple cards
+  List<Map<String, dynamic>>? cardData; // Change to List to hold multiple carFds
   List<Map<String, dynamic>>? moduleData;
   List<Map<String, dynamic>>? ActData;
   List<Map<String, dynamic>>? InsData;

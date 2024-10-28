@@ -717,7 +717,7 @@ ORDER BY
             $sql = "SELECT 
     tbl_project.project_id,
     GROUP_CONCAT(DISTINCT tbl_module_master.module_master_name ORDER BY tbl_module_master.module_master_name SEPARATOR ', ') AS Mode, 
-    GROUP_CONCAT(DISTINCT tbl_activities_header.activities_header_duration ORDER BY tbl_activities_header.activities_header_duration SEPARATOR ', ') AS Duration,  
+    GROUP_CONCAT(DISTINCT tbl_activities_header.activities_header_duration ORDER BY tbl_activities_header.activities_header_duration SEPARATOR ', ') AS Duration,
     GROUP_CONCAT(DISTINCT tbl_activities_details.activities_details_content ORDER BY tbl_activities_details.activities_details_content SEPARATOR ', ') AS Activity, 
     tbl_project.project_title AS Lesson, 
     GROUP_CONCAT(DISTINCT tbl_outputs.outputs_content ORDER BY tbl_outputs.outputs_content SEPARATOR ', ') AS Output, 
@@ -726,13 +726,13 @@ ORDER BY
     tbl_project.project_description AS ProjectDescription,
     tbl_project.project_start_date AS StartDate,
     tbl_project.project_end_date AS EndDate,
-    tbl_activities_details.activities_details_remarks AS ActivityRemarks, 
-    tbl_outputs.outputs_remarks AS OutputRemarks, 
-    tbl_instruction.instruction_remarks AS InstructionRemarks, 
-    tbl_coach_detail.coach_detail_renarks AS CoachDetailRemarks
+    GROUP_CONCAT(DISTINCT tbl_activities_details.activities_details_remarks ORDER BY tbl_activities_details.activities_details_remarks SEPARATOR ', ') AS ActivityRemarks, 
+    GROUP_CONCAT(DISTINCT tbl_outputs.outputs_remarks ORDER BY tbl_outputs.outputs_remarks SEPARATOR ', ') AS OutputRemarks, 
+    GROUP_CONCAT(DISTINCT tbl_instruction.instruction_remarks ORDER BY tbl_instruction.instruction_remarks SEPARATOR ', ') AS InstructionRemarks, 
+    GROUP_CONCAT(DISTINCT tbl_coach_detail.coach_detail_renarks ORDER BY tbl_coach_detail.coach_detail_renarks SEPARATOR ', ') AS CoachDetailRemarks
 FROM 
     tbl_folder
-LEFT JOIN 
+LEFT JOIN
     tbl_project ON tbl_folder.projectId = tbl_project.project_id
 LEFT JOIN 
     tbl_project_modules ON tbl_folder.project_moduleId = tbl_project_modules.project_modules_id
@@ -741,7 +741,7 @@ LEFT JOIN
 LEFT JOIN 
     tbl_activities_details ON tbl_folder.activities_detailId = tbl_activities_details.activities_details_id
 LEFT JOIN 
-    tbl_activities_header ON tbl_activities_header.activities_header_modulesId = tbl_activities_details.activities_details_id
+    tbl_activities_header ON tbl_activities_header.activities_header_id = tbl_activities_details.activities_details_headerId
 LEFT JOIN 
     tbl_outputs ON tbl_folder.outputId = tbl_outputs.outputs_id
 LEFT JOIN 
@@ -749,7 +749,12 @@ LEFT JOIN
 LEFT JOIN 
     tbl_coach_detail ON tbl_folder.coach_detailsId = tbl_coach_detail.coach_detail_id
 GROUP BY 
-    tbl_project.project_id, tbl_project.project_description, tbl_project.project_start_date, tbl_project.project_end_date, tbl_project.project_title;
+    tbl_project.project_id, 
+    tbl_project.project_description, 
+    tbl_project.project_start_date, 
+    tbl_project.project_end_date, 
+    tbl_project.project_title;
+;
 ";
 
             $stmt = $this->pdo->prepare($sql);
@@ -790,8 +795,69 @@ GROUP BY
             return json_encode(['error' => 'An error occurred']);
         }
     }
-
-
+    function getExcel()
+    {
+        $projectId = isset($_POST['projectId']) ? $_POST['projectId'] : '';
+        try {
+            $sql = "SELECT 
+                    tbl_project.project_title AS Lesson,
+                    tbl_project.project_description AS ProjectDescription,
+                    tbl_project.project_start_date AS StartDate,
+                    tbl_project.project_end_date AS EndDate,
+                    tbl_activities_details.activities_details_content AS Activity,
+                    tbl_activities_details.activities_details_remarks AS ActivityRemarks,
+                    tbl_outputs.outputs_content AS Output,
+                    tbl_outputs.outputs_remarks AS OutputRemarks,
+                    tbl_instruction.instruction_content AS Instruction,
+                    tbl_instruction.instruction_remarks AS InstructionRemarks,
+                    tbl_coach_detail.coach_detail_content AS CoachDetail,
+                    tbl_coach_detail.coach_detail_remarks AS CoachDetailRemarks
+                FROM tbl_folder
+                INNER JOIN tbl_project ON tbl_folder.projectId = tbl_project.project_id
+                LEFT JOIN tbl_activities_details ON tbl_folder.activities_detailId = tbl_activities_details.activities_details_id
+                LEFT JOIN tbl_outputs ON tbl_folder.outputId = tbl_outputs.outputs_id
+                LEFT JOIN tbl_instruction ON tbl_folder.instructionId = tbl_instruction.instruction_id
+                LEFT JOIN tbl_coach_detail ON tbl_folder.coach_detailsId = tbl_coach_detail.coach_detail_id
+                WHERE tbl_folder.projectId = :projectId";
+    
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':projectId', $projectId, PDO::PARAM_INT);
+            $stmt->execute();
+    
+            $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+            if (empty($returnValue)) {
+                return json_encode(['success' => false, 'message' => 'No data found']);
+            }
+    
+            // Map data into structured format
+            $structuredData = [];
+            foreach ($returnValue as $row) {
+                $structuredData[] = [
+                    'Lesson' => $row['Lesson'],
+                    'ProjectDescription' => $row['ProjectDescription'],
+                    'StartDate' => $row['StartDate'],
+                    'EndDate' => $row['EndDate'],
+                    'Activity' => $row['Activity'],
+                    'ActivityRemarks' => $row['ActivityRemarks'],
+                    'Output' => $row['Output'],
+                    'OutputRemarks' => $row['OutputRemarks'],
+                    'Instruction' => $row['Instruction'],
+                    'InstructionRemarks' => $row['InstructionRemarks'],
+                    'CoachDetail' => $row['CoachDetail'],
+                    'CoachDetailRemarks' => $row['CoachDetailRemarks']
+                ];
+            }
+    
+            return json_encode(['success' => true, 'data' => $structuredData]);
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            return json_encode(['success' => false, 'error' => 'Database error occurred: ' . $e->getMessage()]);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage());
+            return json_encode(['success' => false, 'error' => 'An error occurred: ' . $e->getMessage()]);
+        }
+    }
 
     function getFolderId($json)
     {
@@ -958,29 +1024,30 @@ GROUP BY
             return json_encode(['error' => 'An error occurred']);
         }
     }
-    function UserVerify($json) {
+    function UserVerify($json)
+    {
         try {
             $updatedRegisterStatus = 1; // Set the status to 'verified'
             $json = json_decode($json, true);
-            
+
             // Check if the JSON was decoded properly
             if (json_last_error() !== JSON_ERROR_NONE) {
                 return json_encode(['success' => false, 'message' => 'Invalid JSON format.']);
             }
-    
+
             if (empty($json['users_id'])) {
                 return json_encode(['success' => false, 'message' => 'User ID is missing.']);
             }
-    
+
             // Prepare SQL statement
             $sql = "UPDATE tbl_users SET register_status = :updatedRegisterStatus WHERE users_id = :users_id";
             $stmt = $this->pdo->prepare($sql);
             $stmt->bindParam(':users_id', $json['users_id'], PDO::PARAM_INT);
             $stmt->bindParam(':updatedRegisterStatus', $updatedRegisterStatus, PDO::PARAM_INT);
-    
+
             // Execute the update
             $stmt->execute();
-    
+
             if ($stmt->rowCount() > 0) {
                 return json_encode(['success' => true, 'message' => 'User verified successfully.']);
             } else {
@@ -1018,7 +1085,6 @@ GROUP BY
             return json_encode(['error' => 'An error occurred']);
         }
     }
-
 }
 
 // Handle preflight requests for CORS (for OPTIONS request)
@@ -1122,6 +1188,9 @@ switch ($operation) {
     case "getAllProjects":
         echo $get->getAllProjects();
         break;
+        case "getExcel":
+            echo $get->getExcel();
+            break;
     default:
         echo json_encode(['error' => 'Invalid operation']);
         break;
