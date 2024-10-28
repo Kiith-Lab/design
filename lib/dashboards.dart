@@ -336,12 +336,17 @@ class _DashboardsState extends State<Dashboards> {
                   item['school_name']?.toString().toLowerCase() ?? '';
               final departmentName =
                   item['department_name']?.toString().toLowerCase() ?? '';
+              final projectTitle =
+                  item['project_title']?.toString().toLowerCase() ??
+                      ''; // Ensure this line is included
 
               bool matchesSearch =
                   name.contains(localSearchQuery.toLowerCase()) ||
                       description.contains(localSearchQuery.toLowerCase()) ||
                       schoolName.contains(localSearchQuery.toLowerCase()) ||
-                      departmentName.contains(localSearchQuery.toLowerCase());
+                      departmentName.contains(localSearchQuery.toLowerCase()) ||
+                      projectTitle.contains(
+                          localSearchQuery.toLowerCase()); // Add this condition
 
               bool matchesSchool = localSchoolFilter == 'all' ||
                   schoolName == localSchoolFilter.toLowerCase();
@@ -376,6 +381,14 @@ class _DashboardsState extends State<Dashboards> {
               ...items
                   .map((item) => item['department_name']?.toString() ?? '')
                   .where((name) => name.isNotEmpty)
+                  .toSet()
+            ];
+
+            List<String> projectTitles = [
+              'all',
+              ...items
+                  .map((item) => item['project_title']?.toString() ?? '')
+                  .where((title) => title.isNotEmpty)
                   .toSet()
             ];
 
@@ -454,6 +467,7 @@ class _DashboardsState extends State<Dashboards> {
                                   localDepartmentFilter,
                                   schoolNames,
                                   departmentNames,
+                                  projectTitles,
                                   hideFilters,
                                 ),
                               ),
@@ -567,7 +581,7 @@ class _DashboardsState extends State<Dashboards> {
                                   onTap: () {
                                     if (title == 'Folders') {
                                       _showFolderDetails(context, item);
-                                      print("Title: YAWA, Item: $item");
+                                      print("Title: Good, Item: $item");
                                     } else if (title == 'Schools') {
                                       _showDepartmentDetails(context, item);
                                     }
@@ -652,7 +666,8 @@ class _DashboardsState extends State<Dashboards> {
                       ),
                       _buildCustomFolderDetail(
                         'How long will this activity take?',
-                        _formatAsBulletList(folder['Duration'],
+                        _formatAsBulletList(
+                            folder['Duration'] ?? 'No duration available',
                             useBullets: false),
                       ),
                       _buildCustomFolderDetail(
@@ -974,45 +989,65 @@ class _DashboardsState extends State<Dashboards> {
 
 // Function to create Excel file
   Future<void> _generateExcel(dynamic folder) async {
-    // Create a new Excel document
     final Excel excel = Excel.createExcel();
     Sheet sheet = excel['Sheet1'];
 
-    // Set the width of each column to appropriate values
-    sheet.setColWidth(0, 50); // Column A
-    sheet.setColWidth(1, 110); // Column B
-    sheet.setColWidth(2, 40); // Column C
+    sheet.setColWidth(0, 50);
+    sheet.setColWidth(1, 110);
+    sheet.setColWidth(2, 40);
 
-    // Add main headers
     sheet.appendRow(['', 'MY DESIGN THINKING PLAN']);
+    sheet.appendRow(['Project', folder['Lesson'] ?? 'Unnamed Project', '']);
     sheet.appendRow(
-        ['Project', _cleanText(folder['Lesson'] ?? 'Unnamed Project'), '']);
-    sheet.appendRow([
-      'Project Description',
-      _cleanText(folder['ProjectDescription'] ?? 'No description'),
-      ''
-    ]);
-    sheet.appendRow(
-        ['Start Date', _cleanText(folder['StartDate'] ?? 'No start date'), '']);
-    sheet.appendRow(
-        ['End Date', _cleanText(folder['EndDate'] ?? 'No end date'), '']);
+        ['Project Description', folder['ProjectDescription'] ?? '', '']);
+    sheet.appendRow(['Start Date', folder['StartDate'] ?? 'No start date', '']);
+    sheet.appendRow(['End Date', folder['EndDate'] ?? 'No end date', '']);
+    sheet.appendRow(['']);
 
-    sheet.appendRow([folder['Mode'], '', 'NOTES/REMARKS']);
+    List<String> sections = [
+      'Empathize',
+      'Define',
+      'Ideate',
+      'Prototype',
+      'Test'
+    ];
 
-    // Handle different sections
-    _appendSection(sheet, folder['Activity'], folder['ActivityRemarks'],
-        'What activity/ies will my students do?');
-    _appendSection(
-        sheet, folder['Duration'], null, 'How long will this activity take?',
-        formatFunction: _formatAsBulletList);
-    _appendSection(sheet, folder['Output'], folder['OutputRemarks'],
-        'What are the expected outputs?');
-    _appendSection(sheet, folder['Instruction'], folder['InstructionRemarks'],
-        'What instructions will I give my students?');
-    _appendSection(sheet, folder['CoachDetail'], folder['CoachDetailRemarks'],
-        'How can I coach my students while doing this activity?');
+    for (String section in sections) {
+      sheet.appendRow([section]);
+      // Directly append rows without using _appendSection
+      sheet.appendRow([
+        'What activities will my students do?',
+        _formatAsRowsForExcel(folder['Activity']).join(', '),
+        folder['ActivityRemarks'] ?? 'No remarks'
+      ]);
+      sheet.appendRow([
+        'What two (2) method cards will my students use?',
+        _formatAsRowsForExcel(folder['Lesson']).join(', '),
+        'No remarks'
+      ]);
+      sheet.appendRow([
+        'How long will this activity take?',
+        _formatAsRowsForExcel(folder['Duration']).join(', '),
+        'No remarks'
+      ]);
+      sheet.appendRow([
+        'What are the expected outputs?',
+        _formatAsRowsForExcel(folder['Output']).join(', '),
+        folder['OutputRemarks'] ?? 'No remarks'
+      ]);
+      sheet.appendRow([
+        'What instructions will I give my students?',
+        _formatAsRowsForExcel(folder['Instruction']).join(', '),
+        folder['InstructionRemarks'] ?? 'No remarks'
+      ]);
+      sheet.appendRow([
+        'How can I coach my students while doing this activity?',
+        _formatAsRowsForExcel(folder['CoachDetail']).join(', '),
+        folder['CoachDetailRemarks'] ?? 'No remarks'
+      ]);
+      sheet.appendRow(['']);
+    }
 
-    // Saving the Excel file
     try {
       if (kIsWeb) {
         final bytes = excel.encode();
@@ -1035,39 +1070,6 @@ class _DashboardsState extends State<Dashboards> {
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to generate Excel: $e')));
     }
-  }
-
-  void _appendSection(Sheet sheet, dynamic items, String? remarks, String title,
-      {Function? formatFunction}) {
-    List<String> itemList = _formatAsRowsForExcel(items);
-    String itemRemarks = remarks ?? 'No remarks';
-
-    // Format item if a formatting function is provided
-    String formattedItem = formatFunction != null
-        ? formatFunction(itemList)
-        : itemList.isNotEmpty
-            ? itemList.join(', ')
-            : 'No items';
-
-    // Append the first row with the first item and the remarks
-    if (itemList.isNotEmpty) {
-      sheet.appendRow([title, itemList[0], itemRemarks]);
-
-      // Append subsequent rows for remaining items with empty first and third columns
-      for (int i = 1; i < itemList.length; i++) {
-        sheet.appendRow(['', itemList[i], '']);
-      }
-    } else {
-      // Handle case where there are no items
-      sheet.appendRow([title, 'No item', itemRemarks]);
-    }
-  }
-
-  Widget _buildFolderDetail(String label, String value) {
-    return ListTile(
-      title: Text(label),
-      subtitle: Text(value),
-    );
   }
 
   void _showDepartmentDetails(BuildContext context, dynamic school) {
@@ -1521,6 +1523,7 @@ class _DashboardsState extends State<Dashboards> {
       String localDepartmentFilter,
       List<String> schoolNames,
       List<String> departmentNames,
+      List<String> projectTitles,
       bool hideFilters) {
     String tempSchoolFilter = localSchoolFilter;
     String tempDepartmentFilter = localDepartmentFilter;
@@ -1598,11 +1601,11 @@ class _DashboardsState extends State<Dashboards> {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/Design_Thinking_Admin.png'),
-            fit: BoxFit.cover,
-          ),
-        ),
+            // image: DecorationImage(
+            //   image: AssetImage('assets/images/Design_Thinking_Admin.png'),
+            //   fit: BoxFit.cover,
+            // ),
+            ),
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24.0), // Overall padding
@@ -1764,7 +1767,7 @@ class _DashboardsState extends State<Dashboards> {
                             ],
                           ),
 
-                    const SizedBox(height: 840),
+                    const SizedBox(height: 250),
 
                     // User Statistics Section
                   ],
