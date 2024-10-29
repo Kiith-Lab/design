@@ -961,7 +961,7 @@ class _DashboardsState extends State<Dashboards> {
             .replaceAll(r'\', '') // Remove backslashes
             .replaceAll(r'\n', ' ') // Replace newlines with space
             .replaceAll(r'\t', ' ') // Replace tabs with space
-            .replaceAll(r't', ' ')
+
             .trim();
         return cleanItem; // No need for bullet points for Excel rows
       }).toList();
