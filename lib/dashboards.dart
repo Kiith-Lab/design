@@ -600,226 +600,253 @@ class _DashboardsState extends State<Dashboards> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Container(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height,
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
+              child: Column(
+                children: [
+                  AppBar(
+                    title: Text(
                       title,
                       style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.teal,
+                        fontSize: 22, // Adjust font size as needed
+                        fontWeight:
+                            FontWeight.bold, // Adjust font weight as needed
+                        color: Colors.white, // Set text color if needed
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Search $title...',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey[200],
-                        prefixIcon:
-                            const Icon(Icons.search, color: Colors.teal),
-                        suffixIcon: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            PopupMenuButton<String>(
-                              icon: const Icon(Icons.sort, color: Colors.teal),
-                              onSelected: (String value) {
-                                setDialogState(() {
-                                  localSortOrder = value;
-                                });
-                              },
-                              itemBuilder: (BuildContext context) => [
-                                const PopupMenuItem(
-                                  value: 'all',
-                                  child: Text('All'),
-                                ),
-                                const PopupMenuItem(
-                                  value: 'asc',
-                                  child: Text('A-Z'),
-                                ),
-                                const PopupMenuItem(
-                                  value: 'desc',
-                                  child: Text('Z-A'),
-                                ),
-                              ],
-                            ),
-                            if (!hideFilters)
-                              IconButton(
-                                icon: const Icon(Icons.filter_list,
-                                    color: Colors.teal),
-                                onPressed: () => _showFilterDialog(
-                                  context,
-                                  (newSchoolFilter, newDepartmentFilter) {
-                                    setDialogState(() {
-                                      localSchoolFilter = newSchoolFilter;
-                                      localDepartmentFilter =
-                                          newDepartmentFilter;
-                                    });
-                                  },
-                                  localSchoolFilter,
-                                  localDepartmentFilter,
-                                  schoolNames,
-                                  departmentNames,
-                                  projectTitles,
-                                  hideFilters,
-                                ),
+                    backgroundColor:
+                        Colors.green, // Set the AppBar color to green
+                    automaticallyImplyLeading:
+                        false, // Remove the default back button
+                    actions: [
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Close the dialog
+                        },
+                      ),
+                    ],
+                  ),
+                  Expanded(
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height,
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Remove the title Text widget since it's now in the AppBar
+
+                          TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Search $title...',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                                borderSide: BorderSide.none,
                               ),
-                          ],
-                        ),
-                      ),
-                      onChanged: (value) {
-                        setDialogState(() {
-                          localSearchQuery = value;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: filteredItems.length,
-                        itemBuilder: (context, index) {
-                          final item = filteredItems[index];
-                          final usersName = item['users_firstname'];
-                          final role = item['role_name'];
-                          final projectTitle = item['Lesson'];
-                          final mode = item['Mode'];
-                          final schoolName = item['school_name'];
-                          final schoolPlace = item['school_country'];
-                          final departmentName = item['department_name'];
-
-                          // Check if the user status is 1 only if the title is not 'Schools'
-                          if (title != 'Schools' &&
-                              title != 'Folders' &&
-                              item['users_status'] != 1) {
-                            return const SizedBox
-                                .shrink(); // Skip this item if status is not 1
-                          }
-
-                          return Card(
-                            elevation: 2,
-                            margin: const EdgeInsets.symmetric(vertical: 8),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              filled: true,
+                              fillColor: Colors.grey[200],
+                              prefixIcon:
+                                  const Icon(Icons.search, color: Colors.green),
+                              suffixIcon: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  PopupMenuButton<String>(
+                                    icon: const Icon(Icons.sort,
+                                        color: Colors.green),
+                                    onSelected: (String value) {
+                                      setDialogState(() {
+                                        localSortOrder = value;
+                                      });
+                                    },
+                                    itemBuilder: (BuildContext context) => [
+                                      const PopupMenuItem(
+                                        value: 'all',
+                                        child: Text('All'),
+                                      ),
+                                      const PopupMenuItem(
+                                        value: 'asc',
+                                        child: Text('A-Z'),
+                                      ),
+                                      const PopupMenuItem(
+                                        value: 'desc',
+                                        child: Text('Z-A'),
+                                      ),
+                                    ],
+                                  ),
+                                  if (!hideFilters)
+                                    IconButton(
+                                      icon: const Icon(Icons.filter_list,
+                                          color: Colors.green),
+                                      onPressed: () => _showFilterDialog(
+                                        context,
+                                        (newSchoolFilter, newDepartmentFilter) {
+                                          setDialogState(() {
+                                            localSchoolFilter = newSchoolFilter;
+                                            localDepartmentFilter =
+                                                newDepartmentFilter;
+                                          });
+                                        },
+                                        localSchoolFilter,
+                                        localDepartmentFilter,
+                                        schoolNames,
+                                        departmentNames,
+                                        projectTitles,
+                                        hideFilters,
+                                      ),
+                                    ),
+                                ],
+                              ),
                             ),
-                            child: Stack(
-                              children: [
-                                ListTile(
-                                  contentPadding: const EdgeInsets.all(16),
-                                  leading: CircleAvatar(
-                                    backgroundColor: Colors.teal,
-                                    child: Text(
-                                      usersName?.isNotEmpty ?? false
-                                          ? usersName![0].toUpperCase()
-                                          : 'N', // Use 'N' for empty or null names
-                                      style:
-                                          const TextStyle(color: Colors.white),
-                                    ),
+                            onChanged: (value) {
+                              setDialogState(() {
+                                localSearchQuery = value;
+                              });
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: filteredItems.length,
+                              itemBuilder: (context, index) {
+                                final item = filteredItems[index];
+                                final usersName = item['users_firstname'];
+                                final role = item['role_name'];
+                                final projectTitle = item['Lesson'];
+                                final mode = item['Mode'];
+                                final schoolName = item['school_name'];
+                                final schoolPlace = item['school_country'];
+                                final departmentName = item['department_name'];
+
+                                // Check if the user status is 1 only if the title is not 'Schools'
+                                if (title != 'Schools' &&
+                                    title != 'Folders' &&
+                                    item['users_status'] != 1) {
+                                  return const SizedBox
+                                      .shrink(); // Skip this item if status is not 1
+                                }
+
+                                return Card(
+                                  elevation: 2,
+                                  margin:
+                                      const EdgeInsets.symmetric(vertical: 8),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                  title: Text(
-                                    usersName ??
-                                        projectTitle ??
-                                        schoolName ??
-                                        'No Name',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
-                                    ),
-                                  ),
-                                  subtitle: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                  child: Stack(
                                     children: [
-                                      if (role != null)
-                                        Text(
-                                          role,
-                                          style: TextStyle(
-                                            color: Colors.grey[600],
-                                            fontSize: 14,
+                                      ListTile(
+                                        contentPadding:
+                                            const EdgeInsets.all(16),
+                                        leading: CircleAvatar(
+                                          backgroundColor: Colors.green,
+                                          child: Text(
+                                            usersName?.isNotEmpty ?? false
+                                                ? usersName![0].toUpperCase()
+                                                : 'N', // Use 'N' for empty or null names
+                                            style: const TextStyle(
+                                                color: Colors.white),
                                           ),
                                         ),
-                                      if (projectTitle != null)
-                                        Text(
-                                          mode,
-                                          style: TextStyle(
-                                            color: Colors.grey[600],
-                                            fontSize: 14,
+                                        title: Text(
+                                          usersName ??
+                                              projectTitle ??
+                                              schoolName ??
+                                              'No Name',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 18,
                                           ),
                                         ),
-                                      // Always show school name if title is not 'Instructors'
-                                      if (title != 'Instructors' &&
-                                          schoolName != null)
-                                        Text(
-                                          schoolName.isNotEmpty
-                                              ? schoolPlace
-                                              : 'No School',
-                                          style: TextStyle(
-                                            color: Colors.grey[600],
-                                            fontSize: 14,
-                                          ),
+                                        subtitle: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            if (role != null)
+                                              Text(
+                                                role,
+                                                style: TextStyle(
+                                                  color: Colors.grey[600],
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                            if (projectTitle != null)
+                                              Text(
+                                                mode,
+                                                style: TextStyle(
+                                                  color: Colors.grey[600],
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                            // Always show school name if title is not 'Instructors'
+                                            if (title != 'Instructors' &&
+                                                schoolName != null)
+                                              Text(
+                                                schoolName.isNotEmpty
+                                                    ? schoolPlace
+                                                    : 'No School',
+                                                style: TextStyle(
+                                                  color: Colors.grey[600],
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                            // Show department name only for Schools
+                                            if (title == 'Schools' &&
+                                                departmentName != null)
+                                              Text(
+                                                departmentName.isNotEmpty
+                                                    ? departmentName
+                                                    : 'No Department',
+                                                style: TextStyle(
+                                                  color: Colors.grey[600],
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                          ],
                                         ),
-                                      // Show department name only for Schools
-                                      if (title == 'Schools' &&
-                                          departmentName != null)
-                                        Text(
-                                          departmentName.isNotEmpty
-                                              ? departmentName
-                                              : 'No Department',
-                                          style: TextStyle(
-                                            color: Colors.grey[600],
-                                            fontSize: 14,
+                                        onTap: () {
+                                          if (title == 'Folders') {
+                                            _showFolderDetails(context, item);
+                                          } else if (title == 'Schools') {
+                                            _showDepartmentDetails(
+                                                context, item);
+                                          }
+                                        },
+                                      ),
+                                      // Only show the delete button in 'User Accounts'
+                                      if (title == 'User Accounts')
+                                        Positioned(
+                                          top: 8,
+                                          right: 8,
+                                          child: IconButton(
+                                            icon: const Icon(
+                                                Icons.archive_outlined,
+                                                color: Colors.red),
+                                            onPressed: () {
+                                              _showConfirmationDialog(
+                                                  context, item['users_id']);
+                                            },
                                           ),
                                         ),
                                     ],
                                   ),
-                                  onTap: () {
-                                    if (title == 'Folders') {
-                                      _showFolderDetails(context, item);
-                                    } else if (title == 'Schools') {
-                                      _showDepartmentDetails(context, item);
-                                    }
-                                  },
-                                ),
-                                // Only show the delete button in 'User Accounts'
-                                if (title == 'User Accounts')
-                                  Positioned(
-                                    top: 8,
-                                    right: 8,
-                                    child: IconButton(
-                                      icon: const Icon(Icons.archive_outlined,
-                                          color: Colors.red),
-                                      onPressed: () {
-                                        _showConfirmationDialog(
-                                            context, item['users_id']);
-                                      },
-                                    ),
-                                  ),
-                              ],
+                                );
+                              },
                             ),
-                          );
-                        },
+                          ),
+                          const SizedBox(height: 16),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              child: const Text('Close'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        child: const Text('Close'),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             );
           },
@@ -859,7 +886,7 @@ class _DashboardsState extends State<Dashboards> {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.teal,
+                    color: Colors.green,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -969,7 +996,7 @@ class _DashboardsState extends State<Dashboards> {
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.teal,
+                color: Colors.green,
               ),
             ),
             const SizedBox(height: 8),
@@ -1416,9 +1443,18 @@ class _DashboardsState extends State<Dashboards> {
                     child: Column(
                       children: [
                         AppBar(
-                          title: const Text('Department Details'),
+                          title: const Text(
+                            'Department Details',
+                            style: TextStyle(
+                              fontWeight: FontWeight
+                                  .bold, // Set the desired font weight
+                              fontSize:
+                                  20, // Optional: adjust the font size if needed
+                              color: Colors.white, // Change text color to white
+                            ),
+                          ),
                           automaticallyImplyLeading: false,
-                          backgroundColor: Colors.teal,
+                          backgroundColor: Colors.green,
                           actions: [
                             IconButton(
                               icon: const Icon(Icons.close),
@@ -1426,11 +1462,14 @@ class _DashboardsState extends State<Dashboards> {
                                 _isDialogOpen = false;
                                 Navigator.of(context).pop();
                               },
-                            )
+                            ),
                           ],
                         ),
+                        const SizedBox(
+                          height: 7,
+                        ),
                         Padding(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.all(16.0),
                           child: TextField(
                             decoration: InputDecoration(
                               hintText: 'Search Departments...',
@@ -1441,7 +1480,7 @@ class _DashboardsState extends State<Dashboards> {
                               filled: true,
                               fillColor: Colors.grey[200],
                               prefixIcon:
-                                  const Icon(Icons.search, color: Colors.teal),
+                                  const Icon(Icons.search, color: Colors.green),
                             ),
                             onChanged: (value) {
                               setState(() {
@@ -1513,30 +1552,19 @@ class _DashboardsState extends State<Dashboards> {
                                                           '$departmentName',
                                                           style:
                                                               const TextStyle(
-                                                            fontSize: 15,
+                                                            fontSize: 17,
                                                             fontWeight:
                                                                 FontWeight.bold,
-                                                            color: Colors.black,
+                                                            color: Colors.white,
                                                           ),
                                                         ),
                                                         backgroundColor:
-                                                            Colors.teal,
-                                                        actions: [
-                                                          IconButton(
-                                                            icon: const Icon(
-                                                                Icons.close),
-                                                            onPressed: () {
-                                                              Navigator.of(
-                                                                      context)
-                                                                  .pop();
-                                                            },
-                                                          )
-                                                        ],
+                                                            Colors.green,
                                                       ),
                                                       Padding(
                                                         padding:
                                                             const EdgeInsets
-                                                                .all(8.0),
+                                                                .all(16.0),
                                                         child: TextField(
                                                           decoration:
                                                               InputDecoration(
@@ -1560,7 +1588,7 @@ class _DashboardsState extends State<Dashboards> {
                                                                     Icons
                                                                         .search,
                                                                     color: Colors
-                                                                        .teal),
+                                                                        .green),
                                                           ),
                                                           onChanged: (value) {
                                                             setState(() {
@@ -1581,196 +1609,197 @@ class _DashboardsState extends State<Dashboards> {
                                                                 filteredUsers[
                                                                     index];
 
-                                                            return Container(
+                                                            return Card(
+                                                              color: Colors
+                                                                      .grey[
+                                                                  100], // Dark green background for the card
                                                               margin:
                                                                   const EdgeInsets
                                                                       .symmetric(
                                                                       vertical:
-                                                                          5,
+                                                                          6,
                                                                       horizontal:
-                                                                          10),
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                color: Colors
-                                                                    .blue
-                                                                    .shade50,
+                                                                          22),
+                                                              shape:
+                                                                  RoundedRectangleBorder(
                                                                 borderRadius:
                                                                     BorderRadius
                                                                         .circular(
-                                                                            10),
-                                                                boxShadow: [
-                                                                  BoxShadow(
-                                                                    color: Colors
-                                                                        .grey
-                                                                        .withOpacity(
-                                                                            0.5),
-                                                                    spreadRadius:
-                                                                        2,
-                                                                    blurRadius:
-                                                                        5,
-                                                                    offset:
-                                                                        const Offset(
-                                                                            0,
-                                                                            3),
-                                                                  ),
-                                                                ],
+                                                                            12), // Rounded corners
                                                               ),
-                                                              child: ListTile(
-                                                                onTap:
-                                                                    () async {
-                                                                  final usersId =
-                                                                      user[
-                                                                          'users_id'];
+                                                              child: SizedBox(
+                                                                height: 80,
+                                                                child: Center(
+                                                                  child:
+                                                                      ListTile(
+                                                                    onTap:
+                                                                        () async {
+                                                                      final usersId =
+                                                                          user[
+                                                                              'users_id'];
 
-                                                                  final jsondata =
-                                                                      jsonEncode({
-                                                                    'users_id':
-                                                                        usersId,
-                                                                  });
+                                                                      final jsondata =
+                                                                          jsonEncode({
+                                                                        'users_id':
+                                                                            usersId,
+                                                                      });
 
-                                                                  final projectResponse =
-                                                                      await http
-                                                                          .post(
-                                                                    Uri.parse(
-                                                                        '${baseUrl}view.php'),
-                                                                    body: {
-                                                                      "json":
-                                                                          jsondata,
-                                                                      "operation":
-                                                                          "getFolderId",
-                                                                    },
-                                                                  );
-
-                                                                  if (projectResponse
-                                                                          .statusCode ==
-                                                                      200) {
-                                                                    final projectData =
-                                                                        json.decode(
-                                                                            projectResponse.body);
-                                                                    if (projectData
-                                                                        is List) {
-                                                                      showDialog(
-                                                                        context:
-                                                                            context,
-                                                                        builder:
-                                                                            (BuildContext
-                                                                                context) {
-                                                                          return Dialog(
-                                                                            insetPadding:
-                                                                                EdgeInsets.zero,
-                                                                            child:
-                                                                                SizedBox(
-                                                                              width: MediaQuery.of(context).size.width,
-                                                                              height: MediaQuery.of(context).size.height,
-                                                                              child: Column(
-                                                                                children: [
-                                                                                  AppBar(
-                                                                                    title: Text(
-                                                                                      '${user['users_firstname'] ?? 'N/A'} ${user['users_lastname'] ?? 'N/A'}',
-                                                                                      style: const TextStyle(
-                                                                                        fontSize: 18,
-                                                                                        fontWeight: FontWeight.bold,
-                                                                                        color: Colors.greenAccent,
-                                                                                      ),
-                                                                                    ),
-                                                                                    backgroundColor: Colors.teal,
-                                                                                    actions: [
-                                                                                      IconButton(
-                                                                                        icon: const Icon(Icons.picture_as_pdf_rounded),
-                                                                                        onPressed: () {
-                                                                                          _printAllLessonsPDF(projectData); // New function to print all lessons
-                                                                                        },
-                                                                                      )
-                                                                                    ],
-                                                                                  ),
-                                                                                  Expanded(
-                                                                                    child: ListView.builder(
-                                                                                      itemCount: projectData.length,
-                                                                                      itemBuilder: (context, index) {
-                                                                                        final project = projectData[index];
-
-                                                                                        return GestureDetector(
-                                                                                          onTap: () {
-                                                                                            _showFolderDetails(context, project);
-                                                                                          },
-                                                                                          child: Container(
-                                                                                            margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                                                                                            padding: const EdgeInsets.all(16),
-                                                                                            decoration: BoxDecoration(
-                                                                                              color: Colors.white,
-                                                                                              borderRadius: BorderRadius.circular(12),
-                                                                                              boxShadow: [
-                                                                                                BoxShadow(
-                                                                                                  color: Colors.grey.withOpacity(0.5),
-                                                                                                  spreadRadius: 2,
-                                                                                                  blurRadius: 5,
-                                                                                                  offset: const Offset(0, 3),
-                                                                                                ),
-                                                                                              ],
-                                                                                            ),
-                                                                                            child: Row(
-                                                                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                                              children: [
-                                                                                                Text(
-                                                                                                  project['Lesson'] ?? 'N/A',
-                                                                                                  style: const TextStyle(
-                                                                                                    fontSize: 16,
-                                                                                                    color: Colors.black,
-                                                                                                    fontWeight: FontWeight.bold,
-                                                                                                  ),
-                                                                                                ),
-                                                                                                const Icon(
-                                                                                                  Icons.arrow_forward_ios,
-                                                                                                  size: 18,
-                                                                                                  color: Colors.grey,
-                                                                                                ),
-                                                                                              ],
-                                                                                            ),
-                                                                                          ),
-                                                                                        );
-                                                                                      },
-                                                                                    ),
-                                                                                  )
-                                                                                ],
-                                                                              ),
-                                                                            ),
-                                                                          );
+                                                                      final projectResponse =
+                                                                          await http
+                                                                              .post(
+                                                                        Uri.parse(
+                                                                            '${baseUrl}view.php'),
+                                                                        body: {
+                                                                          "json":
+                                                                              jsondata,
+                                                                          "operation":
+                                                                              "getFolderId",
                                                                         },
                                                                       );
-                                                                    }
-                                                                  }
-                                                                },
-                                                                title: Text(
-                                                                  '${user['users_lastname'] ?? 'N/A'}, ${user['users_firstname'] ?? 'N/A'}',
-                                                                  style:
-                                                                      const TextStyle(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                    fontSize:
-                                                                        16,
-                                                                    color: Colors
-                                                                        .black87,
+
+                                                                      if (projectResponse
+                                                                              .statusCode ==
+                                                                          200) {
+                                                                        final projectData =
+                                                                            json.decode(projectResponse.body);
+                                                                        if (projectData
+                                                                            is List) {
+                                                                          showDialog(
+                                                                            context:
+                                                                                context,
+                                                                            builder:
+                                                                                (BuildContext context) {
+                                                                              return Dialog(
+                                                                                insetPadding: EdgeInsets.zero,
+                                                                                child: SizedBox(
+                                                                                  width: MediaQuery.of(context).size.width,
+                                                                                  height: MediaQuery.of(context).size.height,
+                                                                                  child: Column(
+                                                                                    children: [
+                                                                                      AppBar(
+                                                                                        title: Text(
+                                                                                          '${user['users_firstname'] ?? 'N/A'} ${user['users_lastname'] ?? 'N/A'}',
+                                                                                          style: const TextStyle(
+                                                                                            fontSize: 20,
+                                                                                            fontWeight: FontWeight.bold,
+                                                                                            color: Colors.white,
+                                                                                          ),
+                                                                                        ),
+                                                                                        backgroundColor: Colors.green,
+                                                                                        actions: [
+                                                                                          IconButton(
+                                                                                            icon: const Icon(Icons.picture_as_pdf_rounded),
+                                                                                            onPressed: () {
+                                                                                              _printAllLessonsPDF(projectData); // New function to print all lessons
+                                                                                            },
+                                                                                          )
+                                                                                        ],
+                                                                                      ),
+                                                                                      const SizedBox(
+                                                                                        height: 15,
+                                                                                      ),
+                                                                                      Expanded(
+                                                                                        child: ListView.builder(
+                                                                                          itemCount: projectData.length,
+                                                                                          itemBuilder: (context, index) {
+                                                                                            final project = projectData[index];
+
+                                                                                            return GestureDetector(
+                                                                                              onTap: () {
+                                                                                                _showFolderDetails(context, project);
+                                                                                              },
+                                                                                              child: Container(
+                                                                                                height: 78, // Set a fixed height for the card
+                                                                                                margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20), // Adjusted margin for spacing
+                                                                                                padding: const EdgeInsets.all(20), // Increased padding for more space inside the card
+                                                                                                decoration: BoxDecoration(
+                                                                                                  color: Colors.grey[100],
+                                                                                                  borderRadius: BorderRadius.circular(12),
+                                                                                                  boxShadow: [
+                                                                                                    BoxShadow(
+                                                                                                      color: Colors.grey.withOpacity(0.5),
+                                                                                                      spreadRadius: 2,
+                                                                                                      blurRadius: 5,
+                                                                                                      offset: const Offset(0, 3),
+                                                                                                    ),
+                                                                                                  ],
+                                                                                                ),
+                                                                                                child: Row(
+                                                                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                                                  children: [
+                                                                                                    Row(
+                                                                                                      // New Row to combine icon and text
+                                                                                                      children: [
+                                                                                                        const Icon(
+                                                                                                          Icons.folder, // Replace with the appropriate icon for project title
+                                                                                                          size: 35, // Adjust size as needed
+                                                                                                          color: Colors.green, // Change color if desired
+                                                                                                        ),
+                                                                                                        const SizedBox(width: 15), // Space between icon and text
+                                                                                                        Text(
+                                                                                                          project['Lesson'] ?? 'N/A',
+                                                                                                          style: const TextStyle(
+                                                                                                            fontSize: 16, // Slightly larger font size
+                                                                                                            color: Colors.black,
+                                                                                                            fontWeight: FontWeight.bold,
+                                                                                                          ),
+                                                                                                        ),
+                                                                                                      ],
+                                                                                                    ),
+                                                                                                    const Icon(
+                                                                                                      Icons.arrow_forward_ios,
+                                                                                                      size: 20, // Slightly larger icon size
+                                                                                                      color: Colors.grey,
+                                                                                                    ),
+                                                                                                  ],
+                                                                                                ),
+                                                                                              ),
+                                                                                            );
+                                                                                          },
+                                                                                        ),
+                                                                                      ),
+                                                                                    ],
+                                                                                  ),
+                                                                                ),
+                                                                              );
+                                                                            },
+                                                                          );
+                                                                        }
+                                                                      }
+                                                                    },
+                                                                    title: Text(
+                                                                      '${user['users_lastname'] ?? 'N/A'}, ${user['users_firstname'] ?? 'N/A'}',
+                                                                      style:
+                                                                          const TextStyle(
+                                                                        fontWeight:
+                                                                            FontWeight.w600,
+                                                                        fontSize:
+                                                                            16,
+                                                                        color: Colors
+                                                                            .black,
+                                                                      ),
+                                                                    ),
+                                                                    leading:
+                                                                        const CircleAvatar(
+                                                                      backgroundColor:
+                                                                          Colors
+                                                                              .green,
+                                                                      child:
+                                                                          Icon(
+                                                                        Icons
+                                                                            .person,
+                                                                        color: Colors
+                                                                            .white,
+                                                                      ),
+                                                                    ),
+                                                                    trailing:
+                                                                        const Icon(
+                                                                      Icons
+                                                                          .info_outline,
+                                                                      color: Colors
+                                                                          .black,
+                                                                    ),
                                                                   ),
-                                                                ),
-                                                                leading:
-                                                                    const CircleAvatar(
-                                                                  backgroundColor:
-                                                                      Colors
-                                                                          .blueAccent,
-                                                                  child: Icon(
-                                                                    Icons
-                                                                        .person,
-                                                                    color: Colors
-                                                                        .white,
-                                                                  ),
-                                                                ),
-                                                                trailing:
-                                                                    const Icon(
-                                                                  Icons
-                                                                      .info_outline,
-                                                                  color: Colors
-                                                                      .blueAccent,
                                                                 ),
                                                               ),
                                                             );
@@ -1789,19 +1818,44 @@ class _DashboardsState extends State<Dashboards> {
                                   }
                                 },
                                 child: Card(
-                                  margin:
-                                      const EdgeInsets.symmetric(vertical: 4),
+                                  color: Colors.grey[
+                                      100], // Dark green background for the card
+                                  margin: const EdgeInsets.symmetric(
+                                      vertical: 6, horizontal: 22),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                        12), // Rounded corners
+                                  ),
                                   child: SizedBox(
-                                    height: 75,
-                                    child: ListTile(
-                                      leading: const Icon(Icons.group),
-                                      title: Text(
-                                        department['department_name'] ?? 'N/A',
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
+                                    height: 120,
+                                    child: Center(
+                                      child: ListTile(
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 16),
+                                        leading: const Icon(
+                                          Icons.group,
+                                          color: Colors
+                                              .green, // Accent color for icon
+                                          size: 50,
+                                        ),
+                                        title: Text(
+                                          department['department_name'] ??
+                                              'N/A',
+                                          style: const TextStyle(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 18,
+                                          ),
+                                        ),
+                                        subtitle: const Text(
+                                          'Tap to view users',
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 14,
+                                          ),
+                                        ),
                                       ),
-                                      subtitle: const Text('Tap to view users',
-                                          style: TextStyle(color: Colors.grey)),
                                     ),
                                   ),
                                 ),
@@ -1944,7 +1998,7 @@ class _DashboardsState extends State<Dashboards> {
                                 'User Accounts',
                                 userCount.toString(),
                                 Icons.person,
-                                Colors.blue,
+                                Colors.green,
                                 () => _showList(context, 'User Accounts', users,
                                     'users_firstname', 'role_name'),
                               ),
