@@ -716,6 +716,7 @@ ORDER BY
             // Your modified SQL query goes here
             $sql = "SELECT 
     tbl_project.project_id,
+    tbl_project_cards.project_cards_id,
     GROUP_CONCAT(DISTINCT tbl_module_master.module_master_name ORDER BY tbl_module_master.module_master_name SEPARATOR ', ') AS Mode, 
     GROUP_CONCAT(DISTINCT tbl_activities_header.activities_header_duration ORDER BY tbl_activities_header.activities_header_duration SEPARATOR ', ') AS Duration,
     GROUP_CONCAT(DISTINCT tbl_activities_details.activities_details_content ORDER BY tbl_activities_details.activities_details_content SEPARATOR ', ') AS Activity, 
@@ -734,6 +735,8 @@ FROM
     tbl_folder
 LEFT JOIN
     tbl_project ON tbl_folder.projectId = tbl_project.project_id
+LEFT JOIN 
+    tbl_project_cards ON tbl_folder.project_cardsId = tbl_project_cards.project_cards_id
 LEFT JOIN 
     tbl_project_modules ON tbl_folder.project_moduleId = tbl_project_modules.project_modules_id
 LEFT JOIN 
@@ -769,6 +772,8 @@ GROUP BY
             $formattedResult = [];
             foreach ($returnValue as $row) {
                 $formattedResult[] = [
+                    'ProjectID' => $row["project_id"],
+                    'ProjectCardsID' => $row["project_cards_id"],
                     'Mode' => $row['Mode'],
                     'Duration' => $row['Duration'],
                     'Activity' => $row['Activity'],
@@ -819,17 +824,17 @@ GROUP BY
                 LEFT JOIN tbl_instruction ON tbl_folder.instructionId = tbl_instruction.instruction_id
                 LEFT JOIN tbl_coach_detail ON tbl_folder.coach_detailsId = tbl_coach_detail.coach_detail_id
                 WHERE tbl_folder.projectId = :projectId";
-    
+
             $stmt = $this->pdo->prepare($sql);
             $stmt->bindParam(':projectId', $projectId, PDO::PARAM_INT);
             $stmt->execute();
-    
+
             $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
             if (empty($returnValue)) {
                 return json_encode(['success' => false, 'message' => 'No data found']);
             }
-    
+
             // Map data into structured format
             $structuredData = [];
             foreach ($returnValue as $row) {
@@ -848,7 +853,7 @@ GROUP BY
                     'CoachDetailRemarks' => $row['CoachDetailRemarks']
                 ];
             }
-    
+
             return json_encode(['success' => true, 'data' => $structuredData]);
         } catch (PDOException $e) {
             error_log("Database error: " . $e->getMessage());
@@ -1188,9 +1193,9 @@ switch ($operation) {
     case "getAllProjects":
         echo $get->getAllProjects();
         break;
-        case "getExcel":
-            echo $get->getExcel();
-            break;
+    case "getExcel":
+        echo $get->getExcel();
+        break;
     default:
         echo json_encode(['error' => 'Invalid operation']);
         break;

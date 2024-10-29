@@ -42,9 +42,13 @@ class Dashboards extends StatefulWidget {
 }
 
 class _DashboardsState extends State<Dashboards> {
+  List<Map<String, dynamic>>? cardData;
+  List<Map<String, dynamic>>? moduleData;
+
   int projectCount = 0;
   String remarks = '';
   List<dynamic> folders = [];
+  List<dynamic> foldersPDF = [];
   int userCount = 0;
   List<dynamic> users = [];
   int schoolCount = 0;
@@ -53,10 +57,6 @@ class _DashboardsState extends State<Dashboards> {
   List<dynamic> departments = [];
   int instructorCount = 0;
   List<dynamic> instructors = [];
-  final String _searchQuery = '';
-  final String _sortOrder = 'all';
-  final String _schoolFilter = 'all';
-  final String _departmentFilter = 'all';
 
   bool _isDialogOpen = false;
 
@@ -64,6 +64,7 @@ class _DashboardsState extends State<Dashboards> {
   void initState() {
     super.initState();
     fetchFolders();
+    fetchFoldersPDF();
     fetchUsers();
     fetchSchools();
     fetchInstructors();
@@ -102,6 +103,207 @@ class _DashboardsState extends State<Dashboards> {
       }
     } catch (e) {
       print('Error fetching folders: $e');
+    }
+  }
+
+  Future<void> _fetchCardData(String projectId) async {
+    if (folders.isNotEmpty) {
+      try {
+        // Make the HTTP POST request to your API
+        final response = await http.post(
+          Uri.parse('${baseUrl}masterlist.php'),
+          body: {
+            'operation': 'getCards1',
+            'projectId': projectId.toString(),
+          },
+        );
+
+        // Check if the response status is OK (HTTP 200)
+        if (response.statusCode == 200) {
+          final dynamic data = json.decode(response.body);
+
+          // Check if the response is a map (expected JSON format)
+          if (data is Map<String, dynamic>) {
+            if (data['success'] == true && data['data'] != null) {
+              setState(() {
+                cardData = List<Map<String, dynamic>>.from(
+                    data['data']); // Store multiple cards
+              });
+              print('Fetched Card Data:');
+              cardData?.forEach((card) {
+                print('Card Title: ${card['cards_title']}');
+                print('Card Content: ${card['cards_content']}');
+              });
+            } else {
+              print('No data found');
+              setState(() {
+                cardData = null;
+              });
+            }
+          } else {
+            // Handle unexpected data types
+            print('Unexpected data format: ${data.runtimeType}');
+            print('Data content: $data');
+            setState(() {
+              cardData = null;
+            });
+          }
+        } else {
+          // Log failure to fetch data with response details
+          print('Failed to fetch card data');
+          print('Status code: ${response.statusCode}');
+          print('Response body: ${response.body}');
+          setState(() {
+            cardData = null;
+          });
+        }
+      } catch (e) {
+        // Handle and log exceptions
+        print('Database error occurred: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Database error occurred: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _fetchProject(String projectId) async {
+    if (folders.isNotEmpty) {
+      print('Fetching project data for projectId: $projectId');
+
+      try {
+        final response = await http.post(
+          Uri.parse('${baseUrl}masterlist.php'),
+          body: {
+            'operation': 'getFolders',
+            'projectId': projectId.toString(),
+          },
+        );
+
+        print('Response body: ${response.body}');
+
+        if (response.statusCode == 200) {
+          final dynamic data = json.decode(response.body);
+
+          if (data is Map<String, dynamic>) {
+            if (data['success'] == true && data['folders'] != null) {
+              setState(() {
+                moduleData = List<Map<String, dynamic>>.from(data['folders']);
+                // Extract and store IDs
+                for (var module in moduleData!) {
+                  print('Module ID: ${module['module_master_id']}');
+                  print('Activity ID: ${module['activities_details_id']}');
+                  // Add more IDs as needed
+                }
+              });
+              print('Fetched Project Data:');
+              moduleData?.forEach((module) {
+                print('Module Name: ${module['module_master_name']}');
+                print('Module Details: ${module['module_master_name']}');
+              });
+            } else {
+              print('No data found or success flag is false');
+              setState(() {
+                moduleData = null;
+              });
+            }
+          } else {
+            print('Unexpected data format: ${data.runtimeType}');
+            print('Data content: $data');
+            setState(() {
+              moduleData = null;
+            });
+          }
+        } else {
+          print('Failed to fetch project data');
+          print('Status code: ${response.statusCode}');
+          print('Response body: ${response.body}');
+          setState(() {
+            moduleData = null;
+          });
+        }
+      } catch (e) {
+        print('Database error occurred: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Database error occurred: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> fetchFoldersPDF() async {
+    try {
+      final response = await http.post(
+        Uri.parse('${baseUrl}masterlist.php'),
+        body: {'operation': 'getFolder'},
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+
+        if (data['folders'] != null && data['folders'] is List) {
+          setState(() {
+            foldersPDF = List<Map<String, dynamic>>.from(data['folders']
+                .map((item) => {
+                      'folder_id': item['id'] ?? '',
+                      'activity_id': item['activities_details_id'] ?? '',
+                      'project_subject_code':
+                          item['project_subject_code'] ?? '',
+                      'project_subject_description':
+                          item['project_subject_description'] ?? '',
+                      'project_title': item['project_title'] ?? '',
+                      'project_description': item['project_description'] ?? '',
+                      'project_start_date': item['project_start_date'] ?? '',
+                      'project_end_date': item['project_end_date'] ?? '',
+                      'module_master_name': item['module_master_name'] ?? '',
+                      'module_master_id': item['module_master_id'] ?? '',
+                      'activities_details_content':
+                          item['activities_details_content'] ?? '',
+                      'activities_header_duration':
+                          item['activities_header_duration'] ?? '',
+                      'cards_title': item['cards_title'] ?? '',
+                      'outputs_content': item['outputs_content'] ?? '',
+                      'instruction_content': item['instruction_content'] ?? '',
+                      'coach_detail_content':
+                          item['coach_detail_content'] ?? '',
+                      'project_cardsId': item['project_cardsId'] is List
+                          ? item['project_cardsId']
+                          : [],
+                      'cards_content': item['cards_content'] ?? '',
+                      'back_cards_header_title':
+                          item['back_cards_header_title'] ?? '',
+                      'back_content_title': item['back_content_title'] ?? '',
+                      'back_content': item['back_content'] ?? '',
+                      'projectId': item['projectId'] ?? '',
+                      'back_cards_header_frontId':
+                          item['back_cards_header_frontId'] ?? '',
+                      'activities_details_remarks':
+                          item['activities_details_remarks'] ?? '',
+                      'coach_detail_renarks':
+                          item['coach_detail_renarks'] ?? '',
+                      'outputs_remarks': item['outputs_remarks'] ?? '',
+                      'project_cards_remarks':
+                          item['project_cards_renarks'] ?? '',
+                      'instruction_remarks': item['instruction_remarks'] ?? '',
+                      'coach_detail_id': item['coach_detail_id'] ?? '',
+                      'instruction_id': item['instruction_id'] ?? '',
+                      'output_id': item['outputs_id'] ?? '',
+                    })
+                .toList());
+          });
+        } else {
+          print('Invalid data format. Response: ${response.body}');
+          throw Exception('Invalid data format: ${response.body}');
+        }
+      } else {
+        throw Exception(
+            'Failed to load folders. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching folders: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error fetching folders: ${e.toString()}')),
+      );
     }
   }
 
@@ -581,7 +783,6 @@ class _DashboardsState extends State<Dashboards> {
                                   onTap: () {
                                     if (title == 'Folders') {
                                       _showFolderDetails(context, item);
-                                      print("Title: Good, Item: $item");
                                     } else if (title == 'Schools') {
                                       _showDepartmentDetails(context, item);
                                     }
@@ -628,8 +829,14 @@ class _DashboardsState extends State<Dashboards> {
   }
 
   void _showFolderDetails(BuildContext context, dynamic folder) {
-    // Debugging: Print the folder data to check its structure
-    print('Folder data: $folder');
+    // Find the matching item in foldersPDF using "Lesson" and "project_title"
+    var matchingPDF = foldersPDF.cast<Map<String, dynamic>>().firstWhere(
+          (pdf) => pdf['project_title'] == folder['Lesson'],
+          orElse: () => {}, // Default to an empty map if no match
+        );
+
+    // Check if matchingPDF is actually a match
+    bool isMatchFound = matchingPDF.isNotEmpty;
 
     showDialog(
       context: context,
@@ -696,7 +903,28 @@ class _DashboardsState extends State<Dashboards> {
                         children: [
                           ShadButton(
                             child: const Text('Print PDF'),
-                            onPressed: () => _printFolderDetailsPDF(folder),
+                            onPressed: isMatchFound
+                                ? () async {
+                                    // Extract project ID and ProjectCardsID from the matching PDF
+                                    final projectId =
+                                        matchingPDF['projectId'] ??
+                                            matchingPDF['project_id'];
+
+                                    // Ensure that projectrId and projectCardsIds are not null
+                                    if (projectId != null) {
+                                      // Fetch project and card data using the extracted project ID and ProjectCardsID
+                                      await _fetchProject(projectId.toString());
+                                      await _fetchCardData(
+                                          projectId.toString());
+
+                                      // After fetching data, call the PDF printing function
+                                      _printFolderDetailsPDF(
+                                          context, matchingPDF);
+                                    } else {
+                                      print("Project ID or Card IDs not found");
+                                    }
+                                  }
+                                : null, // Disable if no match
                           ),
                           ShadButton(
                             onPressed: () => _generateExcel(folder),
@@ -782,133 +1010,214 @@ class _DashboardsState extends State<Dashboards> {
     return field?.toString() ?? 'N/A';
   }
 
-  Future<void> _printFolderDetailsPDF(dynamic folder) async {
+  // Helper function to format data in bullet form with new lines
+  String _filterData(String? data) {
+    if (data == null) {
+      return '';
+    }
+    // Remove the array-like format and split into individual items
+    List<String> items = data.replaceAll(RegExp(r'^\["|"\]$'), '').split('","');
+
+    // Prepend a bullet point to each item and join them with new lines
+    return items
+        .map((item) => '- $item')
+        .join('\n\n'); // Added extra \n for 1.5 spacing
+  }
+
+  Future<void> _printFolderDetailsPDF(
+      BuildContext context, dynamic foldersPDF) async {
     final pdf = pw.Document();
 
+    // Add the cover page with project details
     pdf.addPage(
       pw.Page(
-        build: (pw.Context context) => pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Text('MY DESIGN THINKING PLAN',
-                style:
-                    pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
-            pw.SizedBox(height: 20),
-            _buildBasicInfoTable(folder),
-            pw.SizedBox(height: 20),
-            _buildDetailedInfoTable(folder),
-          ],
-        ),
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Header(
+                level: 0,
+                child: pw.Center(
+                  child: pw.Text('MY DESIGN THINKING PLAN',
+                      style: pw.TextStyle(
+                          fontSize: 24, fontWeight: pw.FontWeight.bold)),
+                ),
+              ),
+              pw.SizedBox(height: 20),
+              pw.Table(
+                border: pw.TableBorder.all(),
+                columnWidths: {
+                  0: const pw.FlexColumnWidth(1),
+                  1: const pw.FlexColumnWidth(2),
+                },
+                children: [
+                  _buildPdfTableRow(
+                      'Project', foldersPDF['project_title'], null),
+                  _buildPdfTableRow('Project Description',
+                      foldersPDF['project_subject_description'], null),
+                  _buildPdfTableRow(
+                      'Start Date', foldersPDF['project_start_date'], null),
+                  _buildPdfTableRow(
+                      'End Date', foldersPDF['project_end_date'], null),
+                ],
+              ),
+            ],
+          );
+        },
       ),
     );
 
-    if (kIsWeb) {
-      // For web, create a Blob and download the PDF
-      final bytes = await pdf.save();
-      final blob = html.Blob([bytes], 'application/pdf');
-      final url = html.Url.createObjectUrlFromBlob(blob);
-      final anchor = html.AnchorElement(href: url)
-        ..setAttribute('download', 'folder_details.pdf')
-        ..click();
-      html.Url.revokeObjectUrl(url);
-    } else {
-      // For mobile/desktop, use the existing printing method
-      await Printing.layoutPdf(
-        onLayout: (PdfPageFormat format) async => pdf.save(),
+    // Add each module on a separate page
+    for (var module in moduleData ?? []) {
+      pdf.addPage(
+        pw.Page(
+          build: (pw.Context context) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                // Module Title
+                pw.Text(
+                  module['module_master_name'] ?? '',
+                  style: pw.TextStyle(
+                      fontSize: 20, fontWeight: pw.FontWeight.bold),
+                ),
+                pw.SizedBox(height: 20),
+
+                // Module Content Table
+                pw.Table(
+                  border: pw.TableBorder.all(),
+                  columnWidths: {
+                    0: const pw.FlexColumnWidth(1),
+                    1: const pw.FlexColumnWidth(2),
+                    2: const pw.FlexColumnWidth(1),
+                  },
+                  children: [
+                    // Table Header
+                    pw.TableRow(
+                      decoration:
+                          const pw.BoxDecoration(color: PdfColors.grey300),
+                      children: [
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Field',
+                              style:
+                                  pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Details',
+                              style:
+                                  pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text('Remarks',
+                              style:
+                                  pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+                    // Activities
+                    _buildPdfTableRow(
+                      'What activities will my students do?',
+                      _filterData(module['activities_details_content']),
+                      _filterData(module['activities_details_remarks']),
+                    ),
+                    // Method Cards
+                    _buildPdfTableRow(
+                      'What two (2) method cards will my students use?',
+                      cardData
+                          ?.where((card) =>
+                              card['project_moduleId'] ==
+                              module['project_moduleId'])
+                          .map((card) => '- ${card['cards_title']}')
+                          .join('\n'),
+                      _filterData(foldersPDF['project_cards_renarks']),
+                    ),
+                    // Duration
+                    _buildPdfTableRow(
+                      'How long will this activity take?',
+                      _filterData(module['activities_header_duration']),
+                      null,
+                    ),
+                    // Outputs
+                    _buildPdfTableRow(
+                      'What are the expected outputs?',
+                      _filterData(module['outputs_content']),
+                      _filterData(module['outputs_remarks']),
+                    ),
+                    // Instructions
+                    _buildPdfTableRow(
+                      'What instructions will I give my students?',
+                      _filterData(module['instruction_content']),
+                      _filterData(module['instruction_remarks']),
+                    ),
+                    // Coaching
+                    _buildPdfTableRow(
+                      'How can I coach my students while doing this activity?',
+                      _filterData(module['coach_detail_content']),
+                      _filterData(module['coach_detail_renarks']),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
       );
+    }
+
+    try {
+      if (kIsWeb) {
+        final bytes = await pdf.save();
+        final blob = html.Blob([bytes], 'application/pdf');
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement(href: url)
+          ..setAttribute('download',
+              '${foldersPDF['project_title'] ?? 'project'}_details.pdf')
+          ..click();
+        html.Url.revokeObjectUrl(url);
+      } else {
+        await Printing.layoutPdf(
+          onLayout: (PdfPageFormat format) async => pdf.save(),
+        );
+      }
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(content: Text('PDF generated successfully')),
+      // );
+    } catch (e) {
+      print('Error generating PDF: $e');
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text('Failed to generate PDF: $e')),
+      // );
     }
   }
 
-  pw.Widget _buildBasicInfoTable(dynamic folder) {
-    return pw.Table(
-      border: pw.TableBorder.all(),
-      children: [
-        _buildTableHeader(),
-        _buildPDFTableRow('Project', folder['Lesson'] ?? 'N/A', ''),
-        _buildPDFTableRow(
-            'Project Description', folder['ProjectDescription'] ?? 'N/A', ''),
-        _buildPDFTableRow('Start Date', folder['StartDate'] ?? 'N/A', ''),
-        _buildPDFTableRow('End Date', folder['EndDate'] ?? 'N/A', ''),
-      ],
-    );
-  }
-
-  pw.Widget _buildDetailedInfoTable(dynamic folder) {
-    return pw.Table(
-      border: pw.TableBorder.all(),
-      children: [
-        _buildTableHeader(),
-        _buildPDFTableRow('Module', _formatAsBulletList(folder['Mode']), ''),
-        _buildPDFTableRow('How long will this activity take?',
-            _formatAsBulletList(folder['Duration']), ''),
-        _buildPDFTableRow(
-            'What activity/ies will my students do?',
-            _formatAsBulletList(folder['Activity']),
-            folder['ActivityRemarks'] ?? ''),
-        _buildPDFTableRow('What two (2) method cards will my students use?',
-            _formatAsBulletList(folder['Lesson']), ''),
-        _buildPDFTableRow(
-            'What are the expected outputs?',
-            _formatAsBulletList(folder['Output']),
-            folder['OutputRemarks'] ?? ''),
-        _buildPDFTableRow(
-            'What instructions will I give my students?',
-            _formatAsBulletList(folder['Instruction']),
-            folder['InstructionRemarks'] ?? ''),
-        _buildPDFTableRow(
-            'How can I coach my students while doing this activity?',
-            _formatAsBulletList(folder['CoachDetail']),
-            folder['CoachDetailRemarks'] ?? ''),
-      ],
-    );
-  }
-
-  pw.TableRow _buildTableHeader() {
+  // Helper method for building PDF table rows
+  pw.TableRow _buildPdfTableRow(
+      String field, String? content, String? remarks) {
     return pw.TableRow(
       children: [
         pw.Padding(
-          padding: const pw.EdgeInsets.all(5),
-          child:
-              pw.Text('', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+          padding: const pw.EdgeInsets.all(8),
+          child: pw.Text(field),
         ),
         pw.Padding(
-          padding: const pw.EdgeInsets.all(5),
-          child:
-              pw.Text('', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+          padding: const pw.EdgeInsets.all(8),
+          child: pw.Text(
+            content ?? 'Not specified',
+            style: const pw.TextStyle(
+              lineSpacing: 1.5, // Line spacing for content
+            ),
+          ),
         ),
         pw.Padding(
-          padding: const pw.EdgeInsets.all(5),
-          child: pw.Text('Remarks',
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-        ),
-      ],
-    );
-  }
-
-  pw.TableRow _buildPDFTableRow(
-      String label, dynamic value, String remarksValue) {
-    return pw.TableRow(
-      children: [
-        pw.Expanded(
-          flex: 2,
-          child: pw.Padding(
-            padding: const pw.EdgeInsets.all(5),
-            child: pw.Text(label),
-          ),
-        ),
-        pw.Expanded(
-          flex: 5,
-          child: pw.Padding(
-            padding: const pw.EdgeInsets.all(1),
-            child: _buildMultiLineRichText(
-                value.toString()), // Use RichText function
-          ),
-        ),
-        pw.Expanded(
-          flex: 3,
-          child: pw.Padding(
-            padding: const pw.EdgeInsets.all(5),
-            child: pw.Text(remarksValue),
+          padding: const pw.EdgeInsets.all(8),
+          child: pw.Text(
+            remarks ?? '-',
+            style: const pw.TextStyle(
+              lineSpacing: 1.5, // Line spacing for remarks
+            ),
           ),
         ),
       ],
