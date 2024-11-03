@@ -353,7 +353,8 @@ class FolderDetailPage extends StatefulWidget {
 }
 
 class _FolderDetailPageState extends State<FolderDetailPage> {
-  List<Map<String, dynamic>>? cardData; // Change to List to hold multiple carFds
+  List<Map<String, dynamic>>?
+      cardData; // Change to List to hold multiple carFds
   List<Map<String, dynamic>>? moduleData;
   List<Map<String, dynamic>>? ActData;
   List<Map<String, dynamic>>? InsData;
@@ -534,48 +535,70 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
 
     for (var module in moduleData ?? []) {
       sheet.appendRow([module['module_master_name'], '', 'NOTES/REMARKS']);
-      sheet.appendRow([
-        'What activities will my students do?',
-        _filterData(module['activities_details_content']),
-        _filterData(module['activities_details_remarks'])
-      ]);
 
+      // Handle activities details content
+      List<String> activitiesDetails =
+          _filterData(module['activities_details_content']).split('\n');
+      sheet.appendRow(['What activities will my students do?', '', '']);
+      for (var activity in activitiesDetails) {
+        if (activity.trim().isNotEmpty) {
+          sheet.appendRow([
+            '',
+            activity,
+            _filterData(module['activities_details_remarks'])
+          ]);
+        }
+      }
+
+      // Handle method cards
       final moduleCards = cardData
           ?.where(
               (card) => card['project_moduleId'] == module['project_moduleId'])
           .toList();
       if (moduleCards != null && moduleCards.isNotEmpty) {
-        String cardsText =
-            moduleCards.map((card) => '- ${card['cards_title']}').join('\n');
-        sheet.appendRow([
-          'What two (2) method cards will my students use?',
-          cardsText,
-          _filterData(widget.folder['project_cards_remarks'])
-        ]);
+        sheet.appendRow(
+            ['What two (2) method cards will my students use?', '', '']);
+        for (var card in moduleCards) {
+          sheet.appendRow([
+            '',
+            '- ${card['cards_title']}',
+            _filterData(widget.folder['project_cards_remarks'])
+          ]);
+        }
       }
 
-      sheet.appendRow([
-        'How long will this activity take?',
-        _filterData(module['activities_header_duration'])
-      ]);
+      // Handle expected outputs
+      List<String> expectedOutputs =
+          _filterData(module['outputs_content']).split('\n');
+      sheet.appendRow(['What are the expected outputs?', '', '']);
+      for (var output in expectedOutputs) {
+        if (output.trim().isNotEmpty) {
+          sheet.appendRow(['', output, _filterData(module['outputs_remarks'])]);
+        }
+      }
 
-      sheet.appendRow([
-        'What are the expected outputs?',
-        _filterData(module['outputs_content']),
-        _filterData(module['outputs_remarks'])
-      ]);
+      // Handle instructions
+      List<String> instructions =
+          _filterData(module['instruction_content']).split('\n');
+      sheet.appendRow(['What instructions will I give my students?', '', '']);
+      for (var instruction in instructions) {
+        if (instruction.trim().isNotEmpty) {
+          sheet.appendRow(
+              ['', instruction, _filterData(module['instruction_remarks'])]);
+        }
+      }
 
-      sheet.appendRow([
-        'What instructions will I give my students?',
-        _filterData(module['instruction_content']),
-        _filterData(module['instruction_remarks'])
-      ]);
-
-      sheet.appendRow([
-        'How can I coach my students while doing this activity?',
-        _filterData(module['coach_detail_content']),
-        _filterData(module['coach_detail_renarks'])
-      ]);
+      // Handle coaching details
+      List<String> coachingDetails =
+          _filterData(module['coach_detail_content']).split('\n');
+      sheet.appendRow(
+          ['How can I coach my students while doing this activity?', '', '']);
+      for (var detail in coachingDetails) {
+        if (detail.trim().isNotEmpty) {
+          sheet.appendRow(
+              ['', detail, _filterData(module['coach_detail_renarks'])]);
+        }
+      }
 
       sheet.appendRow(['', '', '']);
     }
@@ -960,15 +983,6 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                         style:
                             const TextStyle(height: 1.5), // Added line height
                       ),
-                      trailing: IconButton(
-                        icon: Icon(Icons.edit),
-                        onPressed: () => _showUpdateDialog(
-                          context,
-                          'module_master_name',
-                          widget.folder['module_master_name'] ??
-                              'No module name',
-                        ),
-                      ),
                     ),
                   ),
                   Card(
@@ -1202,19 +1216,6 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                           height: 1.5, // Added line height
                         ),
                       ),
-                      trailing: IconButton(
-                        icon: Icon(Icons.edit),
-                        onPressed: () {
-                          // Use the correct variable for the title
-                          _showUpdateDialog(
-                            context,
-                            'cards_title',
-                            cardTitles.isNotEmpty
-                                ? cardTitles.first
-                                : 'No title',
-                          );
-                        },
-                      ),
                     ),
                   ),
                 ],
@@ -1285,53 +1286,41 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
       'project_id': widget.folder['projectId'],
     };
 
-    // Determine the correct ID based on the field being updated
     switch (field) {
       case 'activities_details_content':
         operation = 'activity';
-        jsonData['actId'] = widget.folder['activity_id']; // Use the correct ID
+        jsonData['actId'] = widget.folder['activity_id'];
         jsonData['currentValue'] = currentValue;
         jsonData['newValue'] = newValue;
         jsonData['actRemark'] =
             widget.folder['activities_details_remarks'] ?? '';
-        print('Updating activity with actId: ${jsonData['actId']}');
         break;
       case 'outputs_content':
         operation = 'output';
-        jsonData['outId'] = widget.folder['output_id']; // Use the correct ID
+        jsonData['outId'] = widget.folder['output_id'];
         jsonData['currentValue'] = currentValue;
         jsonData['newValue'] = newValue;
         jsonData['outRemarks'] = widget.folder['outputs_remarks'] ?? '';
-        print('Updating output with outId: ${jsonData['outId']}');
         break;
       case 'instruction_content':
         operation = 'instruction';
-        jsonData['instructionId'] =
-            widget.folder['instruction_id']; // Use the correct ID
+        jsonData['instructionId'] = widget.folder['instruction_id'];
         jsonData['newValue'] = newValue;
         jsonData['currentValue'] = currentValue;
         jsonData['instructRemarks'] =
             widget.folder['instruction_remarks'] ?? '';
-        print(
-            'Updating instruction with instructionId: ${jsonData['instructionId']}');
         break;
       case 'coach_detail_content':
         operation = 'coachDetail';
-        jsonData['coachId'] =
-            widget.folder['coach_detail_id']; // Use the correct ID
+        jsonData['coachId'] = widget.folder['coach_detail_id'];
         jsonData['newValue'] = newValue;
         jsonData['currentValue'] = currentValue;
         jsonData['coachRemarks'] = widget.folder['coach_detail_renarks'] ?? '';
-        print('Updating coach detail with coachId: ${jsonData['coachId']}');
         break;
       default:
         operation = 'project';
         jsonData[field] = newValue;
-        print('Updating project with project_id: ${jsonData['project_id']}');
     }
-
-    // Log the operation and field being updated
-    print('Attempting to update field: $field with operation: $operation');
 
     try {
       final response = await http.post(
@@ -1346,7 +1335,6 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
       );
 
       if (response.statusCode == 200) {
-        print('Update successful: ${response.body}');
         setState(() {
           widget.folder[field] = newValue; // Update the local state
         });
@@ -1354,13 +1342,11 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
           const SnackBar(content: Text('Update successful')),
         );
       } else {
-        print('Failed to update: ${response.statusCode} - ${response.body}');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to update: ${response.body}')),
         );
       }
     } catch (e) {
-      print('Error during update: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error during update: $e')),
       );
@@ -1397,7 +1383,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.info_outline),
+            icon: const Icon(Icons.list),
             onPressed: () => _showFolderDetails(context),
             tooltip: 'Show Details',
           ),

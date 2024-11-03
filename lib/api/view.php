@@ -126,6 +126,7 @@ class Get
     {
         try {
             $sql = "SELECT tbl_front_cards.cards_title,
+            
                 tbl_front_cards.cards_id,
                 tbl_front_cards.cards_content,
                 GROUP_CONCAT(tbl_back_cards_header.back_content) AS back_content,
