@@ -725,7 +725,17 @@ class _DashboardsState extends State<Dashboards> {
                               itemCount: filteredItems.length,
                               itemBuilder: (context, index) {
                                 final item = filteredItems[index];
-                                final usersName = item['users_firstname'];
+                                final usersName = [
+                                  item['users_firstname'],
+                                  item['users_middlename'],
+                                  item['users_lastname'],
+                                  item['school_name'],
+                                  item['Lesson']
+                                ]
+                                    .where((name) => name != null)
+                                    .map((name) => name.toString())
+                                    .join(' ');
+
                                 final role = item['role_name'];
                                 final projectTitle = item['Lesson'];
                                 final mode = item['Mode'];
@@ -1746,19 +1756,28 @@ class _DashboardsState extends State<Dashboards> {
                                                       ),
                                                       Expanded(
                                                         child: ListView.builder(
-                                                          itemCount:
-                                                              filteredUsers
-                                                                  .length,
+                                                          itemCount: filteredUsers
+                                                              .where((user) =>
+                                                                  user[
+                                                                      'users_roleId'] ==
+                                                                  2)
+                                                              .length,
                                                           itemBuilder:
                                                               (context, index) {
+                                                            final filteredList =
+                                                                filteredUsers
+                                                                    .where((user) =>
+                                                                        user[
+                                                                            'users_roleId'] ==
+                                                                        2)
+                                                                    .toList();
                                                             final user =
-                                                                filteredUsers[
+                                                                filteredList[
                                                                     index];
 
                                                             return Card(
                                                               color: Colors
-                                                                      .grey[
-                                                                  100], // Dark green background for the card
+                                                                  .grey[100],
                                                               margin:
                                                                   const EdgeInsets
                                                                       .symmetric(
@@ -1771,7 +1790,7 @@ class _DashboardsState extends State<Dashboards> {
                                                                 borderRadius:
                                                                     BorderRadius
                                                                         .circular(
-                                                                            12), // Rounded corners
+                                                                            12),
                                                               ),
                                                               child: SizedBox(
                                                                 height: 80,
@@ -1787,9 +1806,8 @@ class _DashboardsState extends State<Dashboards> {
                                                                       final jsondata =
                                                                           jsonEncode({
                                                                         'users_id':
-                                                                            usersId,
+                                                                            usersId
                                                                       });
-
                                                                       final projectResponse =
                                                                           await http
                                                                               .post(
@@ -1799,7 +1817,7 @@ class _DashboardsState extends State<Dashboards> {
                                                                           "json":
                                                                               jsondata,
                                                                           "operation":
-                                                                              "getFolderId",
+                                                                              "getFolderId"
                                                                         },
                                                                       );
 
@@ -1836,14 +1854,12 @@ class _DashboardsState extends State<Dashboards> {
                                                                                           IconButton(
                                                                                             icon: const Icon(Icons.picture_as_pdf_rounded),
                                                                                             onPressed: () {
-                                                                                              _printAllLessonsPDF(projectData); // New function to print all lessons
+                                                                                              _printAllLessonsPDF(projectData);
                                                                                             },
                                                                                           )
                                                                                         ],
                                                                                       ),
-                                                                                      const SizedBox(
-                                                                                        height: 15,
-                                                                                      ),
+                                                                                      const SizedBox(height: 15),
                                                                                       Expanded(
                                                                                         child: ListView.builder(
                                                                                           itemCount: projectData.length,
@@ -1855,9 +1871,9 @@ class _DashboardsState extends State<Dashboards> {
                                                                                                 _showFolderDetails(context, project);
                                                                                               },
                                                                                               child: Container(
-                                                                                                height: 78, // Set a fixed height for the card
-                                                                                                margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20), // Adjusted margin for spacing
-                                                                                                padding: const EdgeInsets.all(20), // Increased padding for more space inside the card
+                                                                                                height: 78,
+                                                                                                margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                                                                                                padding: const EdgeInsets.all(20),
                                                                                                 decoration: BoxDecoration(
                                                                                                   color: Colors.grey[100],
                                                                                                   borderRadius: BorderRadius.circular(12),
@@ -1874,18 +1890,17 @@ class _DashboardsState extends State<Dashboards> {
                                                                                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                                                                   children: [
                                                                                                     Row(
-                                                                                                      // New Row to combine icon and text
                                                                                                       children: [
                                                                                                         const Icon(
-                                                                                                          Icons.folder, // Replace with the appropriate icon for project title
-                                                                                                          size: 35, // Adjust size as needed
-                                                                                                          color: Colors.green, // Change color if desired
+                                                                                                          Icons.folder,
+                                                                                                          size: 35,
+                                                                                                          color: Colors.green,
                                                                                                         ),
-                                                                                                        const SizedBox(width: 15), // Space between icon and text
+                                                                                                        const SizedBox(width: 15),
                                                                                                         Text(
                                                                                                           project['Lesson'] ?? 'N/A',
                                                                                                           style: const TextStyle(
-                                                                                                            fontSize: 16, // Slightly larger font size
+                                                                                                            fontSize: 16,
                                                                                                             color: Colors.black,
                                                                                                             fontWeight: FontWeight.bold,
                                                                                                           ),
@@ -1894,7 +1909,7 @@ class _DashboardsState extends State<Dashboards> {
                                                                                                     ),
                                                                                                     const Icon(
                                                                                                       Icons.arrow_forward_ios,
-                                                                                                      size: 20, // Slightly larger icon size
+                                                                                                      size: 20,
                                                                                                       color: Colors.grey,
                                                                                                     ),
                                                                                                   ],
@@ -2136,17 +2151,31 @@ class _DashboardsState extends State<Dashboards> {
                             crossAxisCount: crossAxisCount,
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
-                            mainAxisSpacing: 16, // Outer vertical spacing
-                            crossAxisSpacing: 16, // Outer horizontal spacing
+                            mainAxisSpacing: 16,
+                            crossAxisSpacing: 16,
                             childAspectRatio: childAspectRatio,
                             children: [
                               _buildInfoCard(
                                 'User Accounts',
-                                userCount.toString(),
+                                users
+                                    .where((user) =>
+                                        user['register_status'] == 1 &&
+                                        user['users_status'] == 1)
+                                    .length
+                                    .toString(),
                                 Icons.person,
                                 Colors.green,
-                                () => _showList(context, 'User Accounts', users,
-                                    'users_firstname', 'role_name'),
+                                () => _showList(
+                                  context,
+                                  'User Accounts',
+                                  users
+                                      .where((user) =>
+                                          user['register_status'] == 1 &&
+                                          user['users_status'] == 1)
+                                      .toList(),
+                                  'users_firstname',
+                                  'role_name',
+                                ),
                               ),
                               _buildInfoCard(
                                 'Folders',
@@ -2158,15 +2187,25 @@ class _DashboardsState extends State<Dashboards> {
                               ),
                               _buildInfoCard(
                                 'Instructors',
-                                instructorCount.toString(),
+                                instructors
+                                    .where((instructor) =>
+                                        instructor['register_status'] == 1 &&
+                                        instructor['users_status'] == 1)
+                                    .length
+                                    .toString(),
                                 FontAwesomeIcons.userPlus,
                                 Colors.purple,
                                 () => _showList(
-                                    context,
-                                    'Instructors',
-                                    instructors,
-                                    'users_firstname',
-                                    'role_name'),
+                                  context,
+                                  'Instructors',
+                                  instructors
+                                      .where((instructor) =>
+                                          instructor['register_status'] == 1 &&
+                                          instructor['users_status'] == 1)
+                                      .toList(),
+                                  'users_firstname',
+                                  'role_name',
+                                ),
                               ),
                               _buildInfoCard(
                                 'Schools',
@@ -2186,23 +2225,30 @@ class _DashboardsState extends State<Dashboards> {
                                 children: [
                                   Expanded(
                                     child: Padding(
-                                      padding: const EdgeInsets.only(
-                                          right: 8.0), // Half of SizedBox width
+                                      padding:
+                                          const EdgeInsets.only(right: 8.0),
                                       child: _buildInfoCard(
                                         'User Accounts',
                                         users
                                             .where((user) =>
+                                                user['register_status'] == 1 &&
                                                 user['users_status'] == 1)
                                             .length
                                             .toString(),
                                         Icons.person,
                                         Colors.blue,
                                         () => _showList(
-                                            context,
-                                            'User Accounts',
-                                            users,
-                                            'users_firstname',
-                                            'role_name'),
+                                          context,
+                                          'User Accounts',
+                                          users
+                                              .where((user) =>
+                                                  user['register_status'] ==
+                                                      1 &&
+                                                  user['users_status'] == 1)
+                                              .toList(),
+                                          'users_firstname',
+                                          'role_name',
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -2233,23 +2279,33 @@ class _DashboardsState extends State<Dashboards> {
                                 children: [
                                   Expanded(
                                     child: Padding(
-                                      padding: const EdgeInsets.only(
-                                          right: 8.0), // Half of SizedBox width
+                                      padding:
+                                          const EdgeInsets.only(right: 8.0),
                                       child: _buildInfoCard(
                                         'Instructors',
                                         instructors
                                             .where((instructor) =>
+                                                instructor['register_status'] ==
+                                                    1 &&
                                                 instructor['users_status'] == 1)
                                             .length
                                             .toString(),
                                         FontAwesomeIcons.userPlus,
                                         Colors.purple,
                                         () => _showList(
-                                            context,
-                                            'Instructors',
-                                            instructors,
-                                            'users_firstname',
-                                            'role_name'),
+                                          context,
+                                          'Instructors',
+                                          instructors
+                                              .where((instructor) =>
+                                                  instructor[
+                                                          'register_status'] ==
+                                                      1 &&
+                                                  instructor['users_status'] ==
+                                                      1)
+                                              .toList(),
+                                          'users_firstname',
+                                          'role_name',
+                                        ),
                                       ),
                                     ),
                                   ),

@@ -19,15 +19,26 @@ class Update
     function updateUser()
     {
         try {
-            // $users_status = isset($_POST['users_status']) ? $_POST['users_status'] : '';
+            // Check if the 'users_id' is set in the POST data
             $users_id = isset($_POST['users_id']) ? $_POST['users_id'] : '';
-            $sql = "UPDATE tbl_users SET users_status= 0 WHERE users_id = :users_id ";
+
+            // Validate users_id
+            if (empty($users_id)) {
+                return json_encode(['error' => 'Invalid user ID']);
+            }
+
+            // SQL to toggle users_status between 0 and 1
+            $sql = "UPDATE tbl_users SET users_status = CASE WHEN users_status = 0 THEN 1 ELSE 0 END WHERE users_id = :users_id";
             $stmt = $this->pdo->prepare($sql);
-            // $stmt->bindParam(':users_status', $users_status, PDO::PARAM_STR);
             $stmt->bindParam(':users_id', $users_id, PDO::PARAM_STR);
             $stmt->execute();
 
-            $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            // Fetch and return the updated row to confirm the change
+            $sql = "SELECT * FROM tbl_users WHERE users_id = :users_id";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':users_id', $users_id, PDO::PARAM_STR);
+            $stmt->execute();
+            $returnValue = $stmt->fetch(PDO::FETCH_ASSOC);
 
             error_log("SQL Query: $sql");
             error_log("Result: " . print_r($returnValue, true));
@@ -41,6 +52,8 @@ class Update
             return json_encode(['error' => 'An error occurred']);
         }
     }
+
+
 }
 // Handle preflight requests for CORS (for OPTIONS request)
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {

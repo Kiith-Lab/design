@@ -975,7 +975,7 @@ GROUP BY
     function getUserNotActive()
     {
         try {
-            $sql = "SELECT tbl_users.users_firstname, tbl_users.users_middlename, tbl_users.users_lastname, tbl_role.role_name 
+            $sql = "SELECT tbl_users.users_id, tbl_users.users_firstname, tbl_users.users_middlename, tbl_users.users_lastname, tbl_role.role_name 
                     FROM tbl_users 
                     JOIN tbl_role ON tbl_users.users_roleId = tbl_role.role_id
                     WHERE tbl_users.users_status = 0";
@@ -1001,6 +1001,8 @@ GROUP BY
             return json_encode(['error' => 'An error occurred']);
         }
     }
+
+
     function getUserNotVerify()
     {
         try {

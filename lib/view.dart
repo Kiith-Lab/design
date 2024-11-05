@@ -61,6 +61,34 @@ class _ViewUserPageState extends State<ViewUserPage> {
     }
   }
 
+  Future<void> _updateUserStatus(int userId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${baseUrl}update.php'), // Replace with your actual endpoint
+        body: {
+          'users_id': userId.toString(),
+          'operation':
+              'updateUser' // Indicates that the update operation should be performed
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final decodedResponse = json.decode(response.body);
+
+        if (decodedResponse != null && decodedResponse['error'] == null) {
+          print('User status updated successfully');
+          _fetchUsers(); // Refresh the user list to reflect the changes
+        } else {
+          print('Failed to update user status: ${decodedResponse['error']}');
+        }
+      } else {
+        print('Failed to update user status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error updating user status: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Sort users based on the selected order
@@ -220,20 +248,115 @@ class _ViewUserPageState extends State<ViewUserPage> {
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               ListTile(
-                                                leading:
-                                                    const Icon(Icons.archive),
-                                                title: const Text('Archive'),
+                                                leading: const Icon(Icons
+                                                    .settings_backup_restore_outlined),
+                                                title: const Text('Activate'),
                                                 onTap: () {
-                                                  // Handle archive action
-                                                  Navigator.pop(context);
-                                                },
-                                              ),
-                                              ListTile(
-                                                leading: const Icon(Icons.edit),
-                                                title: const Text('Edit'),
-                                                onTap: () {
-                                                  // Handle edit action
-                                                  Navigator.pop(context);
+                                                  final userId =
+                                                      user['users_id'];
+                                                  if (userId != null) {
+                                                    // Show a confirmation dialog before updating the status
+                                                    showDialog(
+                                                      context: context,
+                                                      builder: (BuildContext
+                                                          context) {
+                                                        return AlertDialog(
+                                                          shape:
+                                                              RoundedRectangleBorder(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        10),
+                                                          ),
+                                                          // ignore: prefer_const_constructors
+                                                          title: Row(
+                                                            children: const [
+                                                              Icon(
+                                                                  Icons
+                                                                      .info_outline,
+                                                                  color: Colors
+                                                                      .blue),
+                                                              SizedBox(
+                                                                  width: 8),
+                                                              Text(
+                                                                'Confirm Activation',
+                                                                style: TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          content: const Text(
+                                                            'Are you sure you want to activate this user?',
+                                                            style: TextStyle(
+                                                                fontSize: 16),
+                                                          ),
+                                                          actions: [
+                                                            TextButton(
+                                                              onPressed: () {
+                                                                Navigator.of(
+                                                                        context)
+                                                                    .pop(); // Close the dialog without action
+                                                              },
+                                                              style: TextButton
+                                                                  .styleFrom(
+                                                                foregroundColor:
+                                                                    Colors
+                                                                        .red, // Text color
+                                                                backgroundColor: Colors
+                                                                    .red
+                                                                    .withOpacity(
+                                                                        0.1), // Button background color
+                                                                padding: const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        20,
+                                                                    vertical:
+                                                                        12),
+                                                              ),
+                                                              child: const Text(
+                                                                  'Cancel'),
+                                                            ),
+                                                            TextButton(
+                                                              onPressed: () {
+                                                                _updateUserStatus(
+                                                                    int.parse(userId
+                                                                        .toString()));
+                                                                Navigator.pop(
+                                                                    context); // Close the dialog and page if needed
+                                                              },
+                                                              style: TextButton
+                                                                  .styleFrom(
+                                                                foregroundColor:
+                                                                    Colors
+                                                                        .white, // Text color
+                                                                backgroundColor:
+                                                                    Colors
+                                                                        .green, // Button background color
+                                                                padding: const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        20,
+                                                                    vertical:
+                                                                        12),
+                                                              ),
+                                                              child: const Text(
+                                                                  'Activate'),
+                                                            ),
+                                                          ],
+                                                        );
+                                                      },
+                                                    );
+                                                  } else {
+                                                    ScaffoldMessenger.of(
+                                                            context)
+                                                        .showSnackBar(
+                                                      const SnackBar(
+                                                          content: Text(
+                                                              'Error: User ID is missing')),
+                                                    );
+                                                  }
                                                 },
                                               ),
                                             ],
