@@ -1817,7 +1817,7 @@ class _DashboardsState extends State<Dashboards> {
                                                                           "json":
                                                                               jsondata,
                                                                           "operation":
-                                                                              "getFolderId"
+                                                                              "getFolders"
                                                                         },
                                                                       );
 
