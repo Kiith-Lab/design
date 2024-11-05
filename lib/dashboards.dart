@@ -411,6 +411,57 @@ class _DashboardsState extends State<Dashboards> {
     }
   }
 
+  void _showUpdateSuccessDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Icon(Icons.check_circle,
+                  color: Colors.green, size: 24), // Success icon
+              SizedBox(width: 8),
+              Text(
+                "Success",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              ),
+            ],
+          ),
+          content: const Padding(
+            padding: EdgeInsets.only(top: 8.0),
+            child: Text(
+              "User details have been updated successfully.",
+              style: TextStyle(fontSize: 16, color: Colors.black54),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          actions: [
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close dialog
+                },
+                style: ElevatedButton.styleFrom(
+                  iconColor: Colors.green, // Button color
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                ),
+                child: const Text("Close"),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _updateUserStatus(int userId) async {
     try {
       final response = await http.post(
@@ -431,6 +482,157 @@ class _DashboardsState extends State<Dashboards> {
       }
     } catch (e) {
       print('Error updating user status: $e');
+    }
+  }
+
+  void _showEditDialog(BuildContext context, String userId) {
+    final TextEditingController firstnameController = TextEditingController();
+    final TextEditingController middlenameController = TextEditingController();
+    final TextEditingController lastnameController = TextEditingController();
+    final FocusNode firstNameFocusNode = FocusNode();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          // ignore: prefer_const_constructors
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            // ignore: prefer_const_literals_to_create_immutables
+            children: [
+              const Text(
+                "Edit User Details",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                "Update user information below",
+                style: TextStyle(color: Colors.grey, fontSize: 14),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildTextField(
+                    "First Name", firstnameController, firstNameFocusNode),
+                const SizedBox(height: 16),
+                _buildTextField("Middle Name", middlenameController, null),
+                const SizedBox(height: 16),
+                _buildTextField("Last Name", lastnameController, null),
+              ],
+            ),
+          ),
+          actionsPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.grey,
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.cancel, size: 18),
+                  SizedBox(width: 4),
+                  Text("Cancel"),
+                ],
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _updateUserDetails(
+                  userId,
+                  firstnameController.text,
+                  middlenameController.text,
+                  lastnameController.text,
+                );
+                Navigator.of(context).pop(); // Close edit dialog
+
+                // Show success message
+                _showUpdateSuccessDialog(context);
+              },
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.save, size: 18),
+                  SizedBox(width: 4),
+                  Text("Save"),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    // Request focus on the first name field when the dialog is shown.
+    Future.delayed(Duration.zero, () {
+      firstNameFocusNode.requestFocus();
+    });
+  }
+
+// Helper function to build styled text fields
+  Widget _buildTextField(
+      String label, TextEditingController controller, FocusNode? focusNode) {
+    return TextField(
+      controller: controller,
+      focusNode: focusNode,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.grey),
+        filled: true,
+        fillColor: Colors.grey[200],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.blue),
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      ),
+    );
+  }
+
+  void _updateUserDetails(String userId, String firstname, String middlename,
+      String lastname) async {
+    final response = await http.post(
+      Uri.parse('${baseUrl}update.php'), // replace with your API endpoint
+      body: {
+        'operation': 'editUserNames',
+        'users_id': userId,
+        'users_firstname': firstname,
+        'users_middlename': middlename,
+        'users_lastname': lastname,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      // Handle success, e.g., refresh the UI or show a success message
+      print('User details updated successfully.');
+      fetchUsers();
+    } else {
+      // Handle error, e.g., show an error message
+      print('Failed to update user details.');
     }
   }
 
@@ -844,14 +1046,31 @@ class _DashboardsState extends State<Dashboards> {
                                         Positioned(
                                           top: 8,
                                           right: 8,
-                                          child: IconButton(
-                                            icon: const Icon(
-                                                Icons.archive_outlined,
-                                                color: Colors.red),
-                                            onPressed: () {
-                                              _showConfirmationDialog(
-                                                  context, item['users_id']);
-                                            },
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              IconButton(
+                                                icon: const Icon(
+                                                    Icons.archive_outlined,
+                                                    color: Colors.red),
+                                                onPressed: () {
+                                                  _showConfirmationDialog(
+                                                      context,
+                                                      item['users_id']);
+                                                },
+                                              ),
+                                              IconButton(
+                                                icon: const Icon(
+                                                    Icons.edit_note,
+                                                    color: Colors.blue),
+                                                onPressed: () {
+                                                  _showEditDialog(
+                                                      context,
+                                                      item['users_id']
+                                                          .toString());
+                                                },
+                                              ),
+                                            ],
                                           ),
                                         ),
                                     ],
