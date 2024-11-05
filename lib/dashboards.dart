@@ -419,6 +419,7 @@ class _DashboardsState extends State<Dashboards> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
+          // ignore: prefer_const_constructors
           title: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: const [
@@ -485,10 +486,14 @@ class _DashboardsState extends State<Dashboards> {
     }
   }
 
-  void _showEditDialog(BuildContext context, String userId) {
-    final TextEditingController firstnameController = TextEditingController();
-    final TextEditingController middlenameController = TextEditingController();
-    final TextEditingController lastnameController = TextEditingController();
+  void _showEditDialog(BuildContext context, String userId, String firstName,
+      String middleName, String lastName) {
+    final TextEditingController firstnameController =
+        TextEditingController(text: firstName);
+    final TextEditingController middlenameController =
+        TextEditingController(text: middleName);
+    final TextEditingController lastnameController =
+        TextEditingController(text: lastName);
     final FocusNode firstNameFocusNode = FocusNode();
 
     showDialog(
@@ -498,10 +503,8 @@ class _DashboardsState extends State<Dashboards> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          // ignore: prefer_const_constructors
           title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            // ignore: prefer_const_literals_to_create_immutables
             children: [
               const Text(
                 "Edit User Details",
@@ -625,11 +628,11 @@ class _DashboardsState extends State<Dashboards> {
         'users_lastname': lastname,
       },
     );
+    fetchUsers();
 
     if (response.statusCode == 200) {
       // Handle success, e.g., refresh the UI or show a success message
       print('User details updated successfully.');
-      fetchUsers();
     } else {
       // Handle error, e.g., show an error message
       print('Failed to update user details.');
@@ -1045,9 +1048,11 @@ class _DashboardsState extends State<Dashboards> {
                                       if (title == 'User Accounts')
                                         Positioned(
                                           top: 8,
-                                          right: 8,
+                                          right: 5,
                                           child: Column(
                                             mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceEvenly,
                                             children: [
                                               IconButton(
                                                 icon: const Icon(
@@ -1067,6 +1072,12 @@ class _DashboardsState extends State<Dashboards> {
                                                   _showEditDialog(
                                                       context,
                                                       item['users_id']
+                                                          .toString(),
+                                                      item['users_firstname']
+                                                          .toString(),
+                                                      item['users_middlename']
+                                                          .toString(),
+                                                      item['users_lastname']
                                                           .toString());
                                                 },
                                               ),
