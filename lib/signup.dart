@@ -16,7 +16,8 @@ class _SignupPageState extends State<SignupPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _schoolIdController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _middleNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
@@ -49,10 +50,12 @@ class _SignupPageState extends State<SignupPage> {
       if (response.statusCode == 200) {
         final List<dynamic> schoolsJson = json.decode(response.body);
         setState(() {
-          _schools = schoolsJson.map((school) => {
-            'school_id': school['school_id'].toString(),
-            'school_name': school['school_name'],
-          }).toList();
+          _schools = schoolsJson
+              .map((school) => {
+                    'school_id': school['school_id'].toString(),
+                    'school_name': school['school_name'],
+                  })
+              .toList();
         });
       } else {
         throw Exception('Failed to load schools');
@@ -64,14 +67,17 @@ class _SignupPageState extends State<SignupPage> {
 
   Future<void> _fetchDepartments() async {
     try {
-      final response = await http.get(Uri.parse('${baseUrl}get_departments.php'));
+      final response =
+          await http.get(Uri.parse('${baseUrl}get_departments.php'));
       if (response.statusCode == 200) {
         final List<dynamic> departmentsJson = json.decode(response.body);
         setState(() {
-          _departments = departmentsJson.map((department) => {
-            'department_id': department['department_id'].toString(),
-            'department_name': department['department_name'],
-          }).toList();
+          _departments = departmentsJson
+              .map((department) => {
+                    'department_id': department['department_id'].toString(),
+                    'department_name': department['department_name'],
+                  })
+              .toList();
         });
       } else {
         throw Exception('Failed to load departments');
@@ -134,7 +140,9 @@ class _SignupPageState extends State<SignupPage> {
       } catch (e) {
         print('Error during signup: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Network error. Please check your connection and try again.')),
+          const SnackBar(
+              content: Text(
+                  'Network error. Please check your connection and try again.')),
         );
       }
     }
@@ -163,7 +171,7 @@ class _SignupPageState extends State<SignupPage> {
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/images/mainbg1.png'),
+                image: AssetImage('assets/images/Design_Thinking_SignUp.png'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -181,31 +189,31 @@ class _SignupPageState extends State<SignupPage> {
                       child: Padding(
                         padding: const EdgeInsets.only(top: 10.0, left: 10.0),
                         child: IconButton(
-                          icon: const Icon(Icons.arrow_back, color: Colors.black),
+                          icon:
+                              const Icon(Icons.arrow_back, color: Colors.black),
                           onPressed: () {
                             Navigator.pushReplacement(
                               context,
-                              MaterialPageRoute(builder: (context) => const LoginAppes()),
+                              MaterialPageRoute(
+                                  builder: (context) => const LoginAppes()),
                             );
                           },
                         ),
                       ),
                     ),
-                    const SizedBox(height: 50),
-                    const Text(
-                      'FILL UP THE FORM TO SIGN UP',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 20),
+
+                    const SizedBox(height: 40),
                     TextFormField(
                       controller: _schoolIdController,
                       decoration: InputDecoration(
                         labelText: 'School ID',
                         prefixIcon: const Icon(Icons.school),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
-                      validator: (value) => value?.isEmpty ?? true ? 'Please enter a School ID' : null,
+                      validator: (value) => value?.isEmpty ?? true
+                          ? 'Please enter a School ID'
+                          : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -213,9 +221,12 @@ class _SignupPageState extends State<SignupPage> {
                       decoration: InputDecoration(
                         labelText: 'First Name',
                         prefixIcon: const Icon(Icons.person),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
-                      validator: (value) => value?.isEmpty ?? true ? 'Please enter your First Name' : null,
+                      validator: (value) => value?.isEmpty ?? true
+                          ? 'Please enter your First Name'
+                          : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -223,7 +234,8 @@ class _SignupPageState extends State<SignupPage> {
                       decoration: InputDecoration(
                         labelText: 'Middle Name',
                         prefixIcon: const Icon(Icons.person),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -232,9 +244,12 @@ class _SignupPageState extends State<SignupPage> {
                       decoration: InputDecoration(
                         labelText: 'Last Name',
                         prefixIcon: const Icon(Icons.person),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
-                      validator: (value) => value?.isEmpty ?? true ? 'Please enter your Last Name' : null,
+                      validator: (value) => value?.isEmpty ?? true
+                          ? 'Please enter your Last Name'
+                          : null,
                     ),
                     const SizedBox(height: 16),
                     TextFormField(
@@ -242,7 +257,8 @@ class _SignupPageState extends State<SignupPage> {
                       decoration: InputDecoration(
                         labelText: 'Suffix',
                         prefixIcon: const Icon(Icons.person),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -251,7 +267,8 @@ class _SignupPageState extends State<SignupPage> {
                       decoration: InputDecoration(
                         labelText: 'School',
                         prefixIcon: const Icon(Icons.school),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
                       items: _schools.map((Map<String, dynamic> school) {
                         return DropdownMenuItem<String>(
@@ -264,7 +281,8 @@ class _SignupPageState extends State<SignupPage> {
                           _selectedSchool = newValue;
                         });
                       },
-                      validator: (value) => value == null ? 'Please select a school' : null,
+                      validator: (value) =>
+                          value == null ? 'Please select a school' : null,
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
@@ -272,9 +290,11 @@ class _SignupPageState extends State<SignupPage> {
                       decoration: InputDecoration(
                         labelText: 'Department',
                         prefixIcon: const Icon(Icons.business),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
-                      items: _departments.map((Map<String, dynamic> department) {
+                      items:
+                          _departments.map((Map<String, dynamic> department) {
                         return DropdownMenuItem<String>(
                           value: department['department_id'],
                           child: Text(department['department_name']),
@@ -285,7 +305,8 @@ class _SignupPageState extends State<SignupPage> {
                           _selectedDepartment = newValue;
                         });
                       },
-                      validator: (value) => value == null ? 'Please select a department' : null,
+                      validator: (value) =>
+                          value == null ? 'Please select a department' : null,
                     ),
                     const SizedBox(height: 16),
                     // DropdownButtonFormField<String>(
@@ -315,9 +336,12 @@ class _SignupPageState extends State<SignupPage> {
                       decoration: InputDecoration(
                         labelText: 'Password',
                         prefixIcon: const Icon(Icons.lock),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10)),
                         suffixIcon: IconButton(
-                          icon: Icon(_isPasswordVisible ? Icons.visibility : Icons.visibility_off),
+                          icon: Icon(_isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off),
                           onPressed: _togglePasswordVisibility,
                         ),
                       ),
@@ -338,9 +362,12 @@ class _SignupPageState extends State<SignupPage> {
                       decoration: InputDecoration(
                         labelText: 'Confirm Password',
                         prefixIcon: const Icon(Icons.lock),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10)),
                         suffixIcon: IconButton(
-                          icon: Icon(_isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off),
+                          icon: Icon(_isConfirmPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off),
                           onPressed: _toggleConfirmPasswordVisibility,
                         ),
                       ),
@@ -358,11 +385,16 @@ class _SignupPageState extends State<SignupPage> {
                     ElevatedButton(
                       onPressed: _signup,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 241, 255, 210),
+                        backgroundColor: const Color.fromARGB(255, 1, 58, 1),
                         padding: const EdgeInsets.symmetric(vertical: 15),
                         textStyle: const TextStyle(fontSize: 16),
                       ),
-                      child: const Text('Sign Up'),
+                      child: const Text(
+                        'Submit',
+                        style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.white), // Set text color to white
+                      ),
                     ),
                   ],
                 ),
