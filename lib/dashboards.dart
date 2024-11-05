@@ -17,7 +17,24 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import 'config.dart';
 
 void main() {
-  runApp(const MaterialApp(home: Dashboard()));
+  String data =
+      "• Guide students to view testing as a cycle of continuous improvement, where each round of feedback refines their work toward a successful webpage. •Encourage trial and error by valuing experimentation, treating errors as learning opportunities, and providing safe scenarios for testing various solutions.      ,Provide clear, actionable feedback that highlights strengths, areas for improvement, and practical suggestions to help students enhance their work.";
+
+  String result = separateText(data);
+  print(result);
+}
+
+String separateText(String text) {
+  // Split the text by bullet points and commas
+  List<String> parts = text.split(RegExp(r'•|,'));
+
+  // Trim whitespace and filter out empty strings
+  List<String> separatedParts = parts
+      .map((part) => part.trim())
+      .where((part) => part.isNotEmpty)
+      .toList();
+
+  return separatedParts.join('\n• '); // Join with bullet points and new lines
 }
 
 class Dashboard extends StatelessWidget {
@@ -788,6 +805,7 @@ class _DashboardsState extends State<Dashboards> {
                                                   fontSize: 14,
                                                 ),
                                               ),
+
                                             // Show department name only for Schools
                                             if (title == 'Schools' &&
                                                 departmentName != null)
@@ -799,7 +817,7 @@ class _DashboardsState extends State<Dashboards> {
                                                   color: Colors.grey[600],
                                                   fontSize: 14,
                                                 ),
-                                              ),
+                                              )
                                           ],
                                         ),
                                         onTap: () {
@@ -862,8 +880,14 @@ class _DashboardsState extends State<Dashboards> {
           orElse: () => {}, // Default to an empty map if no match
         );
 
+    var matchingExcel = foldersPDF.cast<Map<String, dynamic>>().firstWhere(
+          (pdf) => pdf['project_title'] == folder['Lesson'],
+          orElse: () => {}, // Default to an empty map if no match
+        );
+
     // Check if matchingPDF is actually a match
     bool isMatchFound = matchingPDF.isNotEmpty;
+    bool isMatchFounds = matchingExcel.isNotEmpty;
 
     showDialog(
       context: context,
@@ -932,30 +956,41 @@ class _DashboardsState extends State<Dashboards> {
                             child: const Text('Print PDF'),
                             onPressed: isMatchFound
                                 ? () async {
-                                    // Extract project ID and ProjectCardsID from the matching PDF
                                     final projectId =
                                         matchingPDF['projectId'] ??
                                             matchingPDF['project_id'];
-
-                                    // Ensure that projectrId and projectCardsIds are not null
                                     if (projectId != null) {
-                                      // Fetch project and card data using the extracted project ID and ProjectCardsID
                                       await _fetchProject(projectId.toString());
                                       await _fetchCardData(
                                           projectId.toString());
-
-                                      // After fetching data, call the PDF printing function
-                                      _printFolderDetailsPDF(
-                                          context, matchingPDF);
+                                      if (mounted) {
+                                        _printFolderDetailsPDF(
+                                            context, matchingPDF);
+                                      }
                                     } else {
-                                      print("Project ID or Card IDs not found");
+                                      print("Project ID not found");
                                     }
                                   }
                                 : null, // Disable if no match
                           ),
                           ShadButton(
-                            onPressed: () => _generateExcel(folder),
                             child: const Text('Export Excel'),
+                            onPressed: isMatchFounds
+                                ? () async {
+                                    final projectId =
+                                        matchingExcel['projectId'] ??
+                                            matchingExcel['project_id'];
+                                    if (projectId != null) {
+                                      await _fetchProject(projectId.toString());
+                                      await _fetchCardData(
+                                          projectId.toString());
+                                      await _generateExcelWithModules(
+                                          matchingExcel);
+                                    } else {
+                                      print("Project ID not found");
+                                    }
+                                  }
+                                : null, // Disable if no match
                           ),
                         ],
                       ),
@@ -1159,7 +1194,7 @@ class _DashboardsState extends State<Dashboards> {
                               module['project_moduleId'])
                           .map((card) => '- ${card['cards_title']}')
                           .join('\n'),
-                      _filterData(foldersPDF['project_cards_renarks']),
+                      _filterData(foldersPDF['project_cards_remarks']),
                     ),
                     // Duration
                     _buildPdfTableRow(
@@ -1209,14 +1244,8 @@ class _DashboardsState extends State<Dashboards> {
           onLayout: (PdfPageFormat format) async => pdf.save(),
         );
       }
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   const SnackBar(content: Text('PDF generated successfully')),
-      // );
     } catch (e) {
       print('Error generating PDF: $e');
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   SnackBar(content: Text('Failed to generate PDF: $e')),
-      // );
     }
   }
 
@@ -1324,7 +1353,13 @@ class _DashboardsState extends State<Dashboards> {
   }
 
 // Function to create Excel file
-  Future<void> _generateExcel(dynamic folder) async {
+  Future<void> _generateExcelWithModules(
+      Map<String, dynamic> matchingExcel) async {
+    // Ensure foldersPDF is populated
+    if (foldersPDF.isEmpty) {
+      await fetchFoldersPDF();
+    }
+
     final Excel excel = Excel.createExcel();
     Sheet sheet = excel['Sheet1'];
 
@@ -1333,55 +1368,148 @@ class _DashboardsState extends State<Dashboards> {
     sheet.setColWidth(2, 40);
 
     sheet.appendRow(['', 'MY DESIGN THINKING PLAN']);
-    sheet.appendRow(['Project', folder['Lesson'] ?? 'Unnamed Project', '']);
-    sheet.appendRow(
-        ['Project Description', folder['ProjectDescription'] ?? '', '']);
-    sheet.appendRow(['Start Date', folder['StartDate'] ?? 'No start date', '']);
-    sheet.appendRow(['End Date', folder['EndDate'] ?? 'No end date', '']);
-    sheet.appendRow(['']);
 
-    List<String> sections = [
-      'Empathize',
-      'Define',
-      'Ideate',
-      'Prototype',
-      'Test'
-    ];
+    final Set<String> processedProjects = {};
 
-    for (String section in sections) {
-      sheet.appendRow([section]);
-      // Directly append rows without using _appendSection
+    // Filter foldersPDF to only include the selected project
+    final selectedProjectId =
+        matchingExcel['projectId'] ?? matchingExcel['project_id'];
+    final selectedFolders = foldersPDF
+        .where((folder) => folder['projectId'] == selectedProjectId)
+        .toList();
+
+    for (var folder in selectedFolders) {
+      final projectTitle =
+          folder['project_title']?.toString() ?? 'Unnamed Project';
+
+      if (processedProjects.contains(projectTitle)) {
+        continue;
+      }
+
+      processedProjects.add(projectTitle);
+
+      sheet.appendRow(['Project', projectTitle, '']);
       sheet.appendRow([
-        'What activities will my students do?',
-        _formatAsRowsForExcel(folder['Activity']).join(', '),
-        folder['ActivityRemarks'] ?? 'No remarks'
+        'Project Description',
+        folder['project_subject_description']?.toString() ?? '',
+        ''
       ]);
       sheet.appendRow([
-        'What two (2) method cards will my students use?',
-        _formatAsRowsForExcel(folder['Lesson']).join(', '),
-        'No remarks'
+        'Start Date',
+        folder['project_start_date']?.toString() ?? 'No start date',
+        ''
       ]);
       sheet.appendRow([
-        'How long will this activity take?',
-        _formatAsRowsForExcel(folder['Duration']).join(', '),
-        'No remarks'
-      ]);
-      sheet.appendRow([
-        'What are the expected outputs?',
-        _formatAsRowsForExcel(folder['Output']).join(', '),
-        folder['OutputRemarks'] ?? 'No remarks'
-      ]);
-      sheet.appendRow([
-        'What instructions will I give my students?',
-        _formatAsRowsForExcel(folder['Instruction']).join(', '),
-        folder['InstructionRemarks'] ?? 'No remarks'
-      ]);
-      sheet.appendRow([
-        'How can I coach my students while doing this activity?',
-        _formatAsRowsForExcel(folder['CoachDetail']).join(', '),
-        folder['CoachDetailRemarks'] ?? 'No remarks'
+        'End Date',
+        folder['project_end_date']?.toString() ?? 'No end date',
+        ''
       ]);
       sheet.appendRow(['']);
+
+      final Set<String> processedModules = {};
+
+      for (var module in moduleData ?? []) {
+        final moduleId = module['project_moduleId']?.toString() ?? '';
+
+        if (processedModules.contains(moduleId)) {
+          continue;
+        }
+
+        processedModules.add(moduleId);
+
+        // Determine the color based on the module name
+        final String moduleName =
+            module['module_master_name']?.toString() ?? 'Unnamed Module';
+        final String moduleColorHex;
+
+        switch (moduleName) {
+          case 'Empathize':
+            moduleColorHex = '#6fa8dc'; // Blue
+            break;
+          case 'Define':
+            moduleColorHex = '#38761d'; // Green
+            break;
+          case 'Ideate':
+            moduleColorHex = '#ff9900'; // Orange
+            break;
+          case 'Prototype':
+            moduleColorHex = '#f14309'; // Dark Red
+            break;
+          case 'Test':
+            moduleColorHex = '#990000'; // Red
+            break;
+          default:
+            moduleColorHex = '#000000'; // Default to black if no match
+        }
+
+        // Append the row with the module name
+        sheet.appendRow([moduleName, '', 'NOTE/REMARKS']);
+
+        // Apply the color to the last row's first cell
+        final lastRowIndex = sheet.maxRows - 1;
+        final cell = sheet.cell(
+            CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: lastRowIndex));
+        cell.cellStyle = CellStyle(
+          backgroundColorHex: moduleColorHex,
+        );
+        final centerCell = sheet.cell(
+            CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: lastRowIndex));
+        centerCell.cellStyle = CellStyle(
+          backgroundColorHex: moduleColorHex,
+        );
+
+        // Apply the same color to the "NOTE/REMARKS" cell
+        final remarksCell = sheet.cell(
+            CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: lastRowIndex));
+        remarksCell.cellStyle = CellStyle(
+          backgroundColorHex: moduleColorHex,
+        );
+
+        // Append each bullet point as a separate row
+        _appendBulletRows(
+            sheet,
+            'What activities will my students do?',
+            _formatAsRowsForExcel(module['activities_details_content']),
+            _formatAsRowsForExcel(module['activities_details_remarks']));
+
+        _appendBulletRows(
+            sheet,
+            'What two (2) method cards will my students use?',
+            cardData
+                    ?.where((card) =>
+                        card['project_moduleId']?.toString() == moduleId)
+                    .map((card) => card['cards_title']?.toString())
+                    .whereType<String>() // Filter out null values
+                    .toList() ??
+                ['N/A'],
+            [folder['project_cards_remarks']?.toString() ?? 'No remarks']);
+
+        _appendBulletRows(
+            sheet,
+            'How long will this activity take?',
+            _formatAsRowsForExcel(module['activities_header_duration']),
+            ['No remarks']);
+
+        _appendBulletRows(
+            sheet,
+            'What are the expected outputs?',
+            _formatAsRowsForExcel(module['outputs_content']),
+            _formatAsRowsForExcel(module['outputs_remarks']));
+
+        _appendBulletRows(
+            sheet,
+            'What instructions will I give my students?',
+            _formatAsRowsForExcel(module['instruction_content']),
+            _formatAsRowsForExcel(module['instruction_remarks']));
+
+        _appendBulletRows(
+            sheet,
+            'How can I coach my students while doing this activity?',
+            _formatAsRowsForExcel(module['coach_detail_content']),
+            _formatAsRowsForExcel(module['coach_detail_renarks']));
+
+        sheet.appendRow(['']);
+      }
     }
 
     try {
@@ -1390,12 +1518,12 @@ class _DashboardsState extends State<Dashboards> {
         final blob = html.Blob([bytes]);
         final url = html.Url.createObjectUrlFromBlob(blob);
         final anchor = html.AnchorElement(href: url)
-          ..setAttribute('download', 'folder_details.xlsx')
+          ..setAttribute('download', 'DesignThinkingPlan.xlsx')
           ..click();
         html.Url.revokeObjectUrl(url);
       } else {
         final directory = await getApplicationDocumentsDirectory();
-        final filePath = '${directory.path}/folder_details.xlsx';
+        final filePath = '${directory.path}/DesignThinkingPlan.xlsx';
         final file = File(filePath);
         await file.writeAsBytes(excel.encode()!, flush: true);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1405,6 +1533,24 @@ class _DashboardsState extends State<Dashboards> {
       print('Error generating Excel: $e');
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to generate Excel: $e')));
+    }
+  }
+
+  void _appendBulletRows(Sheet sheet, String question, List<String> contents,
+      List<String> remarks) {
+    final maxLength =
+        contents.length > remarks.length ? contents.length : remarks.length;
+
+    for (int i = 0; i < maxLength; i++) {
+      sheet.appendRow([
+        i == 0 ? question : '', // Only show the question in the first row
+        i < contents.length
+            ? '• ${contents[i]}'
+            : '', // Each content in its own cell
+        i < remarks.length
+            ? '• ${remarks[i]}'
+            : '' // Each remark in its own cell
+      ]);
     }
   }
 
