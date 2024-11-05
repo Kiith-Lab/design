@@ -139,7 +139,7 @@ class _ProjectPageState extends State<ProjectPage> {
                   labelText: 'Search by Project Title or Subject Code',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10.0),
-                    borderSide: const BorderSide(color: Colors.teal),
+                    borderSide: const BorderSide(color: Colors.green),
                   ),
                   prefixIcon: const Icon(Icons.search),
                   filled: true,
@@ -165,7 +165,7 @@ class _ProjectPageState extends State<ProjectPage> {
                         child: ListTile(
                           contentPadding: const EdgeInsets.all(16.0),
                           leading: const Icon(Icons.description,
-                              color: Colors.teal, size: 40),
+                              color: Colors.green, size: 40),
                           title: Text(
                             filteredProjects[index]['project_title'],
                             style: const TextStyle(fontWeight: FontWeight.bold),
