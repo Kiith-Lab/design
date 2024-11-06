@@ -539,7 +539,56 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
         ['End Date', widget.folder['project_end_date'] ?? 'No end date', '']);
 
     for (var module in moduleData ?? []) {
-      sheet.appendRow([module['module_master_name'], '', 'NOTES/REMARKS']);
+      final String moduleName =
+          module['module_master_name']?.toString() ?? 'Unnamed Module';
+      final String moduleColorHex;
+
+      switch (moduleName) {
+        case 'Empathize':
+          moduleColorHex = '#6fa8dc'; // Blue
+          break;
+        case 'Define':
+          moduleColorHex = '#38761d'; // Green
+          break;
+        case 'Ideate':
+          moduleColorHex = '#ff9900'; // Orange
+          break;
+        case 'Prototype':
+          moduleColorHex = '#f14309'; // Dark Red
+          break;
+        case 'Test':
+          moduleColorHex = '#990000'; // Red
+          break;
+        default:
+          moduleColorHex = '#000000'; // Default to black if no match
+      }
+
+      final rowIndex = sheet.maxRows;
+      sheet.appendRow([moduleName, '', 'NOTES/REMARKS']);
+
+      // Apply the color to the last row's first cell
+      final cell = sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: rowIndex));
+      cell.cellStyle = CellStyle(
+        backgroundColorHex: moduleColorHex,
+      );
+      final centerCell = sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: rowIndex));
+      centerCell.cellStyle = CellStyle(
+        backgroundColorHex: moduleColorHex,
+      );
+      final remarksCell = sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: rowIndex));
+      remarksCell.cellStyle = CellStyle(
+        backgroundColorHex: moduleColorHex,
+      );
+
+      // Add duration to the Excel sheet
+      sheet.appendRow([
+        'How long would it take?',
+        module['activities_header_duration'] ?? 'No duration',
+        ''
+      ]);
 
       // Handle activities details content
       List<String> activitiesDetails =
@@ -766,7 +815,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                     // Duration
                     _buildPdfTableRow(
                       'How long will this activity take?',
-                      _filterData(widget.folder['activities_header_duration']),
+                      module['activities_header_duration'] ?? 'No duration',
                       null,
                     ),
                     // Outputs
