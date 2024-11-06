@@ -539,7 +539,56 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
         ['End Date', widget.folder['project_end_date'] ?? 'No end date', '']);
 
     for (var module in moduleData ?? []) {
-      sheet.appendRow([module['module_master_name'], '', 'NOTES/REMARKS']);
+      final String moduleName =
+          module['module_master_name']?.toString() ?? 'Unnamed Module';
+      final String moduleColorHex;
+
+      switch (moduleName) {
+        case 'Empathize':
+          moduleColorHex = '#6fa8dc'; // Blue
+          break;
+        case 'Define':
+          moduleColorHex = '#38761d'; // Green
+          break;
+        case 'Ideate':
+          moduleColorHex = '#ff9900'; // Orange
+          break;
+        case 'Prototype':
+          moduleColorHex = '#f14309'; // Dark Red
+          break;
+        case 'Test':
+          moduleColorHex = '#990000'; // Red
+          break;
+        default:
+          moduleColorHex = '#000000'; // Default to black if no match
+      }
+
+      final rowIndex = sheet.maxRows;
+      sheet.appendRow([moduleName, '', 'NOTES/REMARKS']);
+
+      // Apply the color to the last row's first cell
+      final cell = sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: rowIndex));
+      cell.cellStyle = CellStyle(
+        backgroundColorHex: moduleColorHex,
+      );
+      final centerCell = sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: rowIndex));
+      centerCell.cellStyle = CellStyle(
+        backgroundColorHex: moduleColorHex,
+      );
+      final remarksCell = sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: rowIndex));
+      remarksCell.cellStyle = CellStyle(
+        backgroundColorHex: moduleColorHex,
+      );
+
+      // Add duration to the Excel sheet
+      sheet.appendRow([
+        'How long would it take?',
+        module['activities_header_duration'] ?? 'No duration',
+        ''
+      ]);
 
       // Handle activities details content
       List<String> activitiesDetails =
@@ -608,18 +657,24 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
       sheet.appendRow(['', '', '']);
     }
 
+    // Determine the file name using the project title
+    final String projectTitle =
+        widget.folder['project_title'] ?? 'Unnamed_Project';
+    final String fileName = '$projectTitle.xlsx';
+
     try {
       if (kIsWeb) {
         final bytes = excel.encode();
         final blob = html.Blob([bytes]);
         final url = html.Url.createObjectUrlFromBlob(blob);
         final anchor = html.AnchorElement(href: url)
-          ..setAttribute('download', 'folder_details.xlsx')
+          ..setAttribute('download', fileName) // Use the dynamic file name
           ..click();
         html.Url.revokeObjectUrl(url);
       } else {
         final directory = await getApplicationDocumentsDirectory();
-        final filePath = '${directory.path}/folder_details.xlsx';
+        final filePath =
+            '${directory.path}/$fileName'; // Use the dynamic file name
         final file = File(filePath);
         await file.writeAsBytes(excel.encode()!, flush: true);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -760,7 +815,7 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                     // Duration
                     _buildPdfTableRow(
                       'How long will this activity take?',
-                      _filterData(module['activities_header_duration']),
+                      _filterData(widget.folder['activities_header_duration']),
                       null,
                     ),
                     // Outputs
