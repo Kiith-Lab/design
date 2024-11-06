@@ -21,7 +21,9 @@ final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
 
 class ListPage extends StatefulWidget {
-  const ListPage({super.key});
+  final String usersId;
+
+  const ListPage({super.key, required this.usersId});
 
   @override
   _ListPageState createState() => _ListPageState();
@@ -33,14 +35,17 @@ class _ListPageState extends State<ListPage> {
   @override
   void initState() {
     super.initState();
-    fetchFolders(); // Ensure this method is called to fetch folders
+    fetchFolders(widget.usersId);
   }
 
-  Future<void> fetchFolders() async {
+  Future<void> fetchFolders(String userId) async {
     try {
       final response = await http.post(
         Uri.parse('http://localhost/design/lib/api/masterlist.php'),
-        body: {'operation': 'getFolder'},
+        body: {
+          'operation': 'getFolder',
+          'userId': userId,
+        },
       );
       print("FOLDERS FETCH: " + response.body);
 

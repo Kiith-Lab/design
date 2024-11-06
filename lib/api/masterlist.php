@@ -468,7 +468,7 @@ class Get1
             return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
         }
     }
-    function getFolder()
+    function getFolder($userId)
     {
         try {
             $sql = "SELECT 
@@ -495,9 +495,11 @@ class Get1
             LEFT JOIN tbl_activities_header ON tbl_activities_header.activities_header_id = tbl_activities_details.activities_details_headerId
             LEFT JOIN tbl_module_master ON tbl_module_master.module_master_id = tbl_project_modules.project_modules_masterId
             LEFT JOIN tbl_front_cards ON tbl_project_cards.project_cards_cardId = tbl_front_cards.cards_id
-            LEFT JOIN tbl_back_cards_header ON tbl_back_cards_header.back_cards_header_id = tbl_project_cards.project_cards_cardId";
+            LEFT JOIN tbl_back_cards_header ON tbl_back_cards_header.back_cards_header_id = tbl_project_cards.project_cards_cardId
+            WHERE tbl_project.project_userId = :userId";
 
             $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
             $stmt->execute();
             $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -891,7 +893,7 @@ switch ($operation) {
         echo $get->addAllData($json);
         break;
     case "getFolder":
-        echo $get->getFolder();
+        echo $get->getFolder($_POST['userId']);
         break;
     case "getFolders":
         echo $get->getFolders();
