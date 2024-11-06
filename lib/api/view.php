@@ -23,6 +23,7 @@ class Get
             tbl_front_cards.cards_title,
             tbl_front_cards.cards_id,
             tbl_front_cards.cards_content,
+               tbl_front_cards.cards_image,
             MAX(tbl_back_cards_header.back_content) as back_content,
             MAX(tbl_back_cards_header.back_content_title) as back_content_title,
             MAX(tbl_back_cards_header.back_cards_header_frontId) as back_cards_header_frontId,
@@ -57,6 +58,7 @@ class Get
             tbl_front_cards.cards_title,
             tbl_front_cards.cards_id,
             tbl_front_cards.cards_content,
+               tbl_front_cards.cards_image,
             MAX(tbl_back_cards_header.back_content) as back_content,
             MAX(tbl_back_cards_header.back_content_title) as back_content_title,
             MAX(tbl_back_cards_header.back_cards_header_frontId) as back_cards_header_frontId,
@@ -90,6 +92,7 @@ class Get
             $sql = "SELECT tbl_front_cards.cards_title,
        tbl_front_cards.cards_id,
        tbl_front_cards.cards_content,
+        tbl_front_cards.cards_image,
        GROUP_CONCAT(tbl_back_cards_header.back_content) AS back_content,
        GROUP_CONCAT(tbl_back_cards_header.back_content_title) AS back_content_title,
        GROUP_CONCAT(tbl_back_cards_header.back_cards_header_frontId) AS back_cards_header_frontId,
@@ -129,6 +132,7 @@ class Get
             
                 tbl_front_cards.cards_id,
                 tbl_front_cards.cards_content,
+                tbl_front_cards.cards_image,
                 GROUP_CONCAT(tbl_back_cards_header.back_content) AS back_content,
                 GROUP_CONCAT(tbl_back_cards_header.back_content_title) AS back_content_title,
                 GROUP_CONCAT(tbl_back_cards_header.back_cards_header_frontId) AS back_cards_header_frontId,
@@ -165,17 +169,18 @@ class Get
     {
         try {
             $sql = "SELECT tbl_front_cards.cards_title,
-       tbl_front_cards.cards_id,
-       tbl_front_cards.cards_content,
-       GROUP_CONCAT(tbl_back_cards_header.back_content) AS back_content,
-       GROUP_CONCAT(tbl_back_cards_header.back_content_title) AS back_content_title,
-       GROUP_CONCAT(tbl_back_cards_header.back_cards_header_frontId) AS back_cards_header_frontId,
-       GROUP_CONCAT(tbl_back_cards_header.back_cards_header_title) AS back_cards_header_title
-        FROM tbl_front_cards
-        LEFT JOIN tbl_back_cards_header ON tbl_back_cards_header.back_cards_header_frontId = tbl_front_cards.cards_id
-        WHERE tbl_front_cards.cards_masterId = 5
-        GROUP BY tbl_front_cards.cards_id, tbl_front_cards.cards_title, tbl_front_cards.cards_content
-        ORDER BY tbl_front_cards.cards_id ASC";
+                    tbl_front_cards.cards_id,
+                    tbl_front_cards.cards_image,
+                    tbl_front_cards.cards_content,
+                    GROUP_CONCAT(tbl_back_cards_header.back_content) AS back_content,
+                    GROUP_CONCAT(tbl_back_cards_header.back_content_title) AS back_content_title,
+                    GROUP_CONCAT(tbl_back_cards_header.back_cards_header_frontId) AS back_cards_header_frontId,
+                    GROUP_CONCAT(tbl_back_cards_header.back_cards_header_title) AS back_cards_header_title
+                    FROM tbl_front_cards
+                    LEFT JOIN tbl_back_cards_header ON tbl_back_cards_header.back_cards_header_frontId = tbl_front_cards.cards_id
+                    WHERE tbl_front_cards.cards_masterId = 5
+                    GROUP BY tbl_front_cards.cards_id, tbl_front_cards.cards_title, tbl_front_cards.cards_content, tbl_front_cards.cards_image
+                    ORDER BY tbl_front_cards.cards_id ASC";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute();
             $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -206,6 +211,7 @@ class Get
             $sql = "SELECT tbl_front_cards.cards_title, 
                     tbl_front_cards.cards_id, 
                     tbl_front_cards.cards_content,
+                       tbl_front_cards.cards_image,
                     tbl_back_cards_header.back_content, 
                     tbl_back_cards_header.back_content_title,
                     tbl_back_cards_header.back_cards_header_frontId
@@ -240,6 +246,7 @@ class Get
             $sql = "SELECT tbl_front_cards.cards_title, 
                     tbl_front_cards.cards_id, 
                     tbl_front_cards.cards_content,
+                       tbl_front_cards.cards_image,
                     tbl_back_cards_header.back_content, 
                     tbl_back_cards_header.back_content_title,
                     tbl_back_cards_header.back_cards_header_frontId,
@@ -274,6 +281,7 @@ class Get
             $sql = "SELECT tbl_front_cards.cards_title, 
                     tbl_front_cards.cards_id, 
                     tbl_front_cards.cards_content,
+                       tbl_front_cards.cards_image,
                     tbl_back_cards_header.back_content, 
                     tbl_back_cards_header.back_content_title,
                     tbl_back_cards_header.back_cards_header_frontId,
@@ -307,6 +315,7 @@ class Get
             $sql = "SELECT tbl_front_cards.cards_title, 
                     tbl_front_cards.cards_id, 
                     tbl_front_cards.cards_content,
+                       tbl_front_cards.cards_image,
                     tbl_back_cards_header.back_content, 
                     tbl_back_cards_header.back_content_title,
                     tbl_back_cards_header.back_cards_header_frontId,
@@ -339,6 +348,7 @@ class Get
         try {
             $sql = "SELECT tbl_front_cards.cards_title, 
                     tbl_front_cards.cards_id, 
+                    tbl_front_cards.cards_image,
                     tbl_front_cards.cards_content,
                     tbl_back_cards_header.back_content, 
                     tbl_back_cards_header.back_content_title,
