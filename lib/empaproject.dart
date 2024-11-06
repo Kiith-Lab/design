@@ -854,7 +854,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'What two(2) method cards will students use?',
+                    'What two (2) method cards will my students use?',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   const SizedBox(height: 10),
@@ -1043,7 +1043,7 @@ class _EmpathyProjectPageState extends State<EmpathyProjectPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'What outputs will my students produce?',
+                    'What are the expected outputs?',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   const SizedBox(height: 10),
