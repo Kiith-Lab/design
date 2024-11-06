@@ -761,8 +761,7 @@ class _DashboardsState extends State<Dashboards> {
               final departmentName =
                   item['department_name']?.toString().toLowerCase() ?? '';
               final projectTitle =
-                  item['project_title']?.toString().toLowerCase() ??
-                      ''; // Ensure this line is included
+                  item['Lesson']?.toString().toLowerCase() ?? '';
 
               bool matchesSearch =
                   name.contains(localSearchQuery.toLowerCase()) ||
@@ -811,7 +810,7 @@ class _DashboardsState extends State<Dashboards> {
             List<String> projectTitles = [
               'all',
               ...items
-                  .map((item) => item['project_title']?.toString() ?? '')
+                  .map((item) => item['Lesson']?.toString() ?? '')
                   .where((title) => title.isNotEmpty)
                   .toSet()
             ];
@@ -1788,7 +1787,7 @@ class _DashboardsState extends State<Dashboards> {
             ? '• ${contents[i]}'
             : '', // Each content in its own cell
         i < remarks.length
-            ? '• ${remarks[i]}'
+            ? ' ${remarks[i]}'
             : '' // Each remark in its own cell
       ]);
     }
@@ -2080,16 +2079,9 @@ class _DashboardsState extends State<Dashboards> {
                                                                                           ),
                                                                                         ),
                                                                                         backgroundColor: Colors.green,
-                                                                                        actions: [
-                                                                                          IconButton(
-                                                                                            icon: const Icon(Icons.picture_as_pdf_rounded),
-                                                                                            onPressed: () {
-                                                                                              _printAllLessonsPDF(projectData);
-                                                                                            },
-                                                                                          )
-                                                                                        ],
                                                                                       ),
                                                                                       const SizedBox(height: 15),
+
                                                                                       Expanded(
                                                                                         child: ListView.builder(
                                                                                           itemCount: projectData.length,
@@ -2100,55 +2092,39 @@ class _DashboardsState extends State<Dashboards> {
                                                                                               onTap: () {
                                                                                                 _showFolderDetails(context, project);
                                                                                               },
-                                                                                              child: Container(
-                                                                                                height: 78,
-                                                                                                margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                                                                                                padding: const EdgeInsets.all(20),
-                                                                                                decoration: BoxDecoration(
-                                                                                                  color: Colors.grey[100],
+                                                                                              child: Card(
+                                                                                                // Changed from ListTile to Card
+                                                                                                margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 22),
+                                                                                                shape: RoundedRectangleBorder(
                                                                                                   borderRadius: BorderRadius.circular(12),
-                                                                                                  boxShadow: [
-                                                                                                    BoxShadow(
-                                                                                                      color: Colors.grey.withOpacity(0.5),
-                                                                                                      spreadRadius: 2,
-                                                                                                      blurRadius: 5,
-                                                                                                      offset: const Offset(0, 3),
-                                                                                                    ),
-                                                                                                  ],
                                                                                                 ),
-                                                                                                child: Row(
-                                                                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                                                                  children: [
-                                                                                                    Row(
-                                                                                                      children: [
-                                                                                                        const Icon(
-                                                                                                          Icons.folder,
-                                                                                                          size: 35,
-                                                                                                          color: Colors.green,
-                                                                                                        ),
-                                                                                                        const SizedBox(width: 15),
-                                                                                                        Text(
-                                                                                                          project['Lesson'] ?? 'N/A',
-                                                                                                          style: const TextStyle(
-                                                                                                            fontSize: 16,
-                                                                                                            color: Colors.black,
-                                                                                                            fontWeight: FontWeight.bold,
-                                                                                                          ),
-                                                                                                        ),
-                                                                                                      ],
+                                                                                                child: ListTile(
+                                                                                                  contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20), // Added padding
+                                                                                                  leading: const Icon(
+                                                                                                    Icons.folder,
+                                                                                                    size: 35,
+                                                                                                    color: Colors.green,
+                                                                                                  ),
+
+                                                                                                  title: Text(
+                                                                                                    project['Lesson'] ?? 'N/A',
+                                                                                                    style: const TextStyle(
+                                                                                                      fontWeight: FontWeight.bold,
                                                                                                     ),
-                                                                                                    const Icon(
-                                                                                                      Icons.arrow_forward_ios,
-                                                                                                      size: 20,
-                                                                                                      color: Colors.grey,
-                                                                                                    ),
-                                                                                                  ],
+                                                                                                  ),
+
+                                                                                                  trailing: const Icon(
+                                                                                                    Icons.arrow_forward_ios,
+                                                                                                    size: 20,
+                                                                                                    color: Colors.grey,
+                                                                                                  ),
                                                                                                 ),
                                                                                               ),
                                                                                             );
                                                                                           },
                                                                                         ),
                                                                                       ),
+// ... existing code ...
                                                                                     ],
                                                                                   ),
                                                                                 ),
@@ -2622,80 +2598,5 @@ class _DashboardsState extends State<Dashboards> {
         ),
       ),
     );
-  }
-
-  Future<void> _printAllLessonsPDF(List<dynamic> lessons) async {
-    final pdf = pw.Document();
-
-    pdf.addPage(
-      pw.Page(
-        build: (pw.Context context) => pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Text('All Lessons',
-                style:
-                    pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
-            pw.SizedBox(height: 10),
-            pw.Table(
-              border: pw.TableBorder.all(),
-              children: [
-                pw.TableRow(
-                  children: [
-                    pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text('Field')),
-                    pw.Padding(
-                        padding: const pw.EdgeInsets.all(8),
-                        child: pw.Text('Value')),
-                  ],
-                ),
-                ...lessons.expand((lesson) {
-                  return [
-                    'Mode',
-                    'Duration',
-                    'Activity',
-                    'Lesson',
-                    'Output',
-                    'Instruction',
-                    'CoachDetail',
-                    'ActivityRemarks',
-                    'OutputRemarks',
-                    'InstructionRemarks',
-                    'CoachDetailRemarks'
-                  ].map((field) {
-                    return pw.TableRow(
-                      children: [
-                        pw.Padding(
-                            padding: const pw.EdgeInsets.all(8),
-                            child: pw.Text(field)),
-                        pw.Padding(
-                            padding: const pw.EdgeInsets.all(8),
-                            child: pw.Text(lesson[field]?.toString() ?? 'N/A')),
-                      ],
-                    );
-                  });
-                }).toList(),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-
-    if (kIsWeb) {
-      // For web, create a Blob and download the PDF
-      final bytes = await pdf.save();
-      final blob = html.Blob([bytes], 'application/pdf');
-      final url = html.Url.createObjectUrlFromBlob(blob);
-      final anchor = html.AnchorElement(href: url)
-        ..setAttribute('download', 'all_lessons.pdf') // Updated filename
-        ..click();
-      html.Url.revokeObjectUrl(url);
-    } else {
-      // For mobile/desktop, use the existing printing method
-      await Printing.layoutPdf(
-        onLayout: (PdfPageFormat format) async => pdf.save(),
-      );
-    }
   }
 }
