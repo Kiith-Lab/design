@@ -539,7 +539,52 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
         ['End Date', widget.folder['project_end_date'] ?? 'No end date', '']);
 
     for (var module in moduleData ?? []) {
-      sheet.appendRow([module['module_master_name'], '', 'NOTES/REMARKS']);
+      final String moduleName =
+          module['module_master_name']?.toString() ?? 'Unnamed Module';
+      final String moduleColorHex;
+
+      switch (moduleName) {
+        case 'Empathize':
+          moduleColorHex = '#6fa8dc'; // Blue
+          break;
+        case 'Define':
+          moduleColorHex = '#38761d'; // Green
+          break;
+        case 'Ideate':
+          moduleColorHex = '#ff9900'; // Orange
+          break;
+        case 'Prototype':
+          moduleColorHex = '#f14309'; // Dark Red
+          break;
+        case 'Test':
+          moduleColorHex = '#990000'; // Red
+          break;
+        default:
+          moduleColorHex = '#000000'; // Default to black if no match
+      }
+
+      // Append the row with the module name
+      sheet.appendRow([moduleName, '', 'NOTE/REMARKS']);
+
+      // Apply the color to the last row's first cell
+      final lastRowIndex = sheet.maxRows - 1;
+      final cell = sheet.cell(
+          CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: lastRowIndex));
+      cell.cellStyle = CellStyle(
+        backgroundColorHex: moduleColorHex,
+      );
+      final centerCell = sheet.cell(
+          CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: lastRowIndex));
+      centerCell.cellStyle = CellStyle(
+        backgroundColorHex: moduleColorHex,
+      );
+
+      // Apply the same color to the "NOTE/REMARKS" cell
+      final remarksCell = sheet.cell(
+          CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: lastRowIndex));
+      remarksCell.cellStyle = CellStyle(
+        backgroundColorHex: moduleColorHex,
+      );
 
       // Handle activities details content
       List<String> activitiesDetails =
