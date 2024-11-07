@@ -7,6 +7,7 @@ import 'admin.dart'; // Import the admin page
 import 'config.dart';
 import 'secondpage.dart'; // Import the second page
 import 'signup.dart'; // Import the signup page
+import 'ForgotPasswordPage.dart'; // Import the forgot password page
 
 void main() {
   runApp(const LoginAppes());
@@ -232,7 +233,11 @@ class _LoginPageState extends State<LoginPage> {
                                 const SizedBox(height: 16),
                                 TextButton(
                                   onPressed: () {
-                                    // TODO: Implement forgot password functionality
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                const ForgotPasswordPage()));
                                   },
                                   child: const Text('Forgot Password?'),
                                 ),

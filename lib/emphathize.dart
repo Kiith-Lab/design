@@ -177,6 +177,9 @@ class _EmpathizeState extends State<Empathize> {
                                                   frontContent: frontCards[
                                                               index]
                                                           ['cards_content'] ??
+                                                      'No images',
+                                                  frontImage: frontCards[index]
+                                                          ['cards_image'] ??
                                                       'No content',
                                                   cardId: frontCards[index]
                                                       ['cards_id'])),
@@ -276,6 +279,7 @@ class _EmpathizeState extends State<Empathize> {
 class FlashcardPage extends StatefulWidget {
   final String frontTitle;
   final String frontContent;
+  final String frontImage;
   final String backtitle;
   final int cardId;
 
@@ -283,6 +287,7 @@ class FlashcardPage extends StatefulWidget {
     super.key,
     required this.frontTitle,
     required this.frontContent,
+    required this.frontImage,
     required this.backtitle,
     required this.cardId,
   });
@@ -394,7 +399,8 @@ class _FlashcardPageState extends State<FlashcardPage>
               child: const Text('Yes'),
               onPressed: () {
                 Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (context) => const AddLessonPage()),
+                  MaterialPageRoute(
+                      builder: (context) => const AddLessonPage()),
                 );
               },
             ),
@@ -507,23 +513,22 @@ class _FlashcardPageState extends State<FlashcardPage>
 
   Widget _buildCard({required bool isFront}) {
     return Container(
-      width: 400, // Changed width of the flip card
-      height: 800, // Changed height of the flip card
-      margin: const EdgeInsets.only(top: 50), // Move the flip card lower
+      width: 400,
+      height: 800,
+      margin: const EdgeInsets.only(top: 50),
       child: Card(
         elevation: 8,
         margin: const EdgeInsets.all(16.0),
         child: Stack(
           children: [
-            // Add foil effect
             Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      Colors.blue.withOpacity(0.3),
-                      Colors.blue.withOpacity(0.1),
-                      Colors.blue.withOpacity(0.3),
+                      Colors.purple.withOpacity(0.3),
+                      Colors.purple.withOpacity(0.1),
+                      Colors.purple.withOpacity(0.3),
                     ],
                     stops: const [0.0, 0.5, 1.0],
                     begin: Alignment.topLeft,
@@ -543,6 +548,15 @@ class _FlashcardPageState extends State<FlashcardPage>
                           style: const TextStyle(
                               fontSize: 20, fontWeight: FontWeight.bold),
                         ),
+                        const SizedBox(height: 16),
+                        widget.frontImage.isNotEmpty
+                            ? Image.asset(
+                                'assets/images/DT/${widget.frontImage}',
+                                width: 100,
+                                height: 100,
+                                fit: BoxFit.cover,
+                              )
+                            : Container(),
                         const SizedBox(height: 16),
                         Expanded(
                           child: SingleChildScrollView(

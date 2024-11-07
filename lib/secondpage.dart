@@ -106,7 +106,9 @@ class _MyHomePageState extends State<MyHomePage> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const ListPage()),
+                MaterialPageRoute(
+                  builder: (context) => ListPage(usersId: widget.usersId), // Pass usersId here
+                ),
               );
             },
             label: 'MY DESIGN THINKING LIST',

@@ -2046,9 +2046,7 @@ class _DashboardsState extends State<Dashboards> {
                                                                           "json":
                                                                               jsondata,
                                                                           "operation":
-                                                                              "getUserFolders",
-                                                                          "user_id":
-                                                                              usersId.toString(), // Add the user_id here
+                                                                              "getFoldersInside"
                                                                         },
                                                                       );
 
