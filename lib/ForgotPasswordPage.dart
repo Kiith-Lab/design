@@ -166,7 +166,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
+                        return 'Please enter your email address';
                       }
                       // Add more email validation if necessary
                       return null;
