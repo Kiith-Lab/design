@@ -23,6 +23,7 @@ class Get
             tbl_front_cards.cards_title,
             tbl_front_cards.cards_id,
             tbl_front_cards.cards_content,
+               tbl_front_cards.cards_image,
             MAX(tbl_back_cards_header.back_content) as back_content,
             MAX(tbl_back_cards_header.back_content_title) as back_content_title,
             MAX(tbl_back_cards_header.back_cards_header_frontId) as back_cards_header_frontId,
@@ -57,6 +58,7 @@ class Get
             tbl_front_cards.cards_title,
             tbl_front_cards.cards_id,
             tbl_front_cards.cards_content,
+               tbl_front_cards.cards_image,
             MAX(tbl_back_cards_header.back_content) as back_content,
             MAX(tbl_back_cards_header.back_content_title) as back_content_title,
             MAX(tbl_back_cards_header.back_cards_header_frontId) as back_cards_header_frontId,
@@ -90,6 +92,7 @@ class Get
             $sql = "SELECT tbl_front_cards.cards_title,
        tbl_front_cards.cards_id,
        tbl_front_cards.cards_content,
+        tbl_front_cards.cards_image,
        GROUP_CONCAT(tbl_back_cards_header.back_content) AS back_content,
        GROUP_CONCAT(tbl_back_cards_header.back_content_title) AS back_content_title,
        GROUP_CONCAT(tbl_back_cards_header.back_cards_header_frontId) AS back_cards_header_frontId,
@@ -129,6 +132,7 @@ class Get
             
                 tbl_front_cards.cards_id,
                 tbl_front_cards.cards_content,
+                tbl_front_cards.cards_image,
                 GROUP_CONCAT(tbl_back_cards_header.back_content) AS back_content,
                 GROUP_CONCAT(tbl_back_cards_header.back_content_title) AS back_content_title,
                 GROUP_CONCAT(tbl_back_cards_header.back_cards_header_frontId) AS back_cards_header_frontId,
@@ -165,17 +169,18 @@ class Get
     {
         try {
             $sql = "SELECT tbl_front_cards.cards_title,
-       tbl_front_cards.cards_id,
-       tbl_front_cards.cards_content,
-       GROUP_CONCAT(tbl_back_cards_header.back_content) AS back_content,
-       GROUP_CONCAT(tbl_back_cards_header.back_content_title) AS back_content_title,
-       GROUP_CONCAT(tbl_back_cards_header.back_cards_header_frontId) AS back_cards_header_frontId,
-       GROUP_CONCAT(tbl_back_cards_header.back_cards_header_title) AS back_cards_header_title
-        FROM tbl_front_cards
-        LEFT JOIN tbl_back_cards_header ON tbl_back_cards_header.back_cards_header_frontId = tbl_front_cards.cards_id
-        WHERE tbl_front_cards.cards_masterId = 5
-        GROUP BY tbl_front_cards.cards_id, tbl_front_cards.cards_title, tbl_front_cards.cards_content
-        ORDER BY tbl_front_cards.cards_id ASC";
+                    tbl_front_cards.cards_id,
+                    tbl_front_cards.cards_image,
+                    tbl_front_cards.cards_content,
+                    GROUP_CONCAT(tbl_back_cards_header.back_content) AS back_content,
+                    GROUP_CONCAT(tbl_back_cards_header.back_content_title) AS back_content_title,
+                    GROUP_CONCAT(tbl_back_cards_header.back_cards_header_frontId) AS back_cards_header_frontId,
+                    GROUP_CONCAT(tbl_back_cards_header.back_cards_header_title) AS back_cards_header_title
+                    FROM tbl_front_cards
+                    LEFT JOIN tbl_back_cards_header ON tbl_back_cards_header.back_cards_header_frontId = tbl_front_cards.cards_id
+                    WHERE tbl_front_cards.cards_masterId = 5
+                    GROUP BY tbl_front_cards.cards_id, tbl_front_cards.cards_title, tbl_front_cards.cards_content, tbl_front_cards.cards_image
+                    ORDER BY tbl_front_cards.cards_id ASC";
             $stmt = $this->pdo->prepare($sql);
             $stmt->execute();
             $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -206,6 +211,7 @@ class Get
             $sql = "SELECT tbl_front_cards.cards_title, 
                     tbl_front_cards.cards_id, 
                     tbl_front_cards.cards_content,
+                       tbl_front_cards.cards_image,
                     tbl_back_cards_header.back_content, 
                     tbl_back_cards_header.back_content_title,
                     tbl_back_cards_header.back_cards_header_frontId
@@ -240,6 +246,7 @@ class Get
             $sql = "SELECT tbl_front_cards.cards_title, 
                     tbl_front_cards.cards_id, 
                     tbl_front_cards.cards_content,
+                       tbl_front_cards.cards_image,
                     tbl_back_cards_header.back_content, 
                     tbl_back_cards_header.back_content_title,
                     tbl_back_cards_header.back_cards_header_frontId,
@@ -274,6 +281,7 @@ class Get
             $sql = "SELECT tbl_front_cards.cards_title, 
                     tbl_front_cards.cards_id, 
                     tbl_front_cards.cards_content,
+                       tbl_front_cards.cards_image,
                     tbl_back_cards_header.back_content, 
                     tbl_back_cards_header.back_content_title,
                     tbl_back_cards_header.back_cards_header_frontId,
@@ -307,6 +315,7 @@ class Get
             $sql = "SELECT tbl_front_cards.cards_title, 
                     tbl_front_cards.cards_id, 
                     tbl_front_cards.cards_content,
+                       tbl_front_cards.cards_image,
                     tbl_back_cards_header.back_content, 
                     tbl_back_cards_header.back_content_title,
                     tbl_back_cards_header.back_cards_header_frontId,
@@ -339,6 +348,7 @@ class Get
         try {
             $sql = "SELECT tbl_front_cards.cards_title, 
                     tbl_front_cards.cards_id, 
+                    tbl_front_cards.cards_image,
                     tbl_front_cards.cards_content,
                     tbl_back_cards_header.back_content, 
                     tbl_back_cards_header.back_content_title,
@@ -801,6 +811,206 @@ GROUP BY
             return json_encode(['error' => 'An error occurred']);
         }
     }
+
+    function getUserFolders()
+    {
+        if (isset($_POST['user_id'])) {
+            $userId = $_POST['user_id'];
+        } else {
+            throw new Exception("User ID not provided");
+        }
+        try {
+            // Your modified SQL query goes here
+            $sql = "SELECT 
+                    tbl_users.users_firstname,
+                    tbl_users.users_lastname,
+                    tbl_project.project_id,
+                    tbl_project_cards.project_cards_id,
+                    GROUP_CONCAT(DISTINCT tbl_module_master.module_master_name ORDER BY tbl_module_master.module_master_name SEPARATOR ', ') AS Mode, 
+                    GROUP_CONCAT(DISTINCT tbl_activities_header.activities_header_duration ORDER BY tbl_activities_header.activities_header_duration SEPARATOR ', ') AS Duration,
+                    GROUP_CONCAT(DISTINCT tbl_activities_details.activities_details_content ORDER BY tbl_activities_details.activities_details_content SEPARATOR ', ') AS Activity, 
+                    tbl_project.project_title AS Lesson, 
+                    GROUP_CONCAT(DISTINCT tbl_outputs.outputs_content ORDER BY tbl_outputs.outputs_content SEPARATOR ', ') AS Output, 
+                    GROUP_CONCAT(DISTINCT tbl_instruction.instruction_content ORDER BY tbl_instruction.instruction_content SEPARATOR ', ') AS Instruction, 
+                    GROUP_CONCAT(DISTINCT tbl_coach_detail.coach_detail_content ORDER BY tbl_coach_detail.coach_detail_content SEPARATOR ', ') AS CoachDetail,
+                    tbl_project.project_description AS ProjectDescription,
+                    tbl_project.project_start_date AS StartDate,
+                    tbl_project.project_end_date AS EndDate,
+                    GROUP_CONCAT(DISTINCT tbl_activities_details.activities_details_remarks ORDER BY tbl_activities_details.activities_details_remarks SEPARATOR ', ') AS ActivityRemarks, 
+                    GROUP_CONCAT(DISTINCT tbl_outputs.outputs_remarks ORDER BY tbl_outputs.outputs_remarks SEPARATOR ', ') AS OutputRemarks, 
+                    GROUP_CONCAT(DISTINCT tbl_instruction.instruction_remarks ORDER BY tbl_instruction.instruction_remarks SEPARATOR ', ') AS InstructionRemarks, 
+                    GROUP_CONCAT(DISTINCT tbl_coach_detail.coach_detail_renarks ORDER BY tbl_coach_detail.coach_detail_renarks SEPARATOR ', ') AS CoachDetailRemarks
+                FROM 
+                    tbl_folder
+                LEFT JOIN
+                    tbl_project ON tbl_folder.projectId = tbl_project.project_id
+                LEFT JOIN 
+                    tbl_users ON tbl_users.users_id = tbl_project.project_userId
+                LEFT JOIN 
+                    tbl_project_cards ON tbl_folder.project_cardsId = tbl_project_cards.project_cards_id
+                LEFT JOIN 
+                    tbl_project_modules ON tbl_folder.project_moduleId = tbl_project_modules.project_modules_id
+                LEFT JOIN 
+                    tbl_module_master ON tbl_project_modules.project_modules_masterId = tbl_module_master.module_master_id
+                LEFT JOIN 
+                    tbl_activities_details ON tbl_folder.activities_detailId = tbl_activities_details.activities_details_id
+                LEFT JOIN 
+                    tbl_activities_header ON tbl_activities_header.activities_header_id = tbl_activities_details.activities_details_headerId
+                LEFT JOIN 
+                    tbl_outputs ON tbl_folder.outputId = tbl_outputs.outputs_id
+                LEFT JOIN 
+                    tbl_instruction ON tbl_folder.instructionId = tbl_instruction.instruction_id
+                LEFT JOIN 
+                    tbl_coach_detail ON tbl_folder.coach_detailsId = tbl_coach_detail.coach_detail_id
+                WHERE tbl_project.project_userId = :user_id
+                GROUP BY 
+                    tbl_project.project_id, 
+                    tbl_project.project_description, 
+                    tbl_project.project_start_date, 
+                    tbl_project.project_end_date, 
+                    tbl_project.project_title";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':user_id', $userId, PDO::PARAM_INT); // Bind the user ID here
+            $stmt->execute();
+
+
+            $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            error_log("SQL Query: $sql");
+            error_log("Result: " . print_r($returnValue, true));
+
+            // Format the results into a single container
+            $formattedResult = [];
+            foreach ($returnValue as $row) {
+                $formattedResult[] = [
+                    'ProjectID' => $row["project_id"],
+                    'ProjectCardsID' => $row["project_cards_id"],
+                    'Mode' => $row['Mode'],
+                    'Duration' => $row['Duration'],
+                    'Activity' => $row['Activity'],
+                    'Lesson' => $row['Lesson'],
+                    'Output' => $row['Output'],
+                    'Instruction' => $row['Instruction'],
+                    'CoachDetail' => $row['CoachDetail'],
+                    'ProjectDescription' => $row['ProjectDescription'],
+                    'StartDate' => $row['StartDate'],
+                    'EndDate' => $row['EndDate'],
+                    'ActivityRemarks' => $row['ActivityRemarks'],
+                    'OutputRemarks' => $row['OutputRemarks'],
+                    'InstructionRemarks' => $row['InstructionRemarks'],
+                    'CoachDetailRemarks' => $row['CoachDetailRemarks'],
+                ];
+            }
+
+            return json_encode($formattedResult);
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            return json_encode(['error' => 'Database error occurred']);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage());
+            return json_encode(['error' => 'An error occurred']);
+        }
+    }
+
+    function getFoldersInside($json)
+    {
+        $json = json_decode($json, true);
+        $usersId = isset($json['users_id']) ? $json['users_id'] : '';
+
+        try {
+            // Your modified SQL query goes here
+            $sql = "SELECT 
+    tbl_project.project_id,
+    tbl_project_cards.project_cards_id,
+    GROUP_CONCAT(DISTINCT tbl_module_master.module_master_name ORDER BY tbl_module_master.module_master_name SEPARATOR ', ') AS Mode, 
+    GROUP_CONCAT(DISTINCT tbl_activities_header.activities_header_duration ORDER BY tbl_activities_header.activities_header_duration SEPARATOR ', ') AS Duration,
+    GROUP_CONCAT(DISTINCT tbl_activities_details.activities_details_content ORDER BY tbl_activities_details.activities_details_content SEPARATOR ', ') AS Activity, 
+    tbl_project.project_title AS Lesson, 
+    GROUP_CONCAT(DISTINCT tbl_outputs.outputs_content ORDER BY tbl_outputs.outputs_content SEPARATOR ', ') AS Output, 
+    GROUP_CONCAT(DISTINCT tbl_instruction.instruction_content ORDER BY tbl_instruction.instruction_content SEPARATOR ', ') AS Instruction, 
+    GROUP_CONCAT(DISTINCT tbl_coach_detail.coach_detail_content ORDER BY tbl_coach_detail.coach_detail_content SEPARATOR ', ') AS CoachDetail,
+    tbl_project.project_description AS ProjectDescription,
+    tbl_project.project_start_date AS StartDate,
+    tbl_project.project_end_date AS EndDate,
+    GROUP_CONCAT(DISTINCT tbl_activities_details.activities_details_remarks ORDER BY tbl_activities_details.activities_details_remarks SEPARATOR ', ') AS ActivityRemarks, 
+    GROUP_CONCAT(DISTINCT tbl_outputs.outputs_remarks ORDER BY tbl_outputs.outputs_remarks SEPARATOR ', ') AS OutputRemarks, 
+    GROUP_CONCAT(DISTINCT tbl_instruction.instruction_remarks ORDER BY tbl_instruction.instruction_remarks SEPARATOR ', ') AS InstructionRemarks, 
+    GROUP_CONCAT(DISTINCT tbl_coach_detail.coach_detail_renarks ORDER BY tbl_coach_detail.coach_detail_renarks SEPARATOR ', ') AS CoachDetailRemarks
+FROM 
+    tbl_folder
+LEFT JOIN
+    tbl_project ON tbl_folder.projectId = tbl_project.project_id
+LEFT JOIN 
+    tbl_project_cards ON tbl_folder.project_cardsId = tbl_project_cards.project_cards_id
+LEFT JOIN 
+    tbl_project_modules ON tbl_folder.project_moduleId = tbl_project_modules.project_modules_id
+LEFT JOIN 
+    tbl_module_master ON tbl_project_modules.project_modules_masterId = tbl_module_master.module_master_id
+LEFT JOIN 
+    tbl_activities_details ON tbl_folder.activities_detailId = tbl_activities_details.activities_details_id
+LEFT JOIN 
+    tbl_activities_header ON tbl_activities_header.activities_header_id = tbl_activities_details.activities_details_headerId
+LEFT JOIN 
+    tbl_outputs ON tbl_folder.outputId = tbl_outputs.outputs_id
+LEFT JOIN 
+    tbl_instruction ON tbl_folder.instructionId = tbl_instruction.instruction_id
+LEFT JOIN 
+    tbl_coach_detail ON tbl_folder.coach_detailsId = tbl_coach_detail.coach_detail_id
+LEFT JOIN 
+    tbl_users ON tbl_project.project_userId = tbl_users.users_id
+WHERE 
+    tbl_users.users_id = :usersId
+GROUP BY 
+    tbl_project.project_id, 
+    tbl_project.project_description, 
+    tbl_project.project_start_date, 
+    tbl_project.project_end_date, 
+    tbl_project.project_title;
+";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':usersId', $usersId);
+            $stmt->execute();
+
+            $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            error_log("SQL Query: $sql");
+            error_log("Result: " . print_r($returnValue, true));
+
+            // Format the results into a single container
+            $formattedResult = [];
+            foreach ($returnValue as $row) {
+                $formattedResult[] = [
+                    'ProjectID' => $row["project_id"],
+                    'ProjectCardsID' => $row["project_cards_id"],
+                    'Mode' => $row['Mode'],
+                    'Duration' => $row['Duration'],
+                    'Activity' => $row['Activity'],
+                    'Lesson' => $row['Lesson'],
+                    'Output' => $row['Output'],
+                    'Instruction' => $row['Instruction'],
+                    'CoachDetail' => $row['CoachDetail'],
+                    'ProjectDescription' => $row['ProjectDescription'],
+                    'StartDate' => $row['StartDate'],
+                    'EndDate' => $row['EndDate'],
+                    'ActivityRemarks' => $row['ActivityRemarks'],
+                    'OutputRemarks' => $row['OutputRemarks'],
+                    'InstructionRemarks' => $row['InstructionRemarks'],
+                    'CoachDetailRemarks' => $row['CoachDetailRemarks'],
+                ];
+            }
+
+            return json_encode($formattedResult);
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage());
+            return json_encode(['error' => 'Database error occurred']);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage());
+            return json_encode(['error' => 'An error occurred']);
+        }
+    }
+
     function getExcel()
     {
         $projectId = isset($_POST['projectId']) ? $_POST['projectId'] : '';
@@ -1171,6 +1381,9 @@ switch ($operation) {
     case "getFolders":
         echo $get->getFolders();
         break;
+    case "getUserFolders":
+        echo $get->getUserFolders();
+        break;
     case "getUserSchoolDepartment":
         echo $get->getUserSchoolDepartment();
         break;
@@ -1182,6 +1395,9 @@ switch ($operation) {
         break;
     case "getFolderId":
         echo $get->getFolderId($json);
+        break;
+    case "getFoldersInside":
+        echo $get->getFoldersInside($json);
         break;
     case "getUserNotActive":
         echo $get->getUserNotActive();
