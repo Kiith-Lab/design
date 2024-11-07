@@ -1396,9 +1396,6 @@ switch ($operation) {
     case "getFolderId":
         echo $get->getFolderId($json);
         break;
-    case "getFoldersInside":
-        echo $get->getFoldersInside($json);
-        break;
     case "getUserNotActive":
         echo $get->getUserNotActive();
         break;
