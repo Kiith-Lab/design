@@ -505,23 +505,27 @@ class Get1
             $groupedFolders = [];
             foreach ($returnValue as $folder) {
                 $projectId = $folder['projectId'];
-                
+
                 if (!isset($groupedFolders[$projectId])) {
                     $groupedFolders[$projectId] = $folder;
                     // Initialize arrays for multiple values
                     $groupedFolders[$projectId]['activities_header_durations'] = [];
                     $groupedFolders[$projectId]['cards'] = [];
                 }
-                
+
                 // Add duration to the durations array if it's not null (removed uniqueness check)
                 if ($folder['activities_header_duration'] !== null) {
-                    $groupedFolders[$projectId]['activities_header_durations'][] = 
+                    $groupedFolders[$projectId]['activities_header_durations'][] =
                         $folder['activities_header_duration'];
                 }
 
                 // Add card if it's not already added
-                if ($folder['cards_id'] && !in_array($folder['cards_id'], 
-                    array_column($groupedFolders[$projectId]['cards'], 'cards_id'))) {
+                if (
+                    $folder['cards_id'] && !in_array(
+                        $folder['cards_id'],
+                        array_column($groupedFolders[$projectId]['cards'], 'cards_id')
+                    )
+                ) {
                     $groupedFolders[$projectId]['cards'][] = [
                         'cards_id' => $folder['cards_id'],
                         'cards_title' => $folder['cards_title'],
@@ -534,33 +538,35 @@ class Get1
             // Convert arrays to strings where needed
             foreach ($groupedFolders as &$folder) {
                 // Keep activities_header_durations as an array and allow duplicates
-                $folder['activities_header_duration'] = implode(', ', 
-                    $folder['activities_header_durations']);
+                $folder['activities_header_duration'] = implode(
+                    ', ',
+                    $folder['activities_header_durations']
+                );
 
                 $activitiesContent = json_decode($folder['activities_details_content'], true);
-                $folder['activities_details_content'] = is_array($activitiesContent) ? 
+                $folder['activities_details_content'] = is_array($activitiesContent) ?
                     implode("\n", $activitiesContent) : '';
 
                 $outputsContent = json_decode($folder['outputs_content'], true);
-                $folder['outputs_content'] = is_array($outputsContent) ? 
+                $folder['outputs_content'] = is_array($outputsContent) ?
                     implode("\n", $outputsContent) : '';
 
                 $instructionContent = json_decode($folder['instruction_content'], true);
-                $folder['instruction_content'] = is_array($instructionContent) ? 
+                $folder['instruction_content'] = is_array($instructionContent) ?
                     implode("\n", $instructionContent) : '';
 
                 $coachDetailContent = json_decode($folder['coach_detail_content'], true);
-                $folder['coach_detail_content'] = is_array($coachDetailContent) ? 
+                $folder['coach_detail_content'] = is_array($coachDetailContent) ?
                     implode("\n", $coachDetailContent) : '';
             }
 
             return json_encode(['folders' => array_values($groupedFolders)]);
         } catch (PDOException $e) {
-            error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . 
+            error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() .
                 " on line " . $e->getLine());
             return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
         } catch (Exception $e) {
-            error_log("General error: " . $e->getMessage() . " in " . $e->getFile() . 
+            error_log("General error: " . $e->getMessage() . " in " . $e->getFile() .
                 " on line " . $e->getLine());
             return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
         }
@@ -664,7 +670,7 @@ class Get1
 
             if ($existingProject) {
                 $projectId = $existingProject['project_id'];
-                
+
                 // Check if the module already exists for this project
                 $checkModuleStmt = $this->pdo->prepare("SELECT project_modules_id FROM tbl_project_modules 
                     WHERE project_modules_projectId = :projectId 
@@ -673,7 +679,7 @@ class Get1
                     ':projectId' => $projectId,
                     ':masterId' => $data['mode']['project_modules_masterId']
                 ]);
-                
+
                 if ($checkModuleStmt->fetch(PDO::FETCH_ASSOC)) {
                     $this->pdo->rollBack();
                     return json_encode([
@@ -893,6 +899,9 @@ switch ($operation) {
     case "getFolder":
         echo $get->getFolder();
         break;
+    // case "getFolder":
+    //     echo $get->getFolder($_POST['userId']);
+    //     break;
     case "getFolders":
         echo $get->getFolders();
         break;
