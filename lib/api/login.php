@@ -15,6 +15,10 @@ header("Access-Control-Allow-Headers: Content-Type");
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Retrieve username and password from the POST data
     $input = json_decode(file_get_contents('php://input'), true);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        echo json_encode(['success' => false, 'message' => 'Invalid JSON input']);
+        exit;
+    }
     $username = isset($input['users_school_id']) ? $input['users_school_id'] : '';
     $password = isset($input['users_password']) ? $input['users_password'] : '';
 

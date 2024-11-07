@@ -518,6 +518,19 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
     sheet.setColWidth(2, 40);
 
     sheet.appendRow(['', 'MY DESIGN THINKING PLAN', '']);
+
+    // Set color for the header row
+    final headerRowIndex = sheet.maxRows - 1;
+    for (int i = 0; i < 3; i++) {
+      final cell = sheet.cell(
+          CellIndex.indexByColumnRow(columnIndex: i, rowIndex: headerRowIndex));
+      cell.cellStyle = CellStyle(
+        backgroundColorHex: '#D3D3D3',
+        fontSize: 16,
+        horizontalAlign: HorizontalAlign.Center,
+      );
+    }
+
     sheet.appendRow(
         ['Project', widget.folder['project_title'] ?? 'Unnamed Project', '']);
     sheet.appendRow([
@@ -534,7 +547,43 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
         ['End Date', widget.folder['project_end_date'] ?? 'No end date', '']);
 
     for (var module in moduleData ?? []) {
-      sheet.appendRow([module['module_master_name'], '', 'NOTES/REMARKS']);
+      // Determine the color based on the module name
+      final String moduleName =
+          module['module_master_name']?.toString() ?? 'Unnamed Module';
+      final String moduleColorHex;
+
+      switch (moduleName) {
+        case 'Empathize':
+          moduleColorHex = '#6fa8dc'; // Blue
+          break;
+        case 'Define':
+          moduleColorHex = '#38761d'; // Green
+          break;
+        case 'Ideate':
+          moduleColorHex = '#ff9900'; // Orange
+          break;
+        case 'Prototype':
+          moduleColorHex = '#f14309'; // Dark Red
+          break;
+        case 'Test':
+          moduleColorHex = '#990000'; // Red
+          break;
+        default:
+          moduleColorHex = '#000000'; // Default to black if no match
+      }
+
+      // Append the row with the module name
+      sheet.appendRow([moduleName, '', 'NOTES/REMARKS']);
+
+      // Apply the color to the last row's cells
+      final moduleRowIndex = sheet.maxRows - 1;
+      for (int i = 0; i < 3; i++) {
+        final cell = sheet.cell(CellIndex.indexByColumnRow(
+            columnIndex: i, rowIndex: moduleRowIndex));
+        cell.cellStyle = CellStyle(
+          backgroundColorHex: moduleColorHex,
+        );
+      }
 
       // Handle activities details content
       List<String> activitiesDetails =
@@ -566,6 +615,14 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
           ]);
         }
       }
+
+      // Handle activity duration
+      sheet.appendRow(['How long will this activity take?', '', '']);
+      sheet.appendRow([
+        '',
+        _filterData(module['activities_header_duration']),
+        'No remarks'
+      ]);
 
       // Handle expected outputs
       List<String> expectedOutputs =
@@ -693,14 +750,6 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
             return pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                // Module Title
-                pw.Text(
-                  module['module_master_name'] ?? '',
-                  style: pw.TextStyle(
-                      fontSize: 20, fontWeight: pw.FontWeight.bold),
-                ),
-                pw.SizedBox(height: 20),
-
                 // Module Content Table
                 pw.Table(
                   border: pw.TableBorder.all(),
@@ -710,6 +759,37 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
                     2: const pw.FlexColumnWidth(1),
                   },
                   children: [
+                    // Module Name Row with background color
+                    pw.TableRow(
+                      children: [
+                        // pw.Container(
+                        //   padding: const pw.EdgeInsets.all(8),
+                        //   // child: pw.Text(
+                        //   //   'Module',
+                        //   //   style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                        //   // ),
+                        // ),
+                        pw.Container(
+                          padding: const pw.EdgeInsets.all(8),
+                          decoration: pw.BoxDecoration(
+                            color:
+                                _getModuleColor(module['module_master_name']),
+                          ),
+                          child: pw.Text(
+                            module['module_master_name'] ?? '',
+                            style: pw.TextStyle(
+                              fontSize: 20,
+                              fontWeight: pw.FontWeight.bold,
+                              color: PdfColors.white, // Text color for contrast
+                            ),
+                          ),
+                        ),
+                        pw.Container(
+                          padding: const pw.EdgeInsets.all(8),
+                          child: pw.Text(''),
+                        ),
+                      ],
+                    ),
                     // Table Header
                     pw.TableRow(
                       decoration:
@@ -808,6 +888,24 @@ class _FolderDetailPageState extends State<FolderDetailPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to generate PDF: $e')),
       );
+    }
+  }
+
+  // Helper method to get color for each module
+  PdfColor _getModuleColor(String? moduleName) {
+    switch (moduleName) {
+      case 'Empathize':
+        return PdfColor.fromHex('#6fa8dc'); // Blue
+      case 'Define':
+        return PdfColor.fromHex('#38761d'); // Green
+      case 'Ideate':
+        return PdfColor.fromHex('#ff9900'); // Orange
+      case 'Prototype':
+        return PdfColor.fromHex('#f14309'); // Dark Red
+      case 'Test':
+        return PdfColor.fromHex('#990000'); // Red
+      default:
+        return PdfColor.fromHex('#000000'); // Default to black if no match
     }
   }
 
