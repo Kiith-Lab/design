@@ -251,8 +251,8 @@ class _DashboardsState extends State<Dashboards> {
   Future<void> fetchFoldersPDF() async {
     try {
       final response = await http.post(
-        Uri.parse('${baseUrl}masterlist.php'),
-        body: {'operation': 'getFolder'},
+        Uri.parse('${baseUrl}view.php'),
+        body: {'operation': 'getFolderr'},
       );
 
       if (response.statusCode == 200) {

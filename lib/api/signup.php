@@ -29,7 +29,8 @@ try {
             'users_lastname',
             'users_suffix',
             'users_schoolId',
-            'users_departmantId'
+            'users_departmantId',
+            'user_email'
         ];
         $userData = [];
         foreach ($fields as $field) {
@@ -42,7 +43,7 @@ try {
         $userData['register_status'] = '0';
 
         // Validate input
-        foreach (['users_school_id', 'users_password', 'users_firstname', 'users_lastname', 'users_schoolId', 'users_departmantId'] as $requiredField) {
+        foreach (['users_school_id', 'users_password', 'users_firstname', 'users_lastname', 'users_schoolId', 'users_departmantId', 'user_email'] as $requiredField) {
             if (empty($userData[$requiredField])) {
                 echo json_encode(['success' => false, 'message' => 'All required fields must be filled']);
                 exit;
@@ -59,8 +60,8 @@ try {
 
         // Prepare SQL statement to insert new user
         $stmt = $pdo->prepare("
-            INSERT INTO tbl_users (users_school_id, users_password, users_firstname, users_middlename, users_lastname, users_suffix, users_schoolId, users_departmantId, users_roleId, users_status, register_status) 
-            VALUES (:schoolId, :password, :firstname, :middlename, :lastname, :suffix, :schoolIdFK, :departmentId, :roleId, :userStatus, :registerStatus)
+            INSERT INTO tbl_users (users_school_id, users_password, users_firstname, users_middlename, users_lastname, users_suffix, users_schoolId, users_departmantId, users_roleId, users_status, register_status, user_email) 
+            VALUES (:schoolId, :password, :firstname, :middlename, :lastname, :suffix, :schoolIdFK, :departmentId, :roleId, :userStatus, :registerStatus, :email)
         ");
 
         // Execute the statement
@@ -75,7 +76,8 @@ try {
             ':departmentId' => $userData['users_departmantId'],
             ':roleId' => $userData['users_roleId'],
             ':userStatus' => $userData['users_status'],
-            ':registerStatus' => $userData['register_status']
+            ':registerStatus' => $userData['register_status'],
+            ':email' => $userData['user_email']
         ])) {
             echo json_encode(['success' => true, 'message' => 'User registered successfully']);
         } else {
@@ -89,4 +91,5 @@ try {
     // Catch any exceptions and return them as JSON
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
+    
 ?>

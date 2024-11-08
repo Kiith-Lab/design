@@ -1202,7 +1202,106 @@ GROUP BY
             return json_encode(['error' => 'An error occurred']);
         }
     }
+    function getFolderr()
+    {
+        try {
+            $sql = "SELECT 
+                tbl_folder.*,
+                tbl_project_modules.*,
+                tbl_activities_details.*,
+                tbl_project_cards.*,
+                tbl_outputs.*,
+                tbl_instruction.*,
+                tbl_coach_detail.*,
+                tbl_project.*,
+                tbl_module_master.*,
+                tbl_front_cards.*,
+                tbl_back_cards_header.*,
+                tbl_activities_header.*
+            FROM tbl_folder
+            LEFT JOIN tbl_project_modules ON tbl_folder.project_moduleId = tbl_project_modules.project_modules_id
+            LEFT JOIN tbl_activities_details ON tbl_folder.activities_detailId = tbl_activities_details.activities_details_id
+            LEFT JOIN tbl_project_cards ON tbl_folder.project_cardsId = tbl_project_cards.project_cards_id
+            LEFT JOIN tbl_outputs ON tbl_folder.outputId = tbl_outputs.outputs_id
+            LEFT JOIN tbl_instruction ON tbl_folder.instructionId = tbl_instruction.instruction_id
+            LEFT JOIN tbl_coach_detail ON tbl_folder.coach_detailsId = tbl_coach_detail.coach_detail_id
+            LEFT JOIN tbl_project ON tbl_project.project_id = tbl_folder.projectId
+            LEFT JOIN tbl_activities_header ON tbl_activities_header.activities_header_id = tbl_activities_details.activities_details_headerId
+            LEFT JOIN tbl_module_master ON tbl_module_master.module_master_id = tbl_project_modules.project_modules_masterId
+            LEFT JOIN tbl_front_cards ON tbl_project_cards.project_cards_cardId = tbl_front_cards.cards_id
+            LEFT JOIN tbl_back_cards_header ON tbl_back_cards_header.back_cards_header_id = tbl_project_cards.project_cards_cardId";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+            $returnValue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Group folders by projectId to handle multiple data per project
+            $groupedFolders = [];
+            foreach ($returnValue as $folder) {
+                $projectId = $folder['projectId'];
+                
+                if (!isset($groupedFolders[$projectId])) {
+                    $groupedFolders[$projectId] = $folder;
+                    // Initialize arrays for multiple values
+                    $groupedFolders[$projectId]['activities_header_durations'] = [];
+                    $groupedFolders[$projectId]['cards'] = [];
+                }
+                
+                // Add duration to the durations array if it's not null (removed uniqueness check)
+                if ($folder['activities_header_duration'] !== null) {
+                    $groupedFolders[$projectId]['activities_header_durations'][] = 
+                        $folder['activities_header_duration'];
+                }
+
+                // Add card if it's not already added
+                if ($folder['cards_id'] && !in_array($folder['cards_id'], 
+                    array_column($groupedFolders[$projectId]['cards'], 'cards_id'))) {
+                    $groupedFolders[$projectId]['cards'][] = [
+                        'cards_id' => $folder['cards_id'],
+                        'cards_title' => $folder['cards_title'],
+                        'back_cards_header_id' => $folder['back_cards_header_id'],
+                        'back_cards_header_title' => $folder['back_cards_header_title']
+                    ];
+                }
+            }
+
+            // Convert arrays to strings where needed
+            foreach ($groupedFolders as &$folder) {
+                // Keep activities_header_durations as an array and allow duplicates
+                $folder['activities_header_duration'] = implode(', ', 
+                    $folder['activities_header_durations']);
+
+                $activitiesContent = json_decode($folder['activities_details_content'], true);
+                $folder['activities_details_content'] = is_array($activitiesContent) ? 
+                    implode("\n", $activitiesContent) : '';
+
+                $outputsContent = json_decode($folder['outputs_content'], true);
+                $folder['outputs_content'] = is_array($outputsContent) ? 
+                    implode("\n", $outputsContent) : '';
+
+                $instructionContent = json_decode($folder['instruction_content'], true);
+                $folder['instruction_content'] = is_array($instructionContent) ? 
+                    implode("\n", $instructionContent) : '';
+
+                $coachDetailContent = json_decode($folder['coach_detail_content'], true);
+                $folder['coach_detail_content'] = is_array($coachDetailContent) ? 
+                    implode("\n", $coachDetailContent) : '';
+            }
+
+            return json_encode(['folders' => array_values($groupedFolders)]);
+        } catch (PDOException $e) {
+            error_log("Database error: " . $e->getMessage() . " in " . $e->getFile() . 
+                " on line " . $e->getLine());
+            return json_encode(['error' => 'Database error occurred: ' . $e->getMessage()]);
+        } catch (Exception $e) {
+            error_log("General error: " . $e->getMessage() . " in " . $e->getFile() . 
+                " on line " . $e->getLine());
+            return json_encode(['error' => 'An error occurred: ' . $e->getMessage()]);
+        }
+    }
+    
 }
+
 
 // Handle preflight requests for CORS (for OPTIONS request)
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
@@ -1311,6 +1410,9 @@ switch ($operation) {
     case "getExcel":
         echo $get->getExcel();
         break;
+        case "getFolderr":
+            echo $get->getFolderr();
+            break;
     default:
         echo json_encode(['error' => 'Invalid operation']);
         break;

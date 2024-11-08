@@ -22,6 +22,7 @@ class _SignupPageState extends State<SignupPage> {
   final TextEditingController _middleNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _suffixController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   String? _selectedSchool;
@@ -118,6 +119,7 @@ class _SignupPageState extends State<SignupPage> {
             'users_departmantId': _selectedDepartment ?? '',
             'users_roleId': '2',
             'users_status': '0', // Default status
+            'user_email': _emailController.text, // New email field
           }),
         );
 
@@ -156,6 +158,7 @@ class _SignupPageState extends State<SignupPage> {
     _middleNameController.clear();
     _lastNameController.clear();
     _suffixController.clear();
+    _emailController.clear();
     setState(() {
       _selectedSchool = null;
       _selectedDepartment = null;
@@ -377,6 +380,26 @@ class _SignupPageState extends State<SignupPage> {
                         }
                         if (value != _passwordController.text) {
                           return 'Passwords do not match';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _emailController,
+                      decoration: InputDecoration(
+                        labelText: 'Email',
+                        prefixIcon: const Icon(Icons.email),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your email';
+                        }
+                        if (!RegExp(r'^[^@]+@coc@phinmaed\.com$')
+                            .hasMatch(value)) {
+                          return 'Only phinmaed email account is accepted';
                         }
                         return null;
                       },
