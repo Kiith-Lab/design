@@ -166,7 +166,18 @@ class _AdminState extends State<Administrator>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Settings'),
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Settings'),
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
           content: SizedBox(
             width: 300,
             child: Column(
@@ -182,22 +193,23 @@ class _AdminState extends State<Administrator>
                   subtitle: Text("gmail"),
                 ),
                 const Divider(),
-                TextButton(
-                  onPressed: () {
-                    // Add forgot password functionality if needed
-                  },
-                  child: const Text("Forgot Password?"),
-                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    TextButton(
+                      onPressed: () {},
+                      child: const Text("Forgot Password?",
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontWeight: FontWeight.normal)),
+                    ),
+                  ],
+                )
               ],
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Close'),
-            ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
@@ -207,7 +219,11 @@ class _AdminState extends State<Administrator>
                   ),
                 );
               },
-              child: const Text('Logout'),
+              child: const Text('Logout',
+                  style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold)),
             ),
           ],
         );

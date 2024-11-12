@@ -893,8 +893,31 @@ class _DashboardsState extends State<Dashboards> {
                                       ),
                                     ],
                                   ),
-                                  if (!hideFilters)
-                                    IconButton(
+                                ],
+                              ),
+                            ),
+                            onChanged: (value) {
+                              setDialogState(() {
+                                localSearchQuery = value;
+                              });
+                            },
+                          ),
+
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                bottom: 12.0), // Adjust this padding as needed
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                if (title == 'Instructors')
+                                  const Text('Sort by: '),
+                                // Adjusted padding for the filter button
+                                if (!hideFilters &&
+                                    title == 'Instructors') // Update condition
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 8.0), // Add padding here
+                                    child: IconButton(
                                       icon: const Icon(Icons.filter_list,
                                           color: Colors.green),
                                       onPressed: () => _showFilterDialog(
@@ -914,15 +937,12 @@ class _DashboardsState extends State<Dashboards> {
                                         hideFilters,
                                       ),
                                     ),
-                                ],
-                              ),
+                                  ),
+                                // Show "Sort by:" text only for Instructors
+                              ],
                             ),
-                            onChanged: (value) {
-                              setDialogState(() {
-                                localSearchQuery = value;
-                              });
-                            },
                           ),
+
                           const SizedBox(height: 16),
                           Expanded(
                             child: ListView.builder(

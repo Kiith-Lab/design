@@ -91,6 +91,7 @@ class _ViewUserPageState extends State<ViewUserPage> {
 
   @override
   Widget build(BuildContext context) {
+    final totalUsersCount = users?.length ?? 0;
     // Sort users based on the selected order
     final sortedUsers = (users ?? []).toList();
     sortedUsers.sort((a, b) {
@@ -175,8 +176,9 @@ class _ViewUserPageState extends State<ViewUserPage> {
             Padding(
               padding: const EdgeInsets.only(bottom: 16.0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  Text('Showing $totalUsersCount entries'),
                   const Text('Sort by: '),
                   DropdownButton<String>(
                     value: _sortOrder,
